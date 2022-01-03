@@ -1,5 +1,5 @@
 ---
-title: Home1
+title: Home2
 nav-menu: true
 ---
 
