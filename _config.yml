@@ -5,6 +5,5 @@
 title: Kelvin van Hoorn
 # logo: /assets/img/logo.png
 description: Kelvin van Hoorn's personal website
-show_downloads: false
-google_analytics:
-theme: jekyll-theme-minimal
+# google_analytics:
+# theme: jekyll-theme-minimal
