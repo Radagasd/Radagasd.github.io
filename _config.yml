@@ -1,3 +1,10 @@
-theme: jekyll-theme-minimal
+# theme: jekyll-theme-minimal
+# title: Kelvin van Hoorn
+# description: Kelvin van Hoorn's personal website
+
 title: Kelvin van Hoorn
+# logo: /assets/img/logo.png
 description: Kelvin van Hoorn's personal website
+show_downloads: false
+google_analytics:
+theme: jekyll-theme-minimal
