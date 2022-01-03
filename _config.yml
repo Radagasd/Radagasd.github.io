@@ -1,2 +1,11 @@
 title: Kelvin van Hoorn
 description: Kelvin van Hoorn's personal website
+
+
+sass:
+  style: compressed
+
+exclude:
+- "*.gemspec"
+- LICENSE.md
+- README.md 
