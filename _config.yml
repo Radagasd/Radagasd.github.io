@@ -1,9 +1,10 @@
 title: Kelvin van Hoorn
 description: Kelvin van Hoorn's personal website
 
-theme: null
+
 
 markdown: kramdown
+theme: null
 plugins:
   - jekyll-feed
 sass:
