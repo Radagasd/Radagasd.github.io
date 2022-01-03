@@ -1,3 +1,8 @@
+---
+title: Showcases
+nav-menu: true
+---
+
 # Showcases
 
 Showcases are shown here

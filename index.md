@@ -1,3 +1,8 @@
+---
+title: Home
+nav-menu: true
+---
+
 # Hello World!
 
 [Showcases 1](/Showcases/)
