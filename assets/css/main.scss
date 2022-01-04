@@ -16,3 +16,14 @@ body {
     background: palette(bg);
     margin: 0;
 }
+
+.main-content{
+    margin-top: 35px;
+    padding: 1px;
+}
+
+@media screen and (max-width: $mediumdevice-width){
+    .main-content{
+        margin-top: 0px;
+    }
+}
