@@ -1,9 +1,16 @@
 // Palette.
 $palette: (
-    bg          : rgb(74, 192, 90),
+    bg          : rgb(255, 255, 255),
     bg-alt      : rgb(247, 173, 173),
     blue        : #223ac0,
-    yellow      : #fcff49
+    yellow      : #fcff49,
+
+    divider     : black,
+
+    header-bg       : rgb(255, 255, 255),
+    header          : rgb(27, 27, 27),
+    header-hover-bg : hsl(0, 0%, 97%),
+    header-hover    : black
 );
 
 $phone-width: 600px;

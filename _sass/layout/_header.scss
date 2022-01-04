@@ -1,38 +1,45 @@
 #header{
     background: palette(bg-alt);
+    
+    --navpadding: 5px;
 
     .navbar {
         overflow: hidden;
-        background-color: #333;
+        background-color: palette(header-bg);
         position: fixed;
         top: 0;
-        width: 100%;
+
+        width: calc(100vw - 2*var(--navpadding));
+        padding: var(--navpadding);
+
+        border-bottom: 2px solid palette(divider);
     }
 
     .navbar a{
-        color: white;
+        color: palette(header);
         padding: 14px 20px;
         text-decoration: none;
         text-align: center;
         display: block;
 
-        border-bottom: 3px solid transparent;
+        border-bottom: 3px solid mediumseagreen;
 
         float: left;
 
-        // font-size: 3vw;
         font-size: 18px;
         line-height: 25px;
         border-radius: 10px;
+
+        margin: 5px;
     }
 
     .navbar a:hover{
-        background-color: #ddd;
-        border-bottom: 3px solid red;
-        color: black;
+        background-color: palette(header-hover-bg);
+        border-bottom: 3px solid tomato;
+        color: palette(header-hover);
     }
 
-    .navbar-right{
+    .navbar .navbar-right{
         float: right;
     }
 
@@ -45,11 +52,13 @@
     @media screen and (max-width: $mediumdevice-width){
         .navbar{
             position: relative;
+            width: 100%;
+            padding: 0;
         }
         .navbar a{
             float: none;
         }
-        .navbar-right{
+        .navbar .navbar-right{
             float: none;
         }
     }
