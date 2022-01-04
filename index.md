@@ -1,11 +1,10 @@
 ---
-title: Home3
-nav-menu: true
+title: Home
+nav-menu: -1
 ---
 
 # Hello World!
 
-[Showcases 1](/Showcases/)
-[Showcases 2](https://radagasd.github.io/MyWebsite/Showcases/)
+[Showcases](/Showcases/)
 
 [Windfall test](/Showcases/Windfall (prototype)/)

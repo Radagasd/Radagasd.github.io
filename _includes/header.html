@@ -3,21 +3,17 @@
 
     <!-- Header -->
     <header id="header">
-        <a href="{{ "" | absolute_url }}" class="logo"><strong>{{ site.title }}</strong> <span>{{ site.subtitle }}</span></a>
+
+        <div class="navbar">
+            
+            <a href="{{ "" | absolute_url }}" class="logo">{{ site.title }}</a>
+            
+            <div class= "navbar-right">
+                {% assign navlist = site.html_pages | where_exp:"item","item.nav-menu >= 0" | sort: 'nav-menu' %}
+                {% for page in navlist %}
+                    <a href="{{ page.url | absolute_url }}">{{ page.title }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
     </header>
-    
-    <!-- Menu -->
-    <nav id="menu">
-        <ul class="links">
-            {% for page in site.pages %}
-                {% if page.layout == "home" %}
-                    <li><a href="{{ "" | absolute_url }}">{{ page.title }}</a></li>
-                {% endif %}
-            {% endfor %}
-            {% for page in site.html_pages %}
-                {% if page.layout != "home" and page.nav-menu == true %}
-                    <li><a href="{{ page.url | absolute_url }}">{{ page.title }}</a></li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </nav>

@@ -1,10 +1,10 @@
 ---
 title: Showcases
-nav-menu: true
+nav-menu: 1
 ---
 
 # Showcases
 
 Showcases are shown here
 
-[Windfall](https://radagasd.github.io/MyWebsite/Showcases/Windfall (prototype))
+[Windfall](/Showcases/Windfall (prototype))

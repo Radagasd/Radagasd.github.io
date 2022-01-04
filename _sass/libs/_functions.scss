@@ -1,0 +1,12 @@
+@function palette($color){
+
+    @warn map-get($palette,$color);
+
+    @if map-has-key($palette,$color){
+        $color: map-get($palette,$color);
+        @return $color;      
+    }
+
+    @warn "unknown color `#{$color}` in palette";
+    @return null;
+}

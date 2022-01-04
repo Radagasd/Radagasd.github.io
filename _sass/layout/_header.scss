@@ -1,0 +1,60 @@
+#header{
+    background: palette(bg-alt);
+
+    .navbar {
+        background-color: #333;
+        position: fixed;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        top: 0;
+
+        overflow: hidden;
+        
+    }
+
+    .navbar a{
+        color: white;
+        padding: 14px 20px;
+        text-decoration: none;
+        text-align: center;
+        display: block;
+
+        border-bottom: 3px solid transparent;
+
+        float: left;
+
+        font-size: 18px;
+        line-height: 25px;
+        border-radius: 10px;
+    }
+
+    .navbar a:hover{
+        background-color: #ddd;
+        border-bottom: 3px solid red;
+        color: black;
+    }
+
+    .navbar-right{
+        float: right;
+    }
+
+    @media screen and (max-width: $header-mobile-width){
+        .navbar{
+            position: relative;
+        }
+        .navbar a{
+            float: none;
+        }
+        .navbar-right{
+            float: none;
+        }
+    }
+
+    .navbar .logo
+    {
+        font-weight: bold;
+        font-size: 35px;
+    }
+
+}
