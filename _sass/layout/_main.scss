@@ -12,6 +12,27 @@ body {
     margin: 0;
 }
 
+#myBtn {
+    display: none;
+    position: fixed;
+    bottom: 1em;
+    right: 2em;
+    z-index: 99;
+    font-size: medium;
+    outline: none;
+    border: 0.2em solid palette(accent1);
+    background-color: palette(bg);
+    color: palette(text);
+    cursor: pointer;
+    padding: 0.5em;
+    border-radius: 0.5em;
+}
+  
+#myBtn:hover {
+    background-color: palette(accent1);
+    color: palette(text-alt);
+}
+
 .main-content{
     // margin-top: 5em;
     padding: 1em;
