@@ -3,8 +3,8 @@
 	padding-bottom: 56.25%; /* 16:9 */
 	height: 0;
 
-    background-color: tomato;
-    border: 5px solid tomato;
+    background-color: palette(video-box);
+    border: 5px solid palette(video-box);
     border-radius: 1em;
 }
 .youtube-container iframe {
@@ -15,18 +15,6 @@
 	height: 100%;
     border-radius: 1em;
 }
-
-// h1.pagetitle{
-//     text-align: center;
-//     width: 100%;
-//     padding-top: 0.5em;
-//     padding-bottom: 0.5em;
-
-//     background-color: palette(bg);
-
-//     border-bottom: .1em solid palette(accent1);
-//     border-top: .1em solid palette(accent1);
-// }
 
 .title-box{
     display: grid;
@@ -49,10 +37,6 @@ a{
     font-weight: bold;
     text-decoration: none;
     color: palette(text);
-    // color: palette(text-alt);
-    // background-color: palette(accent1);
-    // border-radius: 0.1em;
-    // padding: 0.1em;
 }
 a:hover{
     text-decoration: underline;
