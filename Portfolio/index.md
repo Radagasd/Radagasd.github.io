@@ -3,8 +3,6 @@ title: Portfolio
 nav-menu: 0
 ---
 
-# Portfolio
-
 Here a curated portfolio will be shown.
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur a venenatis eros. Vivamus lectus orci, bibendum et commodo eget, bibendum vel ligula. Duis nec mollis orci. Mauris ut laoreet ex. Aliquam convallis est a ipsum luctus consequat. Integer ullamcorper nunc ante, ac auctor elit tristique a. Vivamus sodales ultricies enim sed gravida. Proin a nisl eu sapien laoreet finibus eu non magna. Morbi vitae sem ut ipsum condimentum dapibus et in dolor. Sed luctus eget massa sed imperdiet. Aliquam dignissim justo eget auctor molestie. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.

@@ -3,8 +3,10 @@ title: Showcases
 nav-menu: 1
 ---
 
-# Showcases
-
 Showcases are shown here
 
-[Windfall](/Showcases/Windfall (prototype))
+{% assign showcaselist = site.posts | where:"category", "showcase"%}
+
+{% for post in showcaselist %}
+[{{ post.title }}]({{ post.url}})
+{% endfor %}

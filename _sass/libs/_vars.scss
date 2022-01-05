@@ -1,21 +1,17 @@
 // Palette.
 $palette: (
     bg          : rgb(255, 255, 255),
-    bg-alt      : hsl(0, 0%, 90%),
+    bg-alt      : hsl(0, 0%, 92%),
     blue        : #223ac0,
     yellow      : #fcff49,
 
-    divider     : black,
+    divider     : hsl(0, 0%, 25%),
 
-    header-bg       : rgb(255, 255, 255),
-    header          : rgb(27, 27, 27),
-    header-hover-bg : mediumseagreen,
-    header-hover    : white,
-
-    text            : black,
+    text            : hsl(0, 0%, 10%),
     text-alt        : white,
 
-    accent1         : mediumseagreen
+    accent1         : mediumseagreen,
+    accent2         : tomato
 );
 
 $phone-width: 600px;
