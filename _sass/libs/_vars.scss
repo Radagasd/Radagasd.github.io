@@ -9,8 +9,13 @@ $palette: (
 
     header-bg       : rgb(255, 255, 255),
     header          : rgb(27, 27, 27),
-    header-hover-bg : hsl(0, 0%, 97%),
-    header-hover    : black
+    header-hover-bg : mediumseagreen,
+    header-hover    : white,
+
+    text            : black,
+    text-alt        : white,
+
+    accent1         : mediumseagreen
 );
 
 $phone-width: 600px;

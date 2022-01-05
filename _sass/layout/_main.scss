@@ -1,0 +1,34 @@
+* {
+    box-sizing: border-box;
+}
+
+video {
+    width: 100%;
+    height: auto;
+}
+
+body {
+    background: palette(bg);
+    margin: 0;
+}
+
+.main-content{
+    margin-top: 50px;
+    padding: 1em;
+    background-color: palette(bg-alt);
+}
+
+.main-grid{
+    display: grid;
+    align-items: center;
+    grid-template-columns: 1fr $mediumdevice-width 1fr;
+}
+
+@media screen and (max-width: $mediumdevice-width){
+    .main-content{
+        margin-top: 0px;
+    }
+    .main-grid{
+        grid-template-columns: 0fr 1fr 0fr;
+    }
+}

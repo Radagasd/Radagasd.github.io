@@ -1,67 +1,66 @@
 #header{
     background: palette(bg-alt);
-    
-    --navpadding: 5px;
 
-    .navbar {
-        overflow: hidden;
+    .navbar{
         background-color: palette(header-bg);
         position: fixed;
         top: 0;
 
-        width: calc(100vw - 2*var(--navpadding));
-        padding: var(--navpadding);
-
+        width: 100%;
         border-bottom: 2px solid palette(divider);
+
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+
+        align-items: center;
     }
 
     .navbar a{
-        color: palette(header);
-        padding: 14px 20px;
+        color: palette(text);
+        
         text-decoration: none;
         text-align: center;
-        display: block;
+        font-size: large;
+        display: inline-block;
 
-        border-bottom: 3px solid mediumseagreen;
+        padding: 0.3em;
+        margin: 0.2em;
 
-        float: left;
-
-        font-size: 18px;
-        line-height: 25px;
-        border-radius: 10px;
-
-        margin: 5px;
+        border: 0.2em solid palette(accent1);
+        border-radius: 0.5em;
     }
 
     .navbar a:hover{
-        background-color: palette(header-hover-bg);
-        border-bottom: 3px solid tomato;
-        color: palette(header-hover);
+        background-color: palette(accent1);
+        color: palette(text-alt);
     }
 
     .navbar .navbar-right{
-        float: right;
+        // display:grid;
+        // // grid-template-columns: 1fr;
+        // grid-template-rows: 1fr;
     }
 
     .navbar .logo
     {
         font-weight: bold;
-        font-size: 35px;
+        font-size: xx-large;
+        line-height: normal;
     }
 
-    @media screen and (max-width: $mediumdevice-width){
-        .navbar{
-            position: relative;
-            width: 100%;
-            padding: 0;
-        }
-        .navbar a{
-            float: none;
-        }
-        .navbar .navbar-right{
-            float: none;
-        }
-    }
+    // @media screen and (max-width: $mediumdevice-width){
+    //     .navbar{
+    //         position: relative;
+    //         width: 100%;
+    //         padding: 0;
+    //     }
+    //     .navbar a{
+    //         float: none;
+    //     }
+    //     .navbar .navbar-right{
+    //         float: none;
+    //     }
+    // }
 
     
 }

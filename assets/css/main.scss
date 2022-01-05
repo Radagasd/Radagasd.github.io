@@ -6,24 +6,5 @@
 
 @import 'layout/wrapper';
 @import 'layout/header'; 
+@import 'layout/main';
 
-video {
-    width: 100%;
-    height: auto;
-}
-
-body {
-    background: palette(bg);
-    margin: 0;
-}
-
-.main-content{
-    margin-top: 35px;
-    padding: 16px;
-}
-
-@media screen and (max-width: $mediumdevice-width){
-    .main-content{
-        margin-top: 0px;
-    }
-}
