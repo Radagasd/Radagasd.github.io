@@ -30,6 +30,11 @@ body {
 
 #toTopBtn:hover {
 }
+
+#toTopBtn:active{
+    background-color: palette(accent1);
+    color: palette(text-alt);
+}
   
 @media (hover: hover){
     #toTopBtn:hover {
