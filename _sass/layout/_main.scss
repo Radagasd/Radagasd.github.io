@@ -12,7 +12,7 @@ body {
     margin: 0;
 }
 
-#myBtn {
+#toTopBtn {
     display: none;
     position: fixed;
     bottom: 1em;
@@ -28,9 +28,11 @@ body {
     border-radius: 0.5em;
 }
   
-#myBtn:hover {
+@media (hover: hover){
+    #toTopBtn:hover {
     background-color: palette(accent1);
     color: palette(text-alt);
+    }
 }
 
 .main-content{
