@@ -1,10 +1,10 @@
 #header{
     background: palette(bg);
-    border-bottom: 2px solid palette(divider);
+    border-bottom: 0.2rem solid palette(divider);
 
     .navbar{
         position: relative;
-        padding: 0.5em;
+        padding: 0.5rem;
         width: 100%;
 
         display: grid;

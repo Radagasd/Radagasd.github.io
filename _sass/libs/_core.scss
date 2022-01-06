@@ -142,13 +142,9 @@ a:hover{
 }
 
 // Modal Image
-#myImg {
-    border-radius: 5px;
+.image__modal{
     cursor: pointer;
-    transition: 0.3s;
 }
-
-#myImg:hover {opacity: 0.7;}
 
 /* The Modal (background) */
 .modal {
@@ -170,7 +166,7 @@ a:hover{
     margin: auto;
     display: block;
     width: 80%;
-    max-width: 1200px;
+    // max-width: 1200px;
 }
 
 /* Caption of Modal Image */
@@ -178,11 +174,10 @@ a:hover{
     margin: auto;
     display: block;
     width: 80%;
-    max-width: 1200px;
+    // max-width: 1200px;
     text-align: center;
     color: palette(text-alt);
     padding: 0.5em 0;
-    // height: 150px;
 }
 
 /* Add Animation */
@@ -222,7 +217,7 @@ a:hover{
 }
 
 /* 100% Image Width on Smaller Screens */
-@media only screen and (max-width: 700px){
+@media only screen and (max-width: $mediumdevice-width){
     .modal-content {
         width: 100%;
     }
