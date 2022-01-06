@@ -17,6 +17,8 @@ body {
     // margin-top: 5em;
     padding: 1em;
     background-color: palette(bg-alt);
+    border-left: 0.2rem solid palette(divider);
+    border-right: 0.2rem solid palette(divider);
 }
 
 .main-grid{
