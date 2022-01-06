@@ -3,6 +3,8 @@ description: Kelvin van Hoorn's personal website
 
 permalink: /:year/:month/:day/:title:output_ext
 
+google_analytics: G-8P9Z3T84Q4
+
 markdown: kramdown
 theme: null
 plugins:

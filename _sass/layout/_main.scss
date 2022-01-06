@@ -12,42 +12,6 @@ body {
     margin: 0;
 }
 
-#toTopBtn {
-    visibility: hidden;
-    opacity: 0;
-
-    display: block;
-    position: fixed;
-    bottom: 1em;
-    right: 2em;
-    z-index: 99;
-    font-size: medium;
-    outline: none;
-    border: 0.2em solid palette(accent1);
-    background-color: palette(bg);
-    color: palette(text);
-    cursor: pointer;
-    padding: 0.5em;
-    border-radius: 0.5em;
-
-    transition: 0.3s, visibility 0s, opacity 0.5s;
-}
-
-#toTopBtn:hover {
-}
-
-#toTopBtn:active{
-    background-color: palette(accent1);
-    color: palette(text-alt);
-}
-  
-@media (hover: hover){
-    #toTopBtn:hover {
-    background-color: palette(accent1);
-    color: palette(text-alt);
-    }
-}
-
 .main-content{
     // margin-top: 5em;
     padding: 1em;
