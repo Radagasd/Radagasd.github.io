@@ -7,8 +7,7 @@
     border: 0.3rem solid palette(video-box);
     border-radius: 0.3rem;
 
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin: 0.5rem 0;
 }
 .youtube-container iframe {
 	position: absolute;
@@ -47,8 +46,7 @@
     position:relative;
     border: 0.3rem solid palette(accent3);
     background-color: palette(accent3);
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin: 0.5rem 0;
 }
 
 .image-container img{
@@ -73,12 +71,11 @@
 
 .list-container{
     position: relative;
-    border: 0.5vw solid palette(accent4);
+    border: 0.3rem solid palette(accent4);
     background-color: palette(accent4);
     color: palette(text-alt);
     padding: 0.5rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin: 0.5rem 0;
 }
 
 .round{
