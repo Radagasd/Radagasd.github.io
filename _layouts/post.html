@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 
+  
 {% include head.html %}
+
   <body>
     {% include header.html %}
-
+    
     <div class="main-grid">
+      
 
       <div class="whitespace"></div>
       <div class="main-content">
@@ -18,17 +21,25 @@
           <div></div>
         </div>
         
-
+        
         {{ content }}
+
+        
       </div>
       <div class="whitespace"></div>
+      
 
     </div>
+    
 
     <button onclick="topFunction()" id="toTopBtn" title="Go to top">Top</button>
-    {% include core.html %}
 
+    
+    
     {% include footer.html %}
+    
+    {% include core.html %}
+    
   </body>
 </html>
 
