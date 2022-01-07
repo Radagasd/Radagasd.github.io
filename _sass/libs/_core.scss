@@ -35,6 +35,32 @@
     margin-top: 1em;
 }
 
+.grid__maxcolumns--2{
+    position: relative;
+    display: grid;
+    width: 100%;
+    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);// 1fr;
+}
+
+@media only screen and (max-width: $mediumdevice-width) {
+    .grid__maxcolumns--2{
+        grid-template-columns: 1fr;
+    }
+}
+
+.grid__align--bottom{
+    align-items: bottom;
+}
+
+.container__list{
+    position: relative;
+    border: 0.3rem solid palette(accent4);
+    background-color: palette(accent4);
+    color: palette(text-alt);
+    padding: 0.5rem;
+}
+
 .grid-2{
     position: relative;
     display: grid;
