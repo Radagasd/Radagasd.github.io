@@ -1,0 +1,44 @@
+---
+title: God of Lines
+layout: post
+category: showcase
+---
+
+<div class="youtube-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/XNt6rwVw0w8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<div class="grid-2">
+    <div class="list-container round">
+        <h2>Main components</h2>
+        <ul>
+            <li>Custom line data edge detection</li>
+            <li>Depth outlines</li>
+            <li>Depth-based Kuwahara filter</li>
+        </ul>
+    </div>
+    <div></div>
+    <div class="list-container round">
+        <h2>Tools used</h2>
+        <ul>
+            <li><i class="fas fa-cube"></i> Blender (axe model)</li>
+            <li><i class="fas fa-cube"></i> Houdini (tree and rock models)</li>
+            <li><i class="fas fa-chess-board"></i> <a href="https://github.com/alelievr/Mixture" target="_blank">Mixture</a> (noise texutres)</li>
+            <li><i class="fas fa-chess-board"></i> Photoshop (drawn textures)</li>
+            <li><i class="fab fa-unity"></i> Unity URP</li>
+        </ul>
+    </div>
+</div>
+
+<h1>Description</h1>
+<p>This scene is based upon the starting area of God of War (2018), but with a drawn style that is very much inspired by the drawings of <a href="https://twitter.com/blurring_my_day" target="_blank">Ma-ko</a>.</p>
+<p>As you can guess the main focus of this scene are the lines you see on most objects. This is achieved by rendering a custom pass, that contains data based on UVs and a Voronoi texture. An edge detection algorithm is then applied to this render to get the final lines. The object outlines are done through depth edge detection.</p>
+
+<div class="note__base round">
+    <p>You can get this scene as wallpaper on wallpaper engine (<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2634062058" target="_blank">1080p</a>, <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2634063956" target="_blank">2K</a>, <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=2634065182" target="_blank">4K</a>), as well as for your phone as a looping video that comes in two variants (<a href="https://drive.google.com/file/d/1uIMeEdrQK6GIAsUX_xsAlVVIU4yukBgH/view?usp=sharing" target="_blank">1</a>, <a href="https://drive.google.com/file/d/1XvQDxVL7EwFqIHfDxAPsMXEunrR6ZIEG/view?usp=sharing" target="_blank">2</a>).</p>
+</div>
+
+<h1>Acknowledgements</h1>
+<p>Besides Santa Monica Studio for creating God of War and <a href="https://twitter.com/blurring_my_day" target="_blank">Ma-ko</a> for his drawings, I’d also like to acknowledge <a href="https://twitter.com/harryh___h" target="_blank">Harry Heath</a>, who recreated one of Ma-ko’s drawings in Unity (<a href="https://twitter.com/harryh___h/status/1328006632102526976" target="_blank">link</a>) and had a small outline of how he did his lines. My shaders are very much inspired by his approach.</p>
+<p>Furthermore I’d like to thank the people from the <a href="https://discord.gg/e9XnPFv" target="_blank">Technically Speaking</a> discord for their feedback and suggestions.</p>
+

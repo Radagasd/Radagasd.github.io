@@ -82,20 +82,6 @@
     border-radius: 0.3rem;
 }
 
-.bottom-caption{
-    position: absolute;
-    bottom: 0;
-    background: rgb(0,0,0);
-    background: rgba(0,0,0,0.5);
-    color: palette(text-alt);
-
-    text-align: center;
-    
-    width: 100%;
-    max-height: 100%;
-    padding: 0.5em;
-}
-
 a{
     font-weight: bold;
     text-decoration: none;
@@ -117,8 +103,8 @@ a:hover{
     font-size: medium;
     outline: none;
     border: 0.2em solid palette(accent1);
-    background-color: palette(bg);
-    color: palette(text);
+    background-color: palette(accent1);
+    color: palette(text-alt);
     cursor: pointer;
     padding: 0.5em;
     border-radius: 0.5em;
@@ -126,19 +112,12 @@ a:hover{
     transition: 0.3s, visibility 0s, opacity 0.5s;
 }
 
-#toTopBtn:hover {
-}
-
-#toTopBtn:active{
-    background-color: palette(accent1);
+.note__base{
+    position: relative;
+    border: 0.3rem solid palette(bg-contrast);
+    background-color: palette(bg-contrast);
     color: palette(text-alt);
-}
-  
-@media (hover: hover){
-    #toTopBtn:hover {
-    background-color: palette(accent1);
-    color: palette(text-alt);
-    }
+    padding: 0 0.5rem;
 }
 
 // Modal Image

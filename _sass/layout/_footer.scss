@@ -1,5 +1,24 @@
 #footer{
-    text-align: center;
+    text-align: right;
     border-top: 0.2rem solid palette(divider);
     background-color: palette(bg);
+
+    .socials__a{
+        text-decoration: none;
+    }
+
+    .socials__container{
+        margin-top: 1rem;
+        margin-right: 1rem;
+    }
+
+    #footer__socials{
+        color: palette(text);
+        font-size: xx-large;
+        // margin: 1em 0;
+    }
+
+    #footer__socials:hover{
+        color: palette(accent1);
+    }
 }

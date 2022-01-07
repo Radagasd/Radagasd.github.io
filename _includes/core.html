@@ -57,6 +57,11 @@
     span.onclick = function() { 
         modal.style.display = "none";
     }
+    $('body').keydown(function(e){
+        if (e.which==27){
+            modal.style.display = "none";
+        }
+    });
 </script>
 
 <!-- Image caption --> 
