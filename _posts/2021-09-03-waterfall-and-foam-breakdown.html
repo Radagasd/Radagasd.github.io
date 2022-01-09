@@ -1,0 +1,68 @@
+---
+title: Waterfall and foam (breakdown)
+layout: post
+category: showcase
+preview-video: assets/posts/2021/waterfall-and-foam-breakdown/preview.mp4
+---
+
+<div class="youtube-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/Toi7A_EKC9I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<div class="grid__maxcolumns--2 grid__align--bottom">
+    <div class="container__list round">
+        <h2>Main components</h2>
+        <ul>
+            <li>Watefall shader</li>
+            <li>Foam shader</li>
+            <li>Particle shader
+                <ul>
+                    <li>GPU instancing</li>
+                    <li>Custom lighting</li>
+                    <li>Shadow casting</li>
+                    <li>Custom vertex streams</li>
+                </ul>
+                
+            </li>
+        </ul>
+    </div>
+    <div class="container__list round">
+        <h2>Tools used</h2>
+        <ul>
+            <li><i class="fas fa-cube"></i> Blender (modelling & UV mapping)</li>
+            <li><i class="fas fa-chess-board"></i> <a href="https://github.com/alelievr/Mixture" target="_blank">Mixture</a> (noise texutres)</li>
+            <li><i class="fab fa-unity"></i> Unity URP</li>
+        </ul>
+    </div>
+</div>
+
+<h1>Description</h1>
+<p>The video shows a breakdown of my waterfall shader and particle systems that go with my <a href="{{ site.baseurl }}/2021/08/26/a-watery-respite-breakdown">water shader</a>. It was made with Unity using URP and HLSL shaders. The waterfall consists of 4 models and 3 different particle systems. The models consists of the following:</p>
+
+<ul>
+    <li>The "water" in the waterfall</li>
+    <li>Three foam models
+        <ul>
+            <li>One at the top to hide the transition between water and waterfall</li>
+            <li>One intersecting the waterfall</li>
+            <li>And the final one that surrounds the other foam at the bottom and has more clipping to give the impression of foam breaking away</li>
+        </ul>
+    </li>
+</ul>
+
+<p>The particle systems are divided as follows:</p>
+
+<ul>
+    <li>One that spawns flow particles for use with the water shader</li>
+    <li>One that throws small sprinkles up into the air (a simple billboard particle)</li>
+    <li>And one that spawns splash meshes, which have have vertex displacement over lifetime, shading and shadow casting.</li>
+</ul>
+
+<p>That last particle system was more complicated to make, but in the end I got it all working with GPU instancing in URP with an HLSL shader.</p>
+
+
+
+<h1>Acknowledgements</h1>
+<p>The approach and general look of the waterfall and all the foam is inspired by <a href="https://youtu.be/fwKQyDZ4ark?t=1392" target=""_blank">this</a> talk by <a href="https://simonschreibt.de/" target="_blank">Simon Trümpler</a> (aka Simon schreibt), where he talks about VFX in the game Rime including a waterfall.</p>
+
+<p>The water from the waterfall borrows a lot from my <a href="{{ site.baseurl }}/2021/08/26/a-watery-respite-breakdown">water shader</a>, so check that out for more info and acknowledgements on that.</p>
