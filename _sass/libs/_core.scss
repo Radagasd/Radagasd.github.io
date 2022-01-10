@@ -75,6 +75,8 @@
     text-align: center;
     width: 100%;
     grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
 }
 
 .container__preview{
@@ -82,7 +84,6 @@
     text-align: left;
     border: 0.3rem solid palette(accent1);
     background-color: palette(accent1);
-    margin: 0.5rem;
 }
 
 .post__navigation{
@@ -183,6 +184,19 @@ a:hover{
     border-radius: 0.5em;
 
     transition: 0.3s, visibility 0s, opacity 0.5s;
+}
+
+#loadShowcaseBtn {
+    position: relative;
+    font-size: large;
+    font-weight: bold;
+    // outline: none;
+    border: 0.2em solid palette(accent4);
+    background-color: palette(accent4);
+    color: palette(text-alt);
+    cursor: pointer;
+    padding: 0.5em;
+    border-radius: 0.3em;
 }
 
 .note__base{

@@ -4,25 +4,6 @@ layout: default
 nav-menu: 1
 ---
 
-{% assign showcaselist = site.posts | where:"category", "showcase"%}
+<div class="grid-w480px" id="showcaseGrid"></div>
 
-<div class="grid-w480px">
-    {% for post in showcaselist %}
-        <div class="container__preview round">
-            {% if post.preview-video %}
-                <a href="{{ post.url | absolute_url }}">
-                    <div class="container__preview-video">
-                        <video autoplay muted loop class="round">
-                            <source src="/{{post.preview-video}}" type="video/mp4">
-                        </video>
-                    </div>
-                </a>
-            {% else %}
-                <div class="container__preview-video" style="padding-top:100%;"></div>
-            {% endif %}
-            <a href="{{ post.url | absolute_url }}" class="caption__text round">{{ post.title }}</a>
-        </div>
-    {% endfor %}
-</div>
-
-
+<button onclick="increasePageLimit()" id="loadShowcaseBtn" title="load more posts">Load more posts...</button>
