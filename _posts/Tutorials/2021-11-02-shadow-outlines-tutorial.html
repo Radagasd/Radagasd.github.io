@@ -219,3 +219,85 @@ category: tutorial
     return float4(col, 1);
 }</code></pre></div>
 
+<div class="note__base round">
+    <p>Note that I’ve calculated the shadowCoord in the fragment function, you could also calculate it in the vertex function and pass it on. This would be more performant at the cost of visual quality.</p>
+</div>
+
+<p>Now sampling the shadow map is as easy as calling the <mark>MainLightRealtimeShadow</mark> function and passing it the <mark>shadowCoord</mark>. In order to see the result we will also multiply <mark>col</mark> by our <mark>shadowMap</mark> value. Add/change the highlighted lines in the fragment function.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="2, 4"><code class="language-hlsl">float4 shadowCoord = TransformWorldToShadowCoord(IN.posWS);
+float shadowMap = MainLightRealtimeShadow(shadowCoord);
+    
+float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
+
+<p>If you look in the scene view now you’ll notice nothing changed, we still can’t see the shadows even though we’re sampling the shadow map. Why is this?</p>
+
+<p>Well, we still need to define some <mark><a href="https://docs.unity3d.com/Manual/shader-keywords.html" target="blank">keywords</a></mark> so that Unity knows how to calculate its shadows. We’ll be defining 3 keywords, the first one being necessary to get the shadows from the main light, and the other 2 are for handling settings from our URP asset from section 1.2. Add the following 3 highlighted lines just above the includes. Each <mark>multi_compile</mark> basically tells Unity to make 2 shader variants, one in which the setting is on and one in which it is off.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="1-3"><code class="language-hlsl">#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+#pragma multi_compile _ _SHADOWS_SOFT
+    
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"</code></pre></div>
+
+<p>Now we can finally see some shadows!</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Finally some shadows! Though they are a bit harsh and that cylinder’s top is wider that its body?" class="image__caption image__modal round">
+</div>
+
+<h2 id="pipeline-settings">2.2 Pipeline settings</h2>
+
+<p>Now that we have our shadow map sampling setup I’ll give a quick overview of the different shadow settings in our URP asset.</p>
+
+<p>The most obvious one is the <mark>Shadow Resolution</mark> (found under <mark>Lighting</mark>), where increasing the resolution gives sharper shadows.</p>
+
+<div class="image-container round">
+    <div class="reveal">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_03_Res2048.jpg" alt="Shadow Resolution: 2048" class="round">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_03_Res4096.jpg" alt="Shadow Resolution: 4096" class="round">
+        <div class="reveal-caption round">Shadow resolution. Left: 2048, right: 4096</div>
+    </div>
+</div>
+
+<p>Next up is <mark>Cascade Count</mark>. This splits your shadow map into different sections that are sampled depending on how far away your object is. This way you can have a higher resolution for nearby objects, compared to far away objects. When using this setting you need to define the keyword <mark>_MAIN_LIGHT_SHADOWS_CASCADE</mark>, like we did in the previous section.</p>
+
+<div class="image-container round">
+    <div class="reveal">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_04_Cas1.jpg" alt="Cascades: 1" class="round">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_04_Cas2.jpg" alt="Cascades: 2" class="round">
+        <div class="reveal-caption round">Cascades. Left: 1 cascade, right: 2 cascades with the split at 6m so you can see the difference between the sphere’s shadow and the other shadows.</div>
+    </div>
+</div>
+
+<p>The <mark>Soft Shadows</mark> tick box changes whether you sample the shadow map only once, or if you take multiple samples to calculate the shadow. Having it on results in softer shadows, as you take neighbouring shadow values into account, but it also decreases your performance as you need to sample the map multiple times.</p>
+
+<div class="image-container round">
+    <div class="reveal">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Hard shadows" class="round">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_05_SoftShadows.jpg" alt="Soft shadows" class="round">
+        <div class="reveal-caption round">Soft shadows. Left: no soft shadows, right: soft shadows.</div>
+    </div>
+</div>
+
+<p>Finally there are the <mark>Depth Bias</mark> and <mark>Normal Bias</mark>. These settings are used to counteract so called shadow-acne or self-shadowing. I won’t go into their details, but you can take a look at Unity’s <a href="https://docs.unity3d.com/Manual/ShadowPerformance.html" target="_blank">documentation</a> on them. Note that these biases are applied in the vertex function of the ShadowCaster pass.</p>
+
+<div class="image-container round">
+    <div class="reveal">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Depth bias 1, normal bias 1" class="round">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_06_DepthNormalBias.jpg" alt="Depth bias 0.3, normal bias 0.3" class="round">
+        <div class="reveal-caption round">Depth and Normal bias. Left: d=1 n=1, right: d=3 n=0.3.</div>
+    </div>
+</div>
+
+<div class="grid__alwayscolumns--2 grid__align--bottom">
+    <div class="image-container round">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/URPSettings.png" alt="I will be using the following settings for the rest of this tutorial." class="image__modal round">
+    </div>
+    <div class="note__base round">
+        <p>I will be using the following settings for the rest of this tutorial.</p>
+    </div>
+</div>
+
+<h2 id="ndotl-shadows">2.3 NdotL shadows</h2>
