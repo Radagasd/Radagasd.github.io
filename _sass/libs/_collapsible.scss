@@ -1,0 +1,37 @@
+.collapsible {
+    background-color: palette(accent5);
+    color: palette(text-alt);
+    cursor: pointer;
+    padding: 1rem;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: medium;
+}
+
+.collapsible:after {
+    // unicode +
+    content: '\002B';
+    color: palette(text-alt);
+    font-weight: bold;
+    float: right;
+    margin-left: 1rem;
+}
+
+.collapsible--active:after {
+    // unicode -
+    content: "\2212";
+}
+
+.collapsible__content {
+    width:100%;
+    max-height: 0;
+    overflow:hidden;
+    transition: max-height 0.2s ease-out;
+    background-color: palette(bg);
+
+    border: 0rem solid palette(accent5);
+    margin-bottom: 1rem;
+    visibility: hidden;
+}

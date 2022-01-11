@@ -11,7 +11,7 @@
     var showcaseIndex=[
         {% for post in showcaselist %}
             {
-                date: "{{ post.date }}",
+                date: "{{ post.date | date: "%d %b %Y"}}",
                 title: "{{post.title}}",
                 videoUrl: "{{post.preview-video}}",
                 url: "{{ site.baseurl }}{{ post.url }}"
@@ -85,6 +85,12 @@
         var captionText = document.createTextNode(post.title);
 
         captionLink.appendChild(captionText);
+
+        var date = document.createElement('div');
+        date.innerHTML = post.date;
+        date.style.fontSize= "small";
+        captionLink.appendChild(date);
+
         showcaseContainer.appendChild(captionLink);
     }
 </script>

@@ -1,0 +1,191 @@
+---
+title: Shadow outlines tutorial
+layout: post
+category: tutorial
+---
+
+<p>In one of my showcases I recreated a piece of art by <a href="https://twitter.com/malintfalch" target="_blank">Malin</a>, which involves <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">these</a> warm shadow outlines that I really liked. There are however few sources or tutorials on how to achieve this, so I made this “beginner” friendly tutorial on how to get shadow outlines in Unity 2020.3 URP with a written HLSL shader.</p>
+
+<p>In this tutorial I will show you how to sample the shadow map of the main light, make a Lambert based toon lighting model and draw outlines around the shadows.</p>
+
+<p>This tutorial was made with Unity 2020.3.1f1 and the Universal Render Pipeline (URP). Note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/ShadowOutlines" target="_blank">here</a>, including the initial and finished shader.</p>
+
+<h1>Acknowledgements</h1>
+
+<p>This tutorial is based on my <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">Art recreation (Malin)</a> post, and thus I’d first like to acknowledge <a href="https://twitter.com/malintfalch" target="_blank">Malin</a> for the beautiful art piece that set me on this path. On a more technical note, the following tutorials/breakdowns/articles were used or useful for the making of this tutorial:</p>
+
+<ul>
+    <li><a href="https://twitter.com/IRCSS/status/1081515753403232256" target="_blank">This</a> tweet on shadow outlines in Unity’s built-in render pipeline, by <a href="https://twitter.com/IRCSS" target="_blank">Shahriar Shahrabi</a></li>
+    <li><a href="https://www.youtube.com/watch?v=RMt6DcaMxcE" target="_blank">This</a> video on edge detection, by <a href="https://twitter.com/NedMakesGames" target="_blank">NedMakesGames</a></li>
+    <li><a href="https://alexanderameye.github.io/notes/rendering-outlines/" target="_blank">This</a> article on edge detection, by <a href="https://twitter.com/alexanderameye" target="_blank">Alex Ameye</a></li>
+</ul>
+
+<h1>Contents</h1>
+
+<ul>
+    <li><a href="#basic-setup">Basic setup</a>
+        <ul>
+            <li><a href="#hlsl-shader">HLSL shader</a></li>
+            <li><a href="#urp-asset">URP asset</a></li>
+        </ul>
+    </li>
+    <li><a href="#shadows">Shadows</a>
+        <ul>
+            <li><a href="#shadow-map-sampling">Shadow map sampling</a></li>
+            <li><a href="#pipeline-settings">Pipeline settings</a></li>
+            <li><a href="#ndotl-shadows">NdotL shadows</a></li>
+            <li><a href="#toon-shading">Toon shading</a></li>
+        </ul>
+    </li>
+    <li><a href="#edge-detection">Edge detection</a>
+        <ul>
+            <li><a href="#convolution">Convolution</a></li>
+            <li><a href="#sobel-operator">Sobel operator</a></li>
+            <li><a href="#implementation">Implementation</a>
+                <ul>
+                    <li><a href="#dilation">Dilation</a></li>
+                    <li><a href="#cascade-index">Cascade index</a></li>
+                    <li><a href="#masking">Masking</a></li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+
+<h1 id="basic-setup">1 Basic setup</h1>
+
+<p class="note__small">If you’re using the project files you can simply open “InitialScene.scene” and “ShadowOutlines.shader” and skip to section <a href="#urp-asset">1.2</a>.</p>
+
+<p>We start by creating a new scene consisting of a plane and some primitive shapes (cube, sphere & cylinder). As well as a new unlit shader ShadowOutlines.shader and its material, which we’ll apply to all objects in the scene. All objects in the scene should be white now, with no shadows what so ever.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_01.jpg" alt="Image of our non-shaded scene. All is white and you can see part of the cube sticking out above the plane." class="image__caption image__modal round">
+</div>
+
+<h1 id="hlsl-shader">1.1 HLSL shader</h1>
+
+<p>The standard unlit shader we made is a CGPROGRAM, but we’ll be using URP’s HLSL library files so we’ll rewrite the shader as a HLSLPROGRAM. Replace all lines in ShadowOutlines.shader with the following code block. This shader contains two passes, the “ForwardLit” pass and the “ShadowCaster” pass. The ForwardLit pass only calculates the vertex position and normal in world space and outputs a white colour. The ShadowCaster pass renders our object to the shadow map. Note that we don’t see any shadows yet, this is because we are not sampling the shadow map in the ForwardLit pass.</p>
+
+<p>For the rest of the tutorial you can ignore the ShadowCaster pass, as the shadows and outlines are calculated and applied in the ForwardLit pass.</p>
+
+<button class="collapsible round">Code snippet</button>
+<div class="collapsible__content round">
+    <pre><code class="language-hlsl">Shader "KelvinvanHoorn/ShadowOutlines"
+    {
+        Properties
+        {
+        }
+        SubShader
+        {
+            Tags { "RenderType"="Opaque" "RenderPipeline" = "UniversalRenderPipeline"}
+            Cull Back
+     
+            Pass
+            {
+                Name "ForwardLit"
+                Tags { "LightMode" = "UniversalForward" }
+     
+                HLSLPROGRAM
+                #pragma vertex vert
+                #pragma fragment frag
+     
+                #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+     
+                struct Attributes
+                {
+                    float4 vertex   : POSITION;
+                    float3 normal   : NORMAL;
+                };
+     
+                struct Varyings
+                {
+                    float4 posCS        : SV_POSITION;
+                    float3 posWS        : TEXCOORD0;
+                    float3 normalWS     : TEXCOORD1;
+                };
+     
+                Varyings vert(Attributes IN)
+                {
+                    Varyings OUT = (Varyings)0;;
+                    VertexPositionInputs vertexInput = GetVertexPositionInputs(IN.vertex.xyz);
+                    OUT.posCS = vertexInput.positionCS;
+                    OUT.posWS = vertexInput.positionWS;
+     
+                    VertexNormalInputs normalInput = GetVertexNormalInputs(IN.normal);
+                    OUT.normalWS = normalInput.normalWS;
+     
+                    return OUT;
+                }
+     
+                float4 frag (Varyings IN) : SV_Target
+                {
+                    float3 col = float3(1, 1, 1);
+     
+                    return float4(col, 1);
+                }
+                ENDHLSL
+            }
+            pass
+            {
+                Name "ShadowCaster"
+                Tags{"LightMode" = "ShadowCaster"}
+     
+                ZWrite On
+                ZTest LEqual
+                ColorMask 0
+     
+                HLSLPROGRAM
+      
+                #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+                #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+     
+                #pragma vertex vert
+                #pragma fragment frag
+     
+                struct Attributes
+                {
+                    float4 vertex   : POSITION;
+                    float3 normal   : NORMAL;
+                };
+      
+                struct Varyings
+                {
+                    float4 posCS        : SV_POSITION;
+                };
+     
+                float3 _LightDirection;
+     
+                Varyings vert(Attributes IN)
+                {
+                        Varyings OUT = (Varyings)0;
+                        VertexPositionInputs vertexInput = GetVertexPositionInputs(IN.vertex.xyz);
+                        float3 posWS = vertexInput.positionWS;
+     
+                        VertexNormalInputs normalInput = GetVertexNormalInputs(IN.normal);
+                        float3 normalWS = normalInput.normalWS;
+     
+                        // Shadow biased ClipSpace position
+                        float4 positionCS = TransformWorldToHClip(ApplyShadowBias(posWS, normalWS, _LightDirection));
+     
+                        #if UNITY_REVERSED_Z
+                            positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
+                        #else
+                            positionCS.z = max(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
+                        #endif
+     
+                        OUT.posCS = positionCS;
+     
+                        return OUT;
+                }
+      
+                float4 frag (Varyings IN) : SV_Target
+                {
+                    return 0;
+                }
+                ENDHLSL
+            }
+        }
+    }</code></pre>
+</div>
+
