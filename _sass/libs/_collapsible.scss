@@ -25,6 +25,7 @@
 }
 
 .collapsible__content {
+    display:grid;
     width:100%;
     max-height: 0;
     overflow:hidden;
