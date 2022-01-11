@@ -23,6 +23,13 @@ mark{
 //     overflow: auto;
 // }
 
+.container__code{
+    display:grid;
+    width:100%;
+    overflow:hidden;
+    border: 0rem solid palette(accent5);
+}
+
 .youtube-container {
 	position: relative;
 	padding-bottom: 56.25%; /* 16:9 */
