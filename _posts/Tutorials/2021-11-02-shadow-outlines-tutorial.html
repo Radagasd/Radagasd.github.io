@@ -55,7 +55,7 @@ category: tutorial
 
 <h1 id="basic-setup">1 Basic setup</h1>
 
-<p class="note__small">If you’re using the project files you can simply open “InitialScene.scene” and “ShadowOutlines.shader” and skip to section <a href="#urp-asset">1.2</a>.</p>
+<p><em>If you’re using the project files you can simply open “InitialScene.scene” and “ShadowOutlines.shader” and skip to section <a href="#urp-asset">1.2</a></em>.</p>
 
 <p>We start by creating a new scene consisting of a plane and some primitive shapes (cube, sphere & cylinder). As well as a new unlit shader ShadowOutlines.shader and its material, which we’ll apply to all objects in the scene. All objects in the scene should be white now, with no shadows what so ever.</p>
 
@@ -63,129 +63,158 @@ category: tutorial
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_01.jpg" alt="Image of our non-shaded scene. All is white and you can see part of the cube sticking out above the plane." class="image__caption image__modal round">
 </div>
 
-<h1 id="hlsl-shader">1.1 HLSL shader</h1>
+<h2 id="hlsl-shader">1.1 HLSL shader</h2>
 
-<p>The standard unlit shader we made is a CGPROGRAM, but we’ll be using URP’s HLSL library files so we’ll rewrite the shader as a HLSLPROGRAM. Replace all lines in ShadowOutlines.shader with the following code block. This shader contains two passes, the “ForwardLit” pass and the “ShadowCaster” pass. The ForwardLit pass only calculates the vertex position and normal in world space and outputs a white colour. The ShadowCaster pass renders our object to the shadow map. Note that we don’t see any shadows yet, this is because we are not sampling the shadow map in the ForwardLit pass.</p>
+<p>The standard unlit shader we made is a <mark>CGPROGRAM</mark>, but we’ll be using URP’s HLSL library files so we’ll rewrite the shader as a <mark>HLSLPROGRAM</mark>. Replace all lines in ShadowOutlines.shader with the following code block. This shader contains two passes, the <mark>ForwardLit</mark> pass and the <mark>ShadowCaster</mark> pass. The ForwardLit pass only calculates the vertex position and normal in world space and outputs a white colour. The ShadowCaster pass renders our object to the shadow map. Note that we don’t see any shadows yet, this is because we are not sampling the shadow map in the ForwardLit pass.</p>
 
 <p>For the rest of the tutorial you can ignore the ShadowCaster pass, as the shadows and outlines are calculated and applied in the ForwardLit pass.</p>
 
 <button class="collapsible round">Code block</button>
-<div class="collapsible__content round">
-    <pre><code class="language-hlsl">Shader "KelvinvanHoorn/ShadowOutlines"
+<div class="collapsible__content round ">
+    <pre class="line-numbers"><code class="language-hlsl">Shader "KelvinvanHoorn/ShadowOutlines"
+{
+    Properties
     {
-        Properties
+    }
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" "RenderPipeline" = "UniversalRenderPipeline"}
+        Cull Back
+
+        Pass
         {
-        }
-        SubShader
-        {
-            Tags { "RenderType"="Opaque" "RenderPipeline" = "UniversalRenderPipeline"}
-            Cull Back
-     
-            Pass
+            Name "ForwardLit"
+            Tags { "LightMode" = "UniversalForward" }
+
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            struct Attributes
             {
-                Name "ForwardLit"
-                Tags { "LightMode" = "UniversalForward" }
-     
-                HLSLPROGRAM
-                #pragma vertex vert
-                #pragma fragment frag
-     
-                #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-     
-                struct Attributes
-                {
-                    float4 vertex   : POSITION;
-                    float3 normal   : NORMAL;
-                };
-     
-                struct Varyings
-                {
-                    float4 posCS        : SV_POSITION;
-                    float3 posWS        : TEXCOORD0;
-                    float3 normalWS     : TEXCOORD1;
-                };
-     
-                Varyings vert(Attributes IN)
-                {
-                    Varyings OUT = (Varyings)0;;
+                float4 vertex   : POSITION;
+                float3 normal   : NORMAL;
+            };
+
+            struct Varyings
+            {
+                float4 posCS        : SV_POSITION;
+                float3 posWS        : TEXCOORD0;
+                float3 normalWS     : TEXCOORD1;
+            };
+
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT = (Varyings)0;;
+                VertexPositionInputs vertexInput = GetVertexPositionInputs(IN.vertex.xyz);
+                OUT.posCS = vertexInput.positionCS;
+                OUT.posWS = vertexInput.positionWS;
+
+                VertexNormalInputs normalInput = GetVertexNormalInputs(IN.normal);
+                OUT.normalWS = normalInput.normalWS;
+
+                return OUT;
+            }
+
+            float4 frag (Varyings IN) : SV_Target
+            {
+                float3 col = float3(1, 1, 1);
+
+                return float4(col, 1);
+            }
+            ENDHLSL
+        }
+        pass
+        {
+            Name "ShadowCaster"
+            Tags{"LightMode" = "ShadowCaster"}
+
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+
+            HLSLPROGRAM
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            #pragma vertex vert
+            #pragma fragment frag
+
+            struct Attributes
+            {
+                float4 vertex   : POSITION;
+                float3 normal   : NORMAL;
+            };
+
+            struct Varyings
+            {
+                float4 posCS        : SV_POSITION;
+            };
+
+            float3 _LightDirection;
+
+            Varyings vert(Attributes IN)
+            {
+                    Varyings OUT = (Varyings)0;
                     VertexPositionInputs vertexInput = GetVertexPositionInputs(IN.vertex.xyz);
-                    OUT.posCS = vertexInput.positionCS;
-                    OUT.posWS = vertexInput.positionWS;
-     
+                    float3 posWS = vertexInput.positionWS;
+
                     VertexNormalInputs normalInput = GetVertexNormalInputs(IN.normal);
-                    OUT.normalWS = normalInput.normalWS;
-     
+                    float3 normalWS = normalInput.normalWS;
+
+                    // Shadow biased ClipSpace position
+                    float4 positionCS = TransformWorldToHClip(ApplyShadowBias(posWS, normalWS, _LightDirection));
+
+                    #if UNITY_REVERSED_Z
+                        positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
+                    #else
+                        positionCS.z = max(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
+                    #endif
+
+                    OUT.posCS = positionCS;
+
                     return OUT;
-                }
-     
-                float4 frag (Varyings IN) : SV_Target
-                {
-                    float3 col = float3(1, 1, 1);
-     
-                    return float4(col, 1);
-                }
-                ENDHLSL
             }
-            pass
+
+            float4 frag (Varyings IN) : SV_Target
             {
-                Name "ShadowCaster"
-                Tags{"LightMode" = "ShadowCaster"}
-     
-                ZWrite On
-                ZTest LEqual
-                ColorMask 0
-     
-                HLSLPROGRAM
-      
-                #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-                #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-     
-                #pragma vertex vert
-                #pragma fragment frag
-     
-                struct Attributes
-                {
-                    float4 vertex   : POSITION;
-                    float3 normal   : NORMAL;
-                };
-      
-                struct Varyings
-                {
-                    float4 posCS        : SV_POSITION;
-                };
-     
-                float3 _LightDirection;
-     
-                Varyings vert(Attributes IN)
-                {
-                        Varyings OUT = (Varyings)0;
-                        VertexPositionInputs vertexInput = GetVertexPositionInputs(IN.vertex.xyz);
-                        float3 posWS = vertexInput.positionWS;
-     
-                        VertexNormalInputs normalInput = GetVertexNormalInputs(IN.normal);
-                        float3 normalWS = normalInput.normalWS;
-     
-                        // Shadow biased ClipSpace position
-                        float4 positionCS = TransformWorldToHClip(ApplyShadowBias(posWS, normalWS, _LightDirection));
-     
-                        #if UNITY_REVERSED_Z
-                            positionCS.z = min(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
-                        #else
-                            positionCS.z = max(positionCS.z, positionCS.w * UNITY_NEAR_CLIP_VALUE);
-                        #endif
-     
-                        OUT.posCS = positionCS;
-     
-                        return OUT;
-                }
-      
-                float4 frag (Varyings IN) : SV_Target
-                {
-                    return 0;
-                }
-                ENDHLSL
+                return 0;
             }
+            ENDHLSL
         }
-    }</code></pre>
+    }
+}</code></pre>
 </div>
 
+<h2 id="urp-asset">1.2 URP asset</h2>
+
+<p>For this tutorial we’ll also need to create a new universal render pipeline asset, as certain shadow settings can be found there. Create a new asset within your asset folder by going <mark>Create</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Rendering</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Universal Render Pipeline</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Pipeline Asset (Forward Renderer)</mark>.</p>
+
+<p>For now we’ll keep the default settings, but we still need to apply them in our project settings. Go to <mark>Edit</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Project settings</mark> in the top window bar and change to our new pipeline asset in the select menus under the sections <mark>Graphics</mark> and <mark>Quality</mark>.</p>
+
+<p>If you’re using the project files you can set either <mark>UnversalRenderPipeLineAsset</mark> or <mark>UnversalRenderPipeLineAsset_Finished</mark> as your active pipeline asset, both are found in Assets/Settings.</p>
+
+<h1 id="shadows">2 Shadows</h1>
+
+<p>In this section we will add some very simple toon shading by sampling the shadow map, as well as calculating the dot product between the light direction and our object’s normal direction.</p>
+
+<h2 id="shadow-map-sampling">2.1 Shadow map sampling</h2>
+
+<p>In order to access the shadow map and relevent functions we need to add the <mark>Lighting.hlsl</mark> include file. We do this by adding the following highlighted line to our ForwardLit pass just below our other #include line.</p>
+
+<pre class="line-numbers round" data-line="2"><code class="language-hlsl">#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"</code></pre>
+
+<p>Before we can sample the shadow map we first need to calculate the <mark>shadowCoord</mark>. We do this by calling the <mark>TransformWorldToShadowCoord</mark> function is our fragment shader and passing it our world position. Add the following highlighted line to the <mark>frag</mark> function.</p>
+
+<pre class="line-numbers round" data-line="3"><code class="language-hlsl">float4 frag (Varyings IN) : SV_Target
+{
+    float4 shadowCoord = TransformWorldToShadowCoord(IN.posWS);
+                    
+    float3 col = float3(1, 1, 1);
+    
+    return float4(col, 1);
+}</code></pre>
