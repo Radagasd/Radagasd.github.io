@@ -293,7 +293,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 
 <div class="grid__alwayscolumns--2 grid__align--bottom">
     <div class="image-container round">
-        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/URPSettings.png" alt="I will be using the following settings for the rest of this tutorial." class="image__modal round">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/URPSettings.png" alt="" class="image__modal round">
     </div>
     <div class="note__base round">
         <p>I will be using the following settings for the rest of this tutorial.</p>
@@ -301,3 +301,127 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 </div>
 
 <h2 id="ndotl-shadows">2.3 NdotL shadows</h2>
+
+<p>As you might have noticed the edge between self-shadowing and the lit surface is quite rough. We can circumvent this by also calculating shadows based on the light direction and the object’s normal direction and taking the minimum of the two shadows.</p>
+
+<p>We calculate if a surface is lit by taking the dot product between the main light direction and object normal direction. This result is often abbreviated as <mark>NdotL</mark>. Our final shadow value is then simply the minimum of the <mark>shadow map</mark> and <mark>NdotL</mark>. Add the highlighted lines and change the value of <mark>col</mark> to reflect the final shadowing.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="4,6,8"><code class="language-hlsl">float4 shadowCoord = TransformWorldToShadowCoord(IN.posWS);
+float shadowMap = MainLightRealtimeShadow(shadowCoord);
+    
+float NdotL = saturate(dot(_MainLightPosition.xyz, IN.normalWS));
+    
+float combinedShadow = min(NdotL, shadowMap);
+    
+float3 col = float3(1, 1, 1) * combinedShadow;</code></pre></div>
+
+<p>Note that I’ve taken the <mark>saturate()</mark> of <mark>NdotL</mark>, this isn’t strictly necessary but I wanted to restrict the shadow values to a 0 to 1 range (0 = shadow, 1 = no shadow).</p>
+
+<p>This basic type of <mark>NdotL</mark> lighting is often referred to as the <mark>Lambert lighting model</mark> or <mark>Lambertian reflectance model</mark>.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_07_NdotL.jpg" alt="NdotL and shadow map lighting, often referred to as the Lambert lighting model." class="image__caption image__modal round">
+</div>
+
+<h2 id="toon=shading">2.4 Toon shading</h2>
+
+<p>This is not a tutorial on toon shading so we will be using the simplest form of it that is just 1 line of code. We take the <mark>combinedShadow</mark> and step it with a small number, so that if there is any shadow we consider it to be fully shaded. In addition we’ll add a small number to the result so that the fully shaded area still shows some light and I saturate it to prevent <mark>shadowValue</mark> from exceeding 1.</p>
+
+<p>Add two properties to control the step and minimum shadow value and declare them just below the <mark>vert</mark> function. Finally apply them in the <mark>frag</mark> function. Add/change the highlighted lines from the following code block.</p>
+
+<button class="collapsible round">Code block</button>
+<div class="collapsible__content round ">
+    <div class="container__code"><pre class="line-numbers" data-line="3-4,12,22,24"><code class="language-hlsl">Properties
+{
+    _ShadowStep ("Shadow step value", Range(0, 1)) = 0.1
+    _ShadowMin ("Minimum shadow value", Range(0, 1)) = 0.2
+}
+    
+...
+    
+Varyings vert(Attributes IN)
+{}
+    
+float _ShadowStep, _ShadowMin;
+    
+float4 frag (Varyings IN) : SV_Target
+{
+    float4 shadowCoord = TransformWorldToShadowCoord(IN.posWS);
+    float shadowMap = MainLightRealtimeShadow(shadowCoord);
+    
+    float NdotL = saturate(dot(_MainLightPosition.xyz, IN.normalWS));
+    
+    float combinedShadow = min(NdotL, shadowMap);
+    float shadowValue = saturate(step(_ShadowStep, combinedShadow) + _ShadowMin);
+    
+    float3 col = float3(1, 1, 1) * shadowValue;
+    
+    return float4(col, 1);
+}</code></pre></div></div>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_08_ToonShading.jpg" alt="Toon shaded scene. _ShadowStep = 0.1, _ShadowMin = 0.2." class="image__caption image__modal round">
+</div>
+
+<h1 id="edge-detection">3 Edge detection</h1>
+
+<p>Now that the shadows are done we can move on to the outlines. These will be drawn by detecting the edges of the shadow, or in more mathematical terms where there is a discontinuity in the shadow, using a <mark>convolution matrix</mark>.</p>
+
+<h2 id="convolution">3.1 Convolution</h2>
+
+<p>The most common way of finding discontinuities in an image is using a <mark>convolution matrix</mark>, also known as a <mark>kernel</mark>. The convolution is an operation between the image and the kernel, where we take samples from the image, multiply them by the corresponding kernel value and add them together, resulting in a single number.</p>
+
+<p>As an example we look at the image below, which uses a single 3×3 kernel for <mark>edge detection</mark> (approximation of the <a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank">Laplace operator</a>). The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Convolution_LongWide_WhiteBG.png" alt="" class="image__modal round">
+</div>
+
+<p>The result is 1.2, and depending on our threshold we would count this result as an edge or not. Note that if all image pixels were white the convolution would result in 0, and the same if all pixels were black or another single value.</p>
+
+<p>For other visual representations of <mark>convolution</mark> and <mark>kernels</mark> I recommend these:</p>
+<ul>
+    <li><a href="https://www.raywenderlich.com/92-unreal-engine-4-toon-outlines-tutorial#toc-anchor-006" target="_blank">Article</a>, specifically the “What is Convolution?” chapter</li>
+    <li><a href="https://www.youtube.com/watch?v=C_zFhWdM4ic" target="_blank">Video</a>, 8 minutes showing you how a blur filter works using convolution</li>
+</ul>
+
+<h2 id="sobel-operator">3.2 Sobel operator</h2>
+
+<p>For our shadow outlines we will be using different <mark>edge detecting operator</mark>, namely the <a href="https://en.wikipedia.org/wiki/Sobel_operator" target="_blank">Sobel operator</a>. The <mark>Sobel operator</mark> consists of two <mark>kernels</mark>, one for detecting the gradient (rate of change) in the x-direction and one for the y-direction. The kernels look as follows.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/SobelKernels_WhiteBG.png" alt="" class="image__modal round">
+</div>
+
+<div class="note__base round">
+    <p>Note that these are weighted gradients, the values near the centre are higher and thus influence the result more than the outer values.</p>
+</div>
+
+<p>In order to get to a single value we take the magnitude of the kernel results \(S_X\) and \(S_Y\), resulting in a single value \(S = \sqrt{S_X^2 + S_Y^2}\).</p>
+
+<h2 id="implementation">3.3 Implementation</h2>
+
+<p>In order to implement the convolution we’ll be adding 3 arrays with 9 entries, corresponding to our 3×3 region. The first array is for the sample points, including the centre at (0, 0), the second and third are the <mark>x-Sobel</mark> and <mark>y-Sobel</mark> kernels respectively. Add the following lines below the <mark>vert</mark> function, but before the <mark>frag</mark> function.</p>
+
+<button class="collapsible round">Code block</button>
+<div class="collapsible__content round ">
+<div class="container__code"><pre class="line-numbers" data-line="3-4,12,22,24"><code class="language-hlsl">// 3x3 sample points
+static float2 sobelSamplePoints[9] = {
+    float2(-1, 1), float2(0, 1), float2(1, 1),
+    float2(-1, 0), float2(0, 0), float2(1, 0),
+    float2(-1, -1), float2(0, -1), float2(1, -1)
+};
+    
+static float sobelXKernel[9] = {
+    1, 0, -1,
+    2, 0, -2,
+    1, 0, -1
+};
+    
+static float sobelYKernel[9] = {
+    1, 2, 1,
+    0, 0, 0,
+    -1, -2, -1
+};</code></pre></div></div>
+
+<p>Now in order to calculate the convolution we’ll add a separate function that we can call from the <mark>frag</mark> function, we’ll call it <mark>ShadowSobelOperator</mark>.</p>
