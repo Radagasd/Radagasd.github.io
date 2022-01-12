@@ -2,7 +2,13 @@
 title: Shadow outlines tutorial
 layout: post
 category: tutorial
+blurb: In this tutorial I will show you how to sample the shadow map of the main light, make a Lambert based toon lighting model and draw outlines around the shadows.
 ---
+
+<div class="image-container round">
+    <video src="/assets//posts/tutorials/shadow-outlines-tutorial/preview.mp4" autoplay muted loop class="round"></video>
+</div>
+
 
 <p>In one of my showcases I recreated a piece of art by <a href="https://twitter.com/malintfalch" target="_blank">Malin</a>, which involves <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">these</a> warm shadow outlines that I really liked. There are however few sources or tutorials on how to achieve this, so I made this “beginner” friendly tutorial on how to get shadow outlines in Unity 2020.3 URP with a written HLSL shader.</p>
 
@@ -22,36 +28,38 @@ category: tutorial
 
 <h1>Contents</h1>
 
-<ul>
+<div style="padding-left: 1.2em;">
+<ol>
     <li><a href="#basic-setup">Basic setup</a>
-        <ul>
+        <ol>
             <li><a href="#hlsl-shader">HLSL shader</a></li>
             <li><a href="#urp-asset">URP asset</a></li>
-        </ul>
+        </ol>
     </li>
     <li><a href="#shadows">Shadows</a>
-        <ul>
+        <ol>
             <li><a href="#shadow-map-sampling">Shadow map sampling</a></li>
             <li><a href="#pipeline-settings">Pipeline settings</a></li>
             <li><a href="#ndotl-shadows">NdotL shadows</a></li>
             <li><a href="#toon-shading">Toon shading</a></li>
-        </ul>
+        </ol>
     </li>
     <li><a href="#edge-detection">Edge detection</a>
-        <ul>
+        <ol>
             <li><a href="#convolution">Convolution</a></li>
             <li><a href="#sobel-operator">Sobel operator</a></li>
             <li><a href="#implementation">Implementation</a>
-                <ul>
+                <ol>
                     <li><a href="#dilation">Dilation</a></li>
                     <li><a href="#cascade-index">Cascade index</a></li>
                     <li><a href="#masking">Masking</a></li>
-                </ul>
+                </ol>
             </li>
-        </ul>
+        </ol>
     </li>
     <li><a href="#conclusion">Conclusion</a></li>
-</ul>
+</ol>
+</div>
 
 <h1 id="basic-setup">1 Basic setup</h1>
 
@@ -323,7 +331,7 @@ float3 col = float3(1, 1, 1) * combinedShadow;</code></pre></div>
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_07_NdotL.jpg" alt="NdotL and shadow map lighting, often referred to as the Lambert lighting model." class="image__caption image__modal round">
 </div>
 
-<h2 id="toon=shading">2.4 Toon shading</h2>
+<h2 id="toon-shading">2.4 Toon shading</h2>
 
 <p>This is not a tutorial on toon shading so we will be using the simplest form of it that is just 1 line of code. We take the <mark>combinedShadow</mark> and step it with a small number, so that if there is any shadow we consider it to be fully shaded. In addition we’ll add a small number to the result so that the fully shaded area still shows some light and I saturate it to prevent <mark>shadowValue</mark> from exceeding 1.</p>
 
@@ -371,7 +379,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <p>The most common way of finding discontinuities in an image is using a <mark>convolution matrix</mark>, also known as a <mark>kernel</mark>. The convolution is an operation between the image and the kernel, where we take samples from the image, multiply them by the corresponding kernel value and add them together, resulting in a single number.</p>
 
-<p>As an example we look at the image below, which uses a single 3×3 kernel for <mark>edge detection</mark> (approximation of the <a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank">Laplace operator</a>). The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
+<p>As an example we look at the image below, which uses a single 3×3 kernel for edge detection (approximation of the <mark><a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank">Laplace operator</a>)</mark>. The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
 
 <div class="image-container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Convolution_LongWide_WhiteBG.png" alt="" class="image__modal round">
@@ -387,7 +395,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <h2 id="sobel-operator">3.2 Sobel operator</h2>
 
-<p>For our shadow outlines we will be using different <mark>edge detecting operator</mark>, namely the <a href="https://en.wikipedia.org/wiki/Sobel_operator" target="_blank">Sobel operator</a>. The <mark>Sobel operator</mark> consists of two <mark>kernels</mark>, one for detecting the gradient (rate of change) in the x-direction and one for the y-direction. The kernels look as follows.</p>
+<p>For our shadow outlines we will be using a different <mark>edge detecting operator</mark>, namely the <mark><a href="https://en.wikipedia.org/wiki/Sobel_operator" target="_blank">Sobel operator</a></mark>. The <mark>Sobel operator</mark> consists of two <mark>kernels</mark>, one for detecting the gradient (rate of change) in the x-direction and one for the y-direction. The kernels look as follows.</p>
 
 <div class="image-container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/SobelKernels_WhiteBG.png" alt="" class="image__modal round">
@@ -405,7 +413,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round ">
-<div class="container__code"><pre class="line-numbers" data-line="3-4,12,22,24"><code class="language-hlsl">// 3x3 sample points
+<div class="container__code"><pre class="line-numbers"><code class="language-hlsl">// 3x3 sample points
 static float2 sobelSamplePoints[9] = {
     float2(-1, 1), float2(0, 1), float2(1, 1),
     float2(-1, 0), float2(0, 0), float2(1, 0),
@@ -425,3 +433,202 @@ static float sobelYKernel[9] = {
 };</code></pre></div></div>
 
 <p>Now in order to calculate the convolution we’ll add a separate function that we can call from the <mark>frag</mark> function, we’ll call it <mark>ShadowSobelOperator</mark>.</p>
+
+<p>Because we’re going to sample the shadow map at 9 points, the pixel we’re rendering and its 8 neighbouring pixels, we first need to get the <mark>texel size</mark> (i.e. the distance between each pixel). Next we do a for loop over all 9 entries of the <mark>sobelSamplePoints</mark> array and enumerate the convolution values of the x- and y-Sobel. Finally we return the magnitude by taking the square root of the sum of squares. Add the following function below the arrays.</p>
+
+<button class="collapsible round">Code block</button>
+<div class="collapsible__content round ">
+<div class="container__code"><pre class="line-numbers"><code class="language-hlsl">// Calculate the Sobel operator of the shadowmap
+float ShadowSobelOperator(float4 shadowCoord)
+{
+    // Get the shadowmap texelsize
+    ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
+    float4 shadowMap_TexelSize = shadowSamplingData.shadowmapSize;
+    
+    // Initialise results
+    float sobelX = 0;
+    float sobelY = 0;
+    
+    // Loop over sample points
+    [unroll] for (int i = 0; i < 9; i++)
+    {
+        // Sample shadowmap
+        float shadowImage = MainLightRealtimeShadow(float4(shadowCoord.xy + sobelSamplePoints[i] * shadowMap_TexelSize.xy, shadowCoord.zw));
+    
+        // Sum the convolution values
+        sobelX += shadowImage * sobelXKernel[i];
+        sobelY += shadowImage * sobelYKernel[i];
+    }
+    
+    // Return the magnitude
+    return sqrt(sobelX * sobelX + sobelY * sobelY);
+}</code></pre></div></div>
+
+<p>The <mark>ShadowSobelOperator</mark> will return values greater than 0 if there is a change in <mark>shadow map</mark> value. In order to show the shadow outline we’ll add a property for outline colour and lerp between this and our previously shaded <mark>col</mark> depending on the outcome of the <mark>ShadowSobelOperator</mark>. Add the highlighted lines for the property, its declaration and add the two lines in the <mark>frag</mark> function to find the outline and lerp the colour.</p>
+
+<button class="collapsible round">Code block</button>
+<div class="collapsible__content round ">
+<div class="container__code"><pre class="line-numbers" data-line="5, 11, 19, 22"><code class="language-hlsl">Properties
+{
+    _ShadowStep ("Shadow step value", Range(0, 1)) = 0.1
+    _ShadowMin ("Minimum shadow value", Range(0, 1)) = 0.2
+    _OutlineColor ("Outline color", Color) = (0, 0, 0, 1)
+}
+    
+...
+    
+float _ShadowStep, _ShadowMin;
+float3 _OutlineColor;
+    
+...
+    
+float4 frag (Varyings IN) : SV_Target
+{
+    ...
+        
+    float shadowOutlineMask = SobelOperator(shadowCoord);
+    
+    float3 col = float3(1, 1, 1) * shadowValue;
+    col = lerp(col, _OutlineColor, saturate(shadowOutlineMask));
+    
+    return float4(col, 1);
+}</code></pre></div></div>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_01.jpg" alt="First implementation of the shadow outlines." class="image__caption image__modal round">
+</div>
+
+<p>Soooo, this doesn’t look too great yet because we have our rough edges back and the edge width isn’t consistent (see the shadow of the sphere on the ground). The rough edges is simply how the shadow map looks and something we’ll remove through masking. The inconsistent width is caused by the shadow cascades, which we’ll lessen using the cascade index. But first let’s add a way of changing the width of our outlines through dilation.</p>
+
+<h3 id="dilation">3.3.1 Dilation</h3>
+
+<p>The idea of <mark>dilation</mark> is that instead of sampling a 3×3 area directly surrounding the centre pixel we expand (dilate) the 8 surrounding sample points. The concept is best shown in an illustration, here red are the pixels that are sampled.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Dilation_WhiteBG.png" alt="" class="image__modal round">
+</div>
+
+<p>Dilation will increase the width of the outlines because we sample further away. Because we still only do 9 samples it won’t impact performance, but the edge detection will be less accurate.</p>
+
+<p>We’ll add a property to the shader to control the amount of dilation. Add/change the highlighted lines to add the property and declare it.</p>
+
+<button class="collapsible round">Code block</button>
+<div class="collapsible__content round ">
+<div class="container__code"><pre class="line-numbers" data-line="6, 11"><code class="language-hlsl">Properties
+{
+    _ShadowStep ("Shadow step value", Range(0, 1)) = 0.1
+    _ShadowMin ("Minimum shadow value", Range(0, 1)) = 0.2
+    _OutlineColor ("Outline color", Color) = (0, 0, 0, 1)
+    _ShadowDilation ("Shadow dilation", Range(0, 10)) = 1
+}
+    
+...
+    
+float _ShadowStep, _ShadowMin, _ShadowDilation;
+float3 _OutlineColor;</code></pre></div></div>
+
+<div class="note__base round">
+    <p>Note that the dilation can also be set to 0, where only the centre pixel is sampled and thus no outline is drawn.</p>
+</div>
+
+<p>Implementing the dilation is as simple as multiplying the sample points by the <mark>_ShadowDilation</mark>. Change the highlighted lines in the <mark>ShadowSobelOperator</mark> function and <mark>frag</mark> function.</p>
+
+<button class="collapsible round">Code block</button>
+<div class="collapsible__content round ">
+<div class="container__code"><pre class="line-numbers" data-line="1, 15, 31"><code class="language-hlsl">float ShadowSobelOperator(float4 shadowCoord, float dilation)
+{
+    // Get the shadowmap texelsize
+    ShadowSamplingData shadowSamplingData = GetMainLightShadowSamplingData();
+    float4 shadowMap_TexelSize = shadowSamplingData.shadowmapSize;
+    
+    // Initialise results
+    float sobelX = 0;
+    float sobelY = 0;
+    
+    // Loop over sample points
+    [unroll] for (int i = 0; i < 9; i++)
+    {
+        // Sample shadowmap
+        float shadowImage = MainLightRealtimeShadow(float4(shadowCoord.xy + sobelSamplePoints[i] * dilation * shadowMap_TexelSize.xy, shadowCoord.zw));
+    
+        // Sum the convolution values
+        sobelX += shadowImage * sobelXKernel[i];
+        sobelY += shadowImage * sobelYKernel[i];
+    }
+    
+    // Return the magnitude
+    return sqrt(sobelX * sobelX + sobelY * sobelY);
+}
+    
+    
+float4 frag (Varyings IN) : SV_Target
+{
+    ...
+    
+    float shadowOutlineMask = ShadowSobelOperator(shadowCoord, _ShadowDilation);
+    
+    float3 col = float3(1, 1, 1) * shadowValue;
+    col = lerp(col, _OutlineColor, saturate(shadowOutlineMask));
+    
+    return float4(col, 1);
+}</code></pre></div></div>
+
+<p>If you look at the result below (with <mark>_ShadowOutlines</mark> = 4) it seems to be getting worse, and it is, but I promise that by the end it will look better.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_02.jpg" alt="Dilated shadow outlines, _ShadowDilation = 4." class="image__caption image__modal round">
+</div>
+
+<h3 id="cascade-index">3.3.2 Cascade index</h3>
+
+<p>Now that we have <mark>dilation</mark>, we can alter it depending on the <mark>cascade index</mark>. The cascade index increases the further away the shadows are and we can use that to decrease the dilation and have more consistent line width.</p>
+
+<p>The best part is that we already know the cascade index, as it is the w-component of the <mark>shadowCoord</mark>. We’ll implement it by dividing the dilation by 2 to the power of the cascade index (the index starts at 0). Change the following line in the <mark>frag</mark> function.</p>
+
+<div class="container__code"><pre class="line-numbers round"><code class="language-hlsl">float shadowOutlineMask = ShadowSobelOperator(shadowCoord, _ShadowDilation / pow(2, shadowCoord.w));</code></pre></div>
+
+<p>While not perfect you can see that the shadow outlines are more consistent over the different cascades. The choice of dividing by a power of two is rather arbitrary and you could play around using different powers or functions to get better results.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_03.jpg" alt="Dilated outlines that are altered by the cascade index. You can still see a change in width, but it’s a lot less notable." class="image__caption image__modal round">
+</div>
+
+<div class="note__base round">
+    <p>Note that through this division the dilation can get very low, where near 0 the outline would disappear. If you want you can limit the dilation to be at least 1 through a min(1, dilation) function.</p>
+</div>
+
+<h3 id="masking">3.3.3 Masking</h3>
+
+<p>Although the previous steps have improved the shadow outlines, the self-shadowing outlines don’t look good. Unfortunately I’ve not yet found a way to do them proper, and thus we will only mask them away.</p>
+
+<p>We’ll be masking it so that there are shadow outlines where the <mark>shadow map</mark> has strong enough shadows, but not where there are <mark>NdotL</mark> shadows. Add the highlighted lines in the <mark>frag</mark> function.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="3,5"><code class="language-hlsl">float shadowOutlineMask = ShadowSobelOperator(shadowCoord, _ShadowDilation / pow(2, shadowCoord.w));
+// Mask, 1 = shadowmap shadows, 0 = no shadowmap shadows
+shadowOutlineMask *= (1 - step(_ShadowStep, shadowMap));
+// Mask, 1 = no NdotL shadows, 0 = NdotL shadows
+shadowOutlineMask *= step(_ShadowStep, NdotL);
+    
+float3 col = float3(1, 1, 1) * shadowValue;
+col = lerp(col, _OutlineColor, saturate(shadowOutlineMask));
+    
+return float4(col, 1);</code></pre></div>
+
+<p>In the resulting image below I’ve added another cube, so that you can see that the shadow casted by the cube onto the sphere has an outline that stops where the sphere is shaded by it’s NdotL value.</p>
+
+<div class="image-container round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_04.jpg" alt="Masked shadow outlines, with _ShadowDilation = 6." class="image__caption image__modal round">
+</div>
+
+<h1 id="conclusion">4 Conclusion</h1>
+<p>Congratulations, you’ve reached the end of the tutorial! You now know how to:</p>
+<ul>
+    <li>sample the shadow map in URP,</li>
+    <li>change the pipeline settings,</li>
+    <li>calculate NdotL shadows,</li>
+    <li>apply the Lambert lighting model,</li>
+    <li>do some simplistic toon shading,</li>
+    <li>do convolution and edge detection,</li>
+    <li>and finally how to make shadow outlines.</li>
+</ul>
+<p>Thank you very much for reading and I hope you learned something new. If you want to support me financially you can do so using my <a href="https://ko-fi.com/kelvinvanhoorn" target="_blank">ko-fi</a> page. You can also check out my <a href="https://twitter.com/KelvinvanHoorn" target="_blank">twitter</a> for more shader work and other things that might not make it to the site.</p>
