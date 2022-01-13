@@ -3,6 +3,7 @@ title: Shadow outlines tutorial
 layout: post
 category: tutorial
 blurb: In this tutorial I will show you how to sample the shadow map of the main light, make a Lambert based toon lighting model and draw outlines around the shadows.
+preview-video: assets//posts/tutorials/shadow-outlines-tutorial/preview.mp4
 ---
 
 <div class="image-container round">
@@ -10,15 +11,15 @@ blurb: In this tutorial I will show you how to sample the shadow map of the main
 </div>
 
 
-<p>In one of my showcases I recreated a piece of art by <a href="https://twitter.com/malintfalch" target="_blank">Malin</a>, which involves <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">these</a> warm shadow outlines that I really liked. There are however few sources or tutorials on how to achieve this, so I made this “beginner” friendly tutorial on how to get shadow outlines in Unity 2020.3 URP with a written HLSL shader.</p>
+<p>In one of my showcases I recreated a piece of art by <a href="https://twitter.com/malintfalch" target="_blank">Malin</a>, which involves <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">these</a> warm shadow outlines that I really liked. There are however few sources or tutorials on how to achieve this, so I made this “beginner” friendly tutorial on how to get shadow outlines in <mark>Unity 2020.3 URP</mark> with a written <mark>HLSL</mark> shader.</p>
 
 <p>In this tutorial I will show you how to sample the shadow map of the main light, make a Lambert based toon lighting model and draw outlines around the shadows.</p>
 
-<p>This tutorial was made with Unity 2020.3.1f1 and the Universal Render Pipeline (URP). Note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/ShadowOutlines" target="_blank">here</a>, including the initial and finished shader.</p>
+<p>This tutorial was made with <mark>Unity 2020.3.1f1</mark> and the <mark>Universal Render Pipeline</mark> (URP). Note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/ShadowOutlines" target="_blank">here</a>, including the initial and finished shader.</p>
 
 <h1>Acknowledgements</h1>
 
-<p>This tutorial is based on my <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">Art recreation (Malin)</a> post, and thus I’d first like to acknowledge <a href="https://twitter.com/malintfalch" target="_blank">Malin</a> for the beautiful art piece that set me on this path. On a more technical note, the following tutorials/breakdowns/articles were used or useful for the making of this tutorial:</p>
+<p>This tutorial is based on my <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">Art recreation (Malin)</a> post, and thus I’d first like to acknowledge <a href="https://twitter.com/malintfalch" target="_blank">Malin</a> for the beautiful art piece that set me on this path. On a more technical note, the following tutorials/breakdowns/articles were used directly or useful for the making of this tutorial:</p>
 
 <ul>
     <li><a href="https://twitter.com/IRCSS/status/1081515753403232256" target="_blank">This</a> tweet on shadow outlines in Unity’s built-in render pipeline, by <a href="https://twitter.com/IRCSS" target="_blank">Shahriar Shahrabi</a></li>
@@ -301,11 +302,9 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 
 <div class="grid__alwayscolumns--2 grid__align--bottom">
     <div class="image-container round">
-        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/URPSettings.png" alt="" class="image__modal round">
+        <img src="/assets/posts/tutorials/shadow-outlines-tutorial/URPSettings.png" alt="I will be using the following settings for the rest of this tutorial." class="image__caption image__modal round">
     </div>
-    <div class="note__base round">
-        <p>I will be using the following settings for the rest of this tutorial.</p>
-    </div>
+    <div></div>
 </div>
 
 <h2 id="ndotl-shadows">2.3 NdotL shadows</h2>

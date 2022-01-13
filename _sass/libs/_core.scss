@@ -74,7 +74,7 @@ ul.n{
     list-style-type: decimal;
 }
 
-
+// Numbered contents list
 ol {
     list-style-type: none;
     counter-reset: item;
@@ -146,6 +146,17 @@ li ol > li:before {
     text-align: center;
     width: 100%;
     grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.grid-full{
+    position: relative;
+    display: grid;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    grid-template-columns: 1fr;
     gap: 1rem;
     margin: 1rem 0;
 }
@@ -233,7 +244,7 @@ a:hover{
     transition: 0.3s, visibility 0s, opacity 0.5s;
 }
 
-#loadShowcaseBtn {
+#loadMorePostsBtn {
     position: relative;
     font-size: large;
     font-weight: bold;

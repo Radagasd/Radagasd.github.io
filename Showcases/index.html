@@ -2,8 +2,14 @@
 title: Showcases
 layout: default
 nav-menu: 1
+previewCategory: showcase
+previewPostsPerPage: 9
 ---
 
-<div class="grid-w480px" id="showcaseGrid"></div>
+<p>This page contains a collection of showcases from personal projects or art challenges I’ve done. With the exception of some textures, most of what you see is done by me, especially the models, shaders and VFX.</p>
 
-<button onclick="increasePageLimit()" id="loadShowcaseBtn" title="load more posts">Load more posts...</button>
+<div class="grid-w480px" id="postPreviewGrid"></div>
+
+<button onclick="increasePageLimit()" id="loadMorePostsBtn" title="load more posts">Load more posts...</button>
+
+{% include preview-list.html %}
