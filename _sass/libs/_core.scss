@@ -1,3 +1,4 @@
+@import 'libs/grids';
 @import 'libs/images';
 @import 'libs/collapsible';
 
@@ -70,6 +71,7 @@ mark{
     margin-top: 1em;
 }
 
+// Decimal list
 ul.n{
     list-style-type: decimal;
 }
@@ -98,32 +100,6 @@ li ol > li:before {
     content: counters(item, ".") " ";
 }
 
-.grid__maxcolumns--2{
-    position: relative;
-    display: grid;
-    width: 100%;
-    gap: 1rem;
-    grid-template-columns: repeat(2, 1fr);// 1fr;
-}
-
-.grid__alwayscolumns--2{
-    position: relative;
-    display: grid;
-    width: 100%;
-    gap: 1rem;
-    grid-template-columns: repeat(2, 1fr);
-}
-
-@media only screen and (max-width: $mediumdevice-width) {
-    .grid__maxcolumns--2{
-        grid-template-columns: 1fr;
-    }
-}
-
-.grid__align--bottom{
-    align-items: bottom;
-}
-
 .container__list{
     position: relative;
     border: 0.3rem solid palette(accent4);
@@ -132,34 +108,7 @@ li ol > li:before {
     padding: 0.5rem;
 }
 
-.grid-2{
-    position: relative;
-    display: grid;
-    align-items: bottom;
-    grid-template-columns: 1fr 1rem 1fr;
-}
 
-.grid-w480px{
-    position: relative;
-    display: grid;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.grid-full{
-    position: relative;
-    display: grid;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin: 1rem 0;
-}
 
 .container__preview{
     position: relative;
@@ -180,26 +129,12 @@ li ol > li:before {
     grid-template-columns: 1fr 1fr;
 }
 
-@media only screen and (max-width: 960px) {
-    .grid-w480px {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media only screen and (max-width: 480px) {
-    .grid-w480px {
-        grid-template-columns: 1fr;
-    }
-}
-
 .container__preview-video{
     position: relative;
     display: flex;
     width: 100%;
     height: 100%;
 }
-
-
 
 .list-container{
     position: relative;
