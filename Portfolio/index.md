@@ -1,6 +1,6 @@
 ---
 title: Portfolio
-nav-menu: 0
+# nav-menu: 0
 ---
 
 Here a curated portfolio will be shown.

@@ -18,6 +18,10 @@ mark{
     color: palette(text);
 }
 
+hr{
+    border-top: 0.2rem solid palette(divider);
+}
+
 .container__code{
     display:grid;
     width:100%;
@@ -108,6 +112,56 @@ li ol > li:before {
     padding: 0.5rem;
 }
 
+.social__container--extended{
+    display: flex;
+    width: fit-content;
+    color: palette(text-alt);
+
+    border-radius: 0.3rem;
+    border: 0.3rem solid palette(text);
+    background-color: palette(text);
+    transition: ease-in-out 0.3s;
+
+    margin: 0.5rem;
+}
+
+.social__container--extended:hover{
+    border-color: palette(accent1);
+    background-color: palette(accent1);
+}
+
+.social__container--extending{
+    display: inline-flex;
+    width: fit-content;
+    color: palette(text-alt);
+
+    border-radius: 0.3rem;
+    border: 0.3rem solid palette(text);
+    background-color: palette(text);
+    transition: ease-in-out 0.3s;
+
+    margin: 0.5rem 0;
+}
+
+.social__container--extending:hover{
+    border-color: palette(accent1);
+    background-color: palette(accent1);
+}
+
+.social__container--extending span{
+    max-width: 0;
+    -webkit-transition: max-width 1s;
+    
+    transition: ease 2s;
+    display: inline-block;
+    vertical-align: top;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.social__container--extending:hover span{
+    max-width: 30em;
+}
 
 
 .container__preview{

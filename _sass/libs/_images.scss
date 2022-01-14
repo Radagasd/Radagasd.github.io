@@ -6,11 +6,11 @@
     margin: 0.5rem 0;
 }
 
-// .image-container img{
-//     object-fit: contain;
-//     width: 100%;
-//     max-height: 100%;
-// }
+.image-container img{
+    object-fit: contain;
+    width: 100%;
+    max-height: 100%;
+}
 
 .fitH{
     height: fit-content;
@@ -44,6 +44,15 @@
     text-align: center;
     max-height: 100%;
     padding: 0.5em;
+}
+
+.caption__text--hover{
+    opacity: 0;
+    transition: ease 0.5s;
+}
+
+.container__preview:hover .caption__text--hover{
+    opacity: 1;
 }
 
 .caption__text--fill{
