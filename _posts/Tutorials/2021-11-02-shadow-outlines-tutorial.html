@@ -6,7 +6,7 @@ blurb: In this tutorial I will show you how to sample the shadow map of the main
 preview-video: assets//posts/tutorials/shadow-outlines-tutorial/preview.mp4
 ---
 
-<div class="image-container round">
+<div class="video__container round gif">
     <video src="/assets//posts/tutorials/shadow-outlines-tutorial/preview.mp4" autoplay muted loop></video>
 </div>
 
@@ -68,7 +68,7 @@ preview-video: assets//posts/tutorials/shadow-outlines-tutorial/preview.mp4
 
 <p>We start by creating a new scene consisting of a plane and some primitive shapes (cube, sphere & cylinder). As well as a new unlit shader ShadowOutlines.shader and its material, which we’ll apply to all objects in the scene. All objects in the scene should be white now, with no shadows what so ever.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_01.jpg" alt="Image of our non-shaded scene. All is white and you can see part of the cube sticking out above the plane." class="image__caption image__modal round">
 </div>
 
@@ -252,7 +252,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 
 <p>Now we can finally see some shadows!</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Finally some shadows! Though they are a bit harsh and that cylinder’s top is wider that its body?" class="image__caption image__modal round">
 </div>
 
@@ -262,7 +262,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 
 <p>The most obvious one is the <mark>Shadow Resolution</mark> (found under <mark>Lighting</mark>), where increasing the resolution gives sharper shadows.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_03_Res2048.jpg" alt="Shadow Resolution: 2048" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_03_Res4096.jpg" alt="Shadow Resolution: 4096" class="round">
@@ -272,7 +272,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 
 <p>Next up is <mark>Cascade Count</mark>. This splits your shadow map into different sections that are sampled depending on how far away your object is. This way you can have a higher resolution for nearby objects, compared to far away objects. When using this setting you need to define the keyword <mark>_MAIN_LIGHT_SHADOWS_CASCADE</mark>, like we did in the previous section.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_04_Cas1.jpg" alt="Cascades: 1" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_04_Cas2.jpg" alt="Cascades: 2" class="round">
@@ -282,7 +282,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 
 <p>The <mark>Soft Shadows</mark> tick box changes whether you sample the shadow map only once, or if you take multiple samples to calculate the shadow. Having it on results in softer shadows, as you take neighbouring shadow values into account, but it also decreases your performance as you need to sample the map multiple times.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Hard shadows" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_05_SoftShadows.jpg" alt="Soft shadows" class="round">
@@ -292,7 +292,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 
 <p>Finally there are the <mark>Depth Bias</mark> and <mark>Normal Bias</mark>. These settings are used to counteract so called shadow-acne or self-shadowing. I won’t go into their details, but you can take a look at Unity’s <a href="https://docs.unity3d.com/Manual/ShadowPerformance.html" target="_blank">documentation</a> on them. Note that these biases are applied in the vertex function of the ShadowCaster pass.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Depth bias 1, normal bias 1" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_06_DepthNormalBias.jpg" alt="Depth bias 0.3, normal bias 0.3" class="round">
@@ -301,7 +301,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
 </div>
 
 <div class="grid__columns--exactly2 grid__align--bottom">
-    <div class="image-container round">
+    <div class="container image__container round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/URPSettings.png" alt="I will be using the following settings for the rest of this tutorial." class="image__caption image__modal round">
     </div>
     <div></div>
@@ -326,7 +326,7 @@ float3 col = float3(1, 1, 1) * combinedShadow;</code></pre></div>
 
 <p>This basic type of <mark>NdotL</mark> lighting is often referred to as the <mark>Lambert lighting model</mark> or <mark>Lambertian reflectance model</mark>.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_07_NdotL.jpg" alt="NdotL and shadow map lighting, often referred to as the Lambert lighting model." class="image__caption image__modal round">
 </div>
 
@@ -366,7 +366,7 @@ float4 frag (Varyings IN) : SV_Target
     return float4(col, 1);
 }</code></pre></div></div>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_08_ToonShading.jpg" alt="Toon shaded scene. _ShadowStep = 0.1, _ShadowMin = 0.2." class="image__caption image__modal round">
 </div>
 
@@ -380,7 +380,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <p>As an example we look at the image below, which uses a single 3×3 kernel for edge detection (approximation of the <mark><a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank">Laplace operator</a>)</mark>. The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Convolution_LongWide_WhiteBG.png" alt="" class="image__modal round">
 </div>
 
@@ -396,7 +396,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <p>For our shadow outlines we will be using a different <mark>edge detecting operator</mark>, namely the <mark><a href="https://en.wikipedia.org/wiki/Sobel_operator" target="_blank">Sobel operator</a></mark>. The <mark>Sobel operator</mark> consists of two <mark>kernels</mark>, one for detecting the gradient (rate of change) in the x-direction and one for the y-direction. The kernels look as follows.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/SobelKernels_WhiteBG.png" alt="" class="image__modal round">
 </div>
 
@@ -493,7 +493,7 @@ float4 frag (Varyings IN) : SV_Target
     return float4(col, 1);
 }</code></pre></div></div>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_01.jpg" alt="First implementation of the shadow outlines." class="image__caption image__modal round">
 </div>
 
@@ -503,7 +503,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <p>The idea of <mark>dilation</mark> is that instead of sampling a 3×3 area directly surrounding the centre pixel we expand (dilate) the 8 surrounding sample points. The concept is best shown in an illustration, here red are the pixels that are sampled.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Dilation_WhiteBG.png" alt="" class="image__modal round">
 </div>
 
@@ -574,7 +574,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <p>If you look at the result below (with <mark>_ShadowOutlines</mark> = 4) it seems to be getting worse, and it is, but I promise that by the end it will look better.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_02.jpg" alt="Dilated shadow outlines, _ShadowDilation = 4." class="image__caption image__modal round">
 </div>
 
@@ -588,7 +588,7 @@ float4 frag (Varyings IN) : SV_Target
 
 <p>While not perfect you can see that the shadow outlines are more consistent over the different cascades. The choice of dividing by a power of two is rather arbitrary and you could play around using different powers or functions to get better results.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_03.jpg" alt="Dilated outlines that are altered by the cascade index. You can still see a change in width, but it’s a lot less notable." class="image__caption image__modal round">
 </div>
 
@@ -615,7 +615,7 @@ return float4(col, 1);</code></pre></div>
 
 <p>In the resulting image below I’ve added another cube, so that you can see that the shadow casted by the cube onto the sphere has an outline that stops where the sphere is shaded by it’s NdotL value.</p>
 
-<div class="image-container round">
+<div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_04.jpg" alt="Masked shadow outlines, with _ShadowDilation = 6." class="image__caption image__modal round">
 </div>
 

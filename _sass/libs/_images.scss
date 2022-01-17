@@ -1,23 +1,19 @@
-.image-container{
-    position:relative;
-    display: flex;
-    border: 0.3rem solid palette(accent3);
-    background-color: palette(accent3);
-    margin: 0.5rem 0;
-}
-
-.image-container img{
-    object-fit: contain;
-    width: 100%;
-    max-height: 100%;
-}
-
-.fitH{
-    height: fit-content;
-}
-
-.fitW{
+.image__container{
+    position: relative;
+    
     width: fit-content;
+    height: fit-content;
+
+    background-color: palette(accent3);
+    border: 0.3rem solid palette(accent3);
+}
+
+.image__container img{
+    position: relative;
+    display: flex;
+    object-fit: contain;
+
+    width:100%;
 }
 
 .portrait{
@@ -32,37 +28,6 @@
         max-width: 256px;
         max-height: 100vw;
     }
-}
-
-.caption__text{
-    position: absolute;
-    bottom: 0;
-    background: rgb(0,0,0);
-    background: rgba(0,0,0,0.5);
-    color: palette(text-alt);
-    width: 100%;
-    text-align: center;
-    max-height: 100%;
-    padding: 0.5em;
-}
-
-.caption__text--hover{
-    opacity: 0;
-    transition: ease 0.5s;
-}
-
-.container__preview:hover .caption__text--hover{
-    opacity: 1;
-}
-
-.caption__text--fill{
-    display: grid;
-    align-items: center;
-    height: 100%;
-}
-
-.caption__p--fill{
-    height:100%;
 }
 
 // Modal Image

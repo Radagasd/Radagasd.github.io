@@ -1,0 +1,47 @@
+.container{
+    position: relative;
+    width: 100%;
+    height:auto;
+}
+
+.container.margin--vertical{
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.caption__text{
+    position: absolute;
+    bottom: 0;
+    background: rgb(0,0,0);
+    background: rgba(0,0,0,0.5);
+    color: palette(text-alt);
+    width: 100%;
+    text-align: center;
+    max-height: 100%;
+    padding: 0.5em;
+
+    z-index: 1;
+}
+
+.caption__text--hover{
+    opacity: 0;
+    transition: ease 0.5s;
+}
+
+.container__preview:hover .caption__text--hover{
+    opacity: 1;
+}
+
+.container:hover .caption__text--hover{
+    opacity: 1;
+}
+
+.caption__text--fill{
+    display: grid;
+    align-items: center;
+    height: 100%;
+}
+
+.caption__p--fill{
+    height:100%;
+}

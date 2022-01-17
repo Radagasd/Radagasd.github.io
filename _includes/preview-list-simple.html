@@ -1,4 +1,4 @@
-<!-- Tutorial grid display and load more posts button -->
+<!-- Simple grid display and load more posts button -->
 <script>
     var postsPerPage = {{page.previewPostsPerPage}};
 
@@ -12,8 +12,7 @@
                 date: "{{ post.date | date: "%d %b %Y"}}",
                 title: "{{post.title}}",
                 videoUrl: "{{post.preview-video}}",
-                url: "{{ site.baseurl }}{{ post.url }}",
-                blurb: "{{post.blurb}}"
+                url: "{{ site.baseurl }}{{ post.url }}"
             }{% unless forloop.last %},{% endunless %}
         {% endfor %}
     ];
@@ -50,7 +49,7 @@
 
     function addPostPreview(i){
         var previewContainer = document.createElement('div');
-        previewContainer.classList.add('container__preview', 'round');
+        previewContainer.classList.add('container', 'video__container', 'preview', 'round');
         previewGrid.appendChild(previewContainer);
 
         var post = previewIndex[i];
@@ -60,8 +59,8 @@
             var videoLink = document.createElement('a');
             videoLink.href = post.url;
             
-            var videoContainer = document.createElement('div');
-            videoContainer.classList.add('container__preview-video');
+            // var videoContainer = document.createElement('div');
+            // videoContainer.classList.add('container__preview-video');
 
             var video = document.createElement('video');
             video.src = "/" + post.videoUrl;
@@ -70,8 +69,8 @@
             video.loop = true;
             // video.classList.add('round');
 
-            videoContainer.appendChild(video);
-            videoLink.appendChild(videoContainer);
+            // videoContainer.appendChild(video);
+            videoLink.appendChild(video);
             previewContainer.appendChild(videoLink);
         }
         else
@@ -85,29 +84,14 @@
 
         var captionContainer = document.createElement('div');
         captionContainer.classList.add('caption__text', 'round');
-        if(post.blurb != "")
-        {
-            captionContainer.classList.add('caption__text--fill');
-        }
+        // captionContainer.classList.add('caption__text', 'round', 'caption__text--hover');
 
         var captionLink = document.createElement('a');
         captionLink.href = post.url;
-        if(post.blurb != "")
-        {
-            captionLink.style.fontSize = "xx-large";
-        }
-
+        // captionLink.classList.add('caption__text', 'round');
         var captionText = document.createTextNode(post.title);
         captionLink.appendChild(captionText);
         captionContainer.appendChild(captionLink);
-
-        if(post.blurb != "")
-        {
-            var blurbText = document.createElement('p');
-            blurbText.classList.add('caption__p--fill');
-            blurbText.innerHTML = post.blurb;
-            captionContainer.appendChild(blurbText);
-        }
 
         var date = document.createElement('div');
         date.innerHTML = post.date;

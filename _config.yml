@@ -1,6 +1,11 @@
 title: Kelvin van Hoorn
+tagline: Kelvin van Hoorn's personal website
 description: Kelvin van Hoorn's personal website
 author: Kelvin van Hoorn
+
+twitter:
+  username: kelvinvanhoorn
+  card: summary
 
 permalink: /:year/:month/:day/:title:output_ext
 
@@ -11,6 +16,7 @@ markdown: kramdown
 theme: null
 plugins:
   - jekyll-feed
+  - jekyll-seo-tag
 sass:
   style: compressed
 
