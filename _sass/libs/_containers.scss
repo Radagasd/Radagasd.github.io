@@ -9,6 +9,20 @@
     margin-bottom: 0.5rem;
 }
 
+
+
+@media only screen and (max-width: $mediumdevice-width){
+    .container.responsive h1{
+        font-size: 4.5vw;
+    }
+    .container.responsive p{
+        font-size: 3vw;
+    }
+    .container.responsive p.date{
+        font-size: 2vw;
+    }
+}
+
 .caption__text{
     position: absolute;
     bottom: 0;
