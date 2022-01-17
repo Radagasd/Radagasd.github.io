@@ -58,9 +58,6 @@
         {
             var videoLink = document.createElement('a');
             videoLink.href = post.url;
-            
-            // var videoContainer = document.createElement('div');
-            // videoContainer.classList.add('container__preview-video');
 
             var video = document.createElement('video');
             video.src = "/" + post.videoUrl;
@@ -69,14 +66,12 @@
             video.loop = true;
             // video.classList.add('round');
 
-            // videoContainer.appendChild(video);
             videoLink.appendChild(video);
             previewContainer.appendChild(videoLink);
         }
         else
         {
             var emptyContainer = document.createElement('div');
-            emptyContainer.classList.add('container__preview-video');
             emptyContainer.style.paddingTop = "100%";
             previewContainer.appendChild(emptyContainer);
         }
@@ -88,7 +83,7 @@
 
         var captionLink = document.createElement('a');
         captionLink.href = post.url;
-        // captionLink.classList.add('caption__text', 'round');
+
         var captionText = document.createTextNode(post.title);
         captionLink.appendChild(captionText);
         captionContainer.appendChild(captionLink);

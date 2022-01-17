@@ -50,7 +50,7 @@
 
     function addPostPreview(i){
         var previewContainer = document.createElement('div');
-        previewContainer.classList.add('container__preview', 'round');
+        previewContainer.classList.add('container', 'video__container', 'preview', 'responsive', 'round');
         previewGrid.appendChild(previewContainer);
 
         var post = previewIndex[i];
@@ -59,9 +59,6 @@
         {
             var videoLink = document.createElement('a');
             videoLink.href = post.url;
-            
-            var videoContainer = document.createElement('div');
-            videoContainer.classList.add('container__preview-video');
 
             var video = document.createElement('video');
             video.src = "/" + post.videoUrl;
@@ -70,47 +67,39 @@
             video.loop = true;
             // video.classList.add('round');
 
-            videoContainer.appendChild(video);
-            videoLink.appendChild(videoContainer);
+            videoLink.appendChild(video);
             previewContainer.appendChild(videoLink);
         }
         else
         {
             var emptyContainer = document.createElement('div');
-            emptyContainer.classList.add('container__preview-video');
-            emptyContainer.style.paddingTop = "100%";
+            emptyContainer.style.paddingTop = "56.25%";
             previewContainer.appendChild(emptyContainer);
         }
         
 
         var captionContainer = document.createElement('div');
-        captionContainer.classList.add('caption__text', 'round');
-        if(post.blurb != "")
-        {
-            captionContainer.classList.add('caption__text--fill');
-        }
+        captionContainer.classList.add('caption__text', 'caption__text--fill', 'round');
 
         var captionLink = document.createElement('a');
         captionLink.href = post.url;
-        if(post.blurb != "")
-        {
-            captionLink.style.fontSize = "xx-large";
-        }
 
-        var captionText = document.createTextNode(post.title);
-        captionLink.appendChild(captionText);
+        var captionTitle = document.createElement('h1');
+        captionTitle.innerHTML = post.title;
+
+        captionLink.appendChild(captionTitle);
         captionContainer.appendChild(captionLink);
 
         if(post.blurb != "")
         {
             var blurbText = document.createElement('p');
-            blurbText.classList.add('caption__p--fill');
             blurbText.innerHTML = post.blurb;
             captionContainer.appendChild(blurbText);
         }
 
-        var date = document.createElement('div');
+        var date = document.createElement('p');
         date.innerHTML = post.date;
+        date.classList.add('date');
         date.style.fontSize= "small";
         captionContainer.appendChild(date);
 

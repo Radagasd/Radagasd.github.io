@@ -42,10 +42,6 @@
     transition: ease 0.5s;
 }
 
-.container__preview:hover .caption__text--hover{
-    opacity: 1;
-}
-
 .container:hover .caption__text--hover{
     opacity: 1;
 }
@@ -53,6 +49,7 @@
 .caption__text--fill{
     display: grid;
     align-items: center;
+    overflow: auto;
     height: 100%;
 }
 
