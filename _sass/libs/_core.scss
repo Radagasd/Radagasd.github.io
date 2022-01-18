@@ -25,11 +25,7 @@ hr{
 }
 
 .container__code{
-    display:flex;
-    // background-color: green;
-    // width:100%;
-    // overflow:hidden;
-    // border: 0rem solid palette(accent5);
+    display: grid;
 }
 
 .container__code.line-numbers{
