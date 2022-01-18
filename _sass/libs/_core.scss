@@ -24,6 +24,15 @@ hr{
     border-top: 0.2rem solid palette(divider);
 }
 
+// .MathJax{
+//     color: palette(text);
+//     vertical-align:middle;
+// }
+
+.caption__text-mathjax{
+    color: palette(text-alt);
+}
+
 .container__code{
     display: grid;
 }
