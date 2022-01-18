@@ -25,10 +25,15 @@ hr{
 }
 
 .container__code{
-    display:grid;
-    width:100%;
-    overflow:hidden;
-    border: 0rem solid palette(accent5);
+    display:flex;
+    // background-color: green;
+    // width:100%;
+    // overflow:hidden;
+    // border: 0rem solid palette(accent5);
+}
+
+.container__code.line-numbers{
+    margin: 0;
 }
 
 .title-box{

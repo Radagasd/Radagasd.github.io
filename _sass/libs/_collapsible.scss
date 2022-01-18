@@ -6,7 +6,6 @@
     width: 100%;
     border: none;
     text-align: left;
-    outline: none;
     font-size: medium;
 }
 
@@ -19,6 +18,11 @@
     margin-left: 1rem;
 }
 
+.collapsible--active.round{
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
 .collapsible--active:after {
     // unicode -
     content: "\2212";
@@ -28,11 +32,37 @@
     // display:grid;
     // width:100%;
     max-height: 0;
-    overflow:hidden;
-    transition: max-height 0.2s ease-out;
+    overflow: hidden;
+    // transition: max-height 0.2s ease-out;
     background-color: palette(bg);
 
     border: 0rem solid palette(accent5);
     margin-bottom: 1rem;
     visibility: hidden;
+}
+
+.collapsible__content.round{
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.collapsible__content.code{
+    border-color: palette(accent5);
+    background-color: palette(accent5);
+}
+
+
+.collapsible__test{
+    visibility: hidden;
+    max-height: 0;
+
+    border: 0rem solid palette(accent5);
+    overflow: hidden;
+
+    // padding: 0;
+    // outline: none;
+
+
+    margin-bottom: 1rem;
 }
