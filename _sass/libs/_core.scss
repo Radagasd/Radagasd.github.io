@@ -29,6 +29,17 @@ hr{
 //     vertical-align:middle;
 // }
 
+// .MathJax_Display, .MJXc-display, .MathJax_SVG_Display {
+//     overflow-x: auto;
+//     overflow-y: hidden;
+// }
+
+.equation{
+    display: grid; 
+    max-width: 100%; 
+    overflow: auto;
+}
+
 .caption__text-mathjax{
     color: palette(text-alt);
 }

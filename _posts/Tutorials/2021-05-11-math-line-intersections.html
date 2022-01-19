@@ -106,13 +106,15 @@ float3x3 constructTransitionMatrix(float3 forwardDir, float3 upDir)
 <h2 id="plane-intersection">1.3 Plane intersection</h1>
 
 <p>Now onto the actual stuff, finding intersections. We’ll start with the simplest shape, as it always has exactly one intersection, the flat plane. We can define a plane with the following equation [<a href="#references">1</a>]:</p>
-<p>\[s_x x + s_y y + s_z z + s_t = 0\]</p>
+<div class="equation">
+    \[s_x x + s_y y + s_z z + s_t = 0\]
+</div>
 <p>Here the shape parameters \(\begin{pmatrix} s_x \\ s_y \\ s_z \end{pmatrix}\) determine the normal of the plane and \(s_t\) an offset along the normal. Now in order to find the intersection with the line we need to substitute our \(\begin{pmatrix} x \\ y \\ z \end{pmatrix}\) coordinates with the line parameterisation \(\overrightarrow{P} = \begin{pmatrix} O_x + D_x t \\ O_y + D_y t \\ O_z + D_z t \end{pmatrix}\). Because this is a simple linear equation we can solve it for t to find the distance between the line’s origin and the intersection. This process is written out below.</p>
-<p>
+<div class="equation">
     \[s_x (O_x + D_x t) + s_y (O_y + D_y t) + s_z (O_z + D_z t) + s_t = 0\]
     \[(s_x D_x + s_y D_y + s_z D_z) t + s_x O_x + s_y O_y + s_z O_z + s_t = 0\]
     \[t = -\frac{s_x O_x + s_y O_y + s_z O_z + s_t}{s_x D_x + s_y D_y + s_z D_z} \]
-</p>
+</div>
 <p>Because we’re transforming our line to the shape’s local space, which already defines the shape’s direction and origin/offset, we don’t have to provide the shape parameters as they overlap. In our shape space the plane always points up (the y-direction), this allows us to simplify the equation to \(t = -\frac{O_y}{D_y}\).</p>
 <p>The code block below shows how this is implemented in HLSL, where we transform the input line to shape space and calculate \(t\). As input we provide the line origin, line direction, shape origin, and shape up direction. Add the following lines to our HLSL file below the <mark>constructTransitionMatrix</mark> function but before #endif.</p>
 <button class="collapsible round">Code block</button>
@@ -246,14 +248,16 @@ float intersectPlane(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, floa
 <h1 id="quadric-surfaces">2 Quadric surfaces</h1>
 
 <p>In the following sections I’ll go through the surface equations of <a href="https://en.wikipedia.org/wiki/Quadric" target="_blank">quadrics</a> and use the <a href="https://en.wikipedia.org/wiki/Quadratic_formula" target="_blank">quadratic formula</a> to find their intersections. Quadrics describe surfaces that are expressed as a polynomial of second degree, i.e. quadratic functions like the following.</p>
-<p>\[a x^2 + b x + c = 0 \]</p>
+<div class="equation">
+    \[a x^2 + b x + c = 0 \]
+</div>
 <p>When we substitute the line equation into a quadric equation it will also be quadratic in \(t\), and thus like any quadratic function it will have at most 2 intersections. Moreover, it means we can refactor it and use the quadratic formula to solve it.</p>
 <p>You’ve probably already encountered the quadratic formula in a mathematics class. Basically we refactor a quadratic equation to a general form, calculate the <a href="https://en.wikipedia.org/wiki/Discriminant" target="_blank">discriminant</a> (d) and use that to calculate the intersections. Written out this method consists of the following equations.</p>
-<p>
+<div class="equation">
     \[a t^2 + b t + c = 0\]
     \[d = b^2 - 4 a c\]
     \[t = \frac{-b \pm \sqrt{d}}{2 a}\]
-</p>
+</div>
 <p>Note that depending on the discriminant there are either 2, 1 or no intersections, which respectively corresponds to \(d > 0\), \(d = 0\) or \(d < 0\).</p>
 <p>Implementing this in HLSL is a straightforward copy of the mathematical equations, except that we need to decide on what to return if there are no intersections. In my case I’ve decided to return the maximum float value as we should never deal with an intersection that far away. Add the following lines to our HLSL file just above the <mark>constructTransitionMatrix</mark> function. We will use this function to solve all our quadric surface intersections.</p>
 <button class="collapsible round">Code block</button>
@@ -291,15 +295,19 @@ float2 quadraticFormula(float a, float b, float c)
     <div></div>
 </div>
 <p>The first quadric to discuss is the elliptic cylinder, an infinite cylinder with two focal points, i.e. the x-z plane cross-section is an ellipse. The equation for an elliptic cylinder is as follows [<a href="#references">3</a>]:</p>
-<p>\[\frac{x^2}{s_x^2} + \frac{z^2}{s_z^2} = 1.\]</p>
+<div class="equation">
+    \[\frac{x^2}{s_x^2} + \frac{z^2}{s_z^2} = 1.\]
+</div>
 <p>Here the scale parameters \(s_x\) and \(s_z\) act similar to the radius of a circular cylinder. Substituting the line equation results in:</p>
-<p>\[\frac{(O_x + D_x t)^2}{s_x^2} + \frac{(O_z + D_z t)^2}{s_z^2} - 1 = 0.\]</p>
+<div class="equation">
+    \[\frac{(O_x + D_x t)^2}{s_x^2} + \frac{(O_z + D_z t)^2}{s_z^2} - 1 = 0.\]
+</div>
 <p>Refactoring this equation results in a quadratic function of form \(a t^2 + b t + c = 0\), with the following coefficients:</p>
-<p>
+<div class="equation">
     \[a = \frac{D_x^2}{s_x^2} + \frac{D_z^2}{s_z^2},\]
     \[b = 2(\frac{O_x D_x}{s_x^2} + \frac{O_z D_z}{s_z^2}),\]
     \[c = \frac{O_x^2}{s_x^2} + \frac{O_z^2}{s_z^2} - 1.\]
-</p>
+</div>
 <p>We can then use the quadratic formula from the previous section to find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\). Add the following lines to our HLSL file below the <mark>intersectPlane</mark> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
@@ -353,15 +361,19 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     <div></div>
 </div>
 <p>The ellipsoid is my most used quadric surface, as it includes the sphere where all axes have the same radius. The equation for an ellipsoid is given by the following [<a href="#references">3</a>]:</p>
-<p>\[\frac{x^2}{s_x^2} + \frac{y^2}{s_y^2} + \frac{z^2}{s_z^2} = 1.\]</p>
+<div class="equation">
+    \[\frac{x^2}{s_x^2} + \frac{y^2}{s_y^2} + \frac{z^2}{s_z^2} = 1.\]
+</div>
 <p>Here the scale parameters \(s_x\), \(s_y\) and \(s_z\) act similar to the radius of a sphere. Substituting the line equation results in:</p>
-<p>\[\frac{(O_x + D_x t)^2}{s_x^2} + \frac{(O_y + D_y t)^2}{s_y^2} + \frac{(O_z + D_z t)^2}{s_z^2} - 1 = 0.\]</p>
+<div class="equation">
+    \[\frac{(O_x + D_x t)^2}{s_x^2} + \frac{(O_y + D_y t)^2}{s_y^2} + \frac{(O_z + D_z t)^2}{s_z^2} - 1 = 0.\]
+</div>
 <p>Refactoring this equation results in a quadratic function of form \(a t^2 + b t + c = 0\), with the following coefficients:</p>
-<p>
+<div class="equation">
     \[a = \frac{D_x^2}{s_x^2} + \frac{D_y^2}{s_y^2} + \frac{D_z^2}{s_z^2},\]
     \[b = 2(\frac{O_x D_x}{s_x^2} + \frac{O_y D_y}{s_y^2} + \frac{O_z D_z}{s_z^2}),\]
     \[c = \frac{O_x^2}{s_x^2} + \frac{O_y^2}{s_y^2} + \frac{O_z^2}{s_z^2} - 1.\]
-</p>
+</div>
 <p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\), \(s_y\) and \(s_z\). Add the following lines to our HLSL file below the <mark>intersectEllipticCylinder</mark> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
@@ -426,15 +438,19 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     </div>
 </div>
 <p>The hyperboloid equation is very similar to the ellipsoid, except that the y component is negative and that we have an additional parameter for type (\(s_t\)). Depending on this type parameter we can have a hyperbolic (\(s_t > 0\)) or elliptic (\(s_t < 0\)) hyperboloid or an elliptic cone (\(s_t = 0\)). The equation for hyperboloids is given by the following [<a href="#references">3</a>]:</p>
-<p>\[\frac{x^2}{s_x^2} - \frac{y^2}{s_y^2} + \frac{z^2}{s_z^2} = s_t.\]</p>
+<div class="equation">
+    \[\frac{x^2}{s_x^2} - \frac{y^2}{s_y^2} + \frac{z^2}{s_z^2} = s_t.\]
+</div>
 <p>By substituting the line equation we get:</p>
-<p>\[\displaystyle \frac{(O_x + D_x t)^2}{s_x^2} - \frac{(O_y + D_y t)^2}{s_y^2} + \frac{(O_z + D_z t)^2}{s_z^2} - s_t = 0.\]</p>
+<div class="equation">
+    \[\displaystyle \frac{(O_x + D_x t)^2}{s_x^2} - \frac{(O_y + D_y t)^2}{s_y^2} + \frac{(O_z + D_z t)^2}{s_z^2} - s_t = 0.\]
+</div>
 <p>Refactoring this equation results in a quadratic function of form \(a t^2 + b t + c = 0\), with the following coefficients:</p>
-<p>
+<div class="equation">
     \[a = \frac{D_x^2}{s_x^2} - \frac{D_y^2}{s_y^2} + \frac{D_z^2}{s_z^2},\]
     \[b = 2(\frac{O_x D_x}{s_x^2} - \frac{O_y D_y}{s_y^2} + \frac{O_z D_z}{s_z^2}),\]
     \[c = \frac{O_x^2}{s_x^2} - \frac{O_y^2}{s_y^2} + \frac{O_z^2}{s_z^2} - s_t.\]
-</p>
+</div>
 <p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), and the type parameter \(s_t\). Add the following lines to our HLSL file below the <mark>intersectEllipsoid</mark> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
@@ -495,15 +511,19 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     <div></div>
 </div>
 <p>I’m not sure how useful the paraboloids are for raytracing, but they are a quadric so I’ve added them here for completeness. Paraboloids also have a type parameter where \(s_t = 1\) describes an elliptic paraboloid and \(s_t = -1\) describes a hyperbolic paraboloid. The equation for hyperboloids is given by the following [<a href="#references">3</a>]:</p>
-<p>\[\frac{x^2}{s_x^2} + sign(s_t) \frac{z^2}{s_z^2} - y = 0\]</p>
+<div class="equation">
+    \[\frac{x^2}{s_x^2} + sign(s_t) \frac{z^2}{s_z^2} - y = 0\]
+</div>
 <p>The sign function returns -1 if negative, 1 if positive and 0 if 0. By substituting the line equation we get:</p>
-<p>\[\frac{(O_x + D_x t)^2}{s_x^2} + sign(s_t) \frac{(O_z + D_z t)^2}{s_z^2} - (O_y + D_y t) = 0 \]</p>
+<div class="equation">
+    \[\frac{(O_x + D_x t)^2}{s_x^2} + sign(s_t) \frac{(O_z + D_z t)^2}{s_z^2} - (O_y + D_y t) = 0 \]
+</div>
 <p>Refactoring this equation results in a quadratic function of form \(a t^2 + b t + c = 0\), with the following coefficients:</p>
-<p>
+<div class="equation">
     \[a = \frac{D_x^2}{s_x^2} + sign(s_t) \frac{D_z^2}{s_z^2},\]
     \[\displaystyle b = 2(\frac{O_x D_x}{s_x^2} + sign(s_t) \frac{O_z D_z}{s_z^2}) - D_y,\]
     \[\displaystyle c = \frac{O_x^2}{s_x^2} + sign(s_t) \frac{O_z^2}{s_z^2} - O_y.\]
-</p>
+</div>
 <p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\) and \(s_z\), and the type parameter \(s_t\). Add the following lines to our HLSL file below the <mark>intersectHyperboloid</mark> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
@@ -554,7 +574,9 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 
 <h2 id="ellipse">3.1 Ellipse</h2>
 <p>The ellipse is the simplest of combinations as it is a plane where we check if the intersection is within the bounds of an ellipse. The surface of an ellipse is described by following equation:</p>
-<p>\[\frac{x^2}{s_x^2} + \frac{z^2}{s_z^2} \leq 1.\]</p>
+<div class="equation">
+    \[\frac{x^2}{s_x^2} + \frac{z^2}{s_z^2} \leq 1.\]
+</div>
 <p>To check if a point is within the ellipse we substitute the x and z coordinate with our plane intersection coordinates.</p>
 <p>The HLSL implementation for the ellipse thus starts the same as the plane. Only the end is different where check if the intersection point is within an ellipse, if it is we return the intersection, if not we return the max float. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\) that define the ellipse. Add the following lines to our HLSL file below the <mark>intersectParaboloid</mark> function.</p>
 <button class="collapsible round">Code block</button>
@@ -674,11 +696,11 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 <h2 id="capped-ellipsoid">3.3 Capped ellipsoid</h2>
 
 <p>The capped ellipsoid is slightly different, as the scale of of the caps change with their heights. A cap at the centre of the ellipsoid will be greater than that of a cap at the ends. Luckily we can calculate the height dependent ellipse scales using the equation for an ellipsoid from section 2.2. This is done by setting either x or z to 0 and solve for the other as well as putting in your cap’s height as y position. From the ellipsoid equation this results in the following [<a href="#references">4</a>]:</p>
-<p>
+<div class="equation">
     \[\frac{x^2}{s_x^2} + \frac{y^2}{s_y^2} + \frac{z^2}{s_z^2} = 1,\]
     \[s_{e,x} \rightarrow x (z = 0) = s_x \sqrt{1 - \frac{h^2}{s_y^2}},\]
     \[s_{e,z} \rightarrow z (x=0) = s_z \sqrt{1 - \frac{h^2}{s_y^2}}.\]
-</p>
+</div>
 <p>Here \(s_{e,x}\) denotes the x-scale parameter of the ellipse, \(s_x\) the x-scale parameter of the ellipsoid and \(h\) the height position of the cap. Note that, because an ellipsoid has a finite height determined by \(s_y\), we can remap it to a range of -1 to 1 range (-1 being the bottom of the ellipsoid and 1 the top) which is nicer to handle. In that case the equations would be of form \(s_{e,x} = s_x \sqrt{1 - h^2}\), with the new \(h\) between -1 and 1.</p>
 <p>The HLSL implementation is similar to the capped cylinder, meaning we first find the ellipsoid intersections and check if they are between the caps followed by a comparison with the two ellipses. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), and two cap heights which get clamped between -1 and 1. Add the following lines to our HLSL file below the <mark>intersectCappedCylinder</mark> function.</p>
 <button class="collapsible round">Code block</button>
@@ -766,11 +788,11 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 
 <p>Note that the name states half a hyperboloid. This is because a capped hyperboloid can have up to 4 intersections and handling that is outside the scope of this tutorial. As such we will be looking at only the lower half (\(y <= 0\)) of the hyperboloid, which has only 2 intersections.</p>
 <p>The caps of a hyperboloid are again made of ellipses. We can calculate the height dependent ellipse scales similarly to the ellipsoid’s. This is done by taking the equation for hyperboloids from section 2.3 and setting either x or z to 0 and solve for the other. From the hyperboloid equation this results in the following:</p>
-<p>
+<div class="equation">
     \[\frac{x^2}{s_x^2} - \frac{y^2}{s_y^2} + \frac{z^2}{s_z^2} = s_t,\]
     \[s_{e,x} \rightarrow x (z=0) = s_x \sqrt{s_t + \frac{h^2}{s_y^2}},\]
     \[s_{e,z} \rightarrow z (x=0) = s_z \sqrt{s_t + \frac{h^2}{s_y^2}}.\]
-</p>
+</div>
 <p>Here \(s_{e,x}\) denotes the x-scale parameter of the ellipse, \(s_x\) the x-scale parameter of the hyperboloid, \(s_t\) the type parameter of the hyperboloid and \(h\) the height position of the cap. Because we’re only looking at the lower half of the hyperboloid we have the extra condition that \(h \leq 0\).</p>
 <p>The HLSL implementation is again similar to the capped cylinder and capped ellipsoid, meaning we first find the hyperboloid intersections and check if they are between the caps followed by a comparison with the two ellipses. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), type parameter \(s_t\), and two cap heights which get clamped between <mark>-maxLineDst</mark> and 0. Add the following lines to our HLSL file below the <mark>intersectCappedEllipsoid</mark> function.</p>
 <button class="collapsible round">Code block</button>
@@ -855,10 +877,10 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 <h2 id="rectangle">3.5 Rectangle</h2>
 
 <p>The rectangle is very similar to the ellipse, in that we do a plane intersection and check if it is within the bounds of a rectangle. The rectangular surface is bounded by the following 2 conditions:</p>
-<p>
+<div class="equation">
     \[|x| \leq s_x,\]
     \[|z| \leq s_z.\]
-</p>
+</div>
 <p>Here \(|x|\) stands for the absolute value of x. To check if a point is within the rectangle we substitute the x and z coordinate with our plane intersection coordinates.</p>
 <p>The HLSL implementation for the rectangle thus starts the same as the plane. Only the end is different where check if the intersection point is within an rectangle, if it is we return the intersection, if not we return the max float. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\) that define the bounds of the rectangle. Note that the rectangle’s length is \(2 s_x\). Add the following lines to our HLSL file below the <mark>intersectCappedHalfHyperboloid</mark> function.</p>
 <button class="collapsible round">Code block</button>
