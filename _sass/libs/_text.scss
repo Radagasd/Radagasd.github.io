@@ -1,0 +1,118 @@
+
+.style1 a{
+    color: inherit;
+    font-weight: normal;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-thickness: 0.01em;
+}
+
+.style1 a:hover{
+    text-decoration-style: solid;
+}
+
+.style1 a.a--local{
+    text-decoration-style: dotted;
+}
+
+.style1 a:hover.a--local{
+    text-decoration-style: solid;
+}
+
+.style1 .tooltip{
+    position: relative;
+    display: inline-block;
+
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 0.01em;
+}
+
+// .style1 .tooltip .tooltip__text{
+//     background-color: palette(bg-contrast);
+//     border-radius: 0.3rem;
+//     color: palette(text-alt);
+//     font-size: medium;
+//     // font-size: 1rem;
+//     // font-size: 85%;
+//     font-weight: normal;
+//     opacity: 0;
+//     padding: .3em .5em;
+//     position: absolute;
+//     text-align: center;
+//     text-transform: none;
+//     transition: opacity .3s;
+//     visibility: hidden;
+//     white-space: nowrap;
+//     z-index: 1;
+
+//     bottom: 100%;
+//     left: 50%;
+//     transform: translate(-50%);
+// }
+
+// .style1 .tooltip .tooltip__text::after{
+//     content: "";
+//     position: absolute;
+//     top: 100%;
+//     left: 50%;
+//     margin-left: -0.3rem;
+//     border-width: 0.3rem;
+//     border-style: solid;
+//     border-color: palette(bg-contrast) transparent transparent transparent;
+// }
+
+// .style1 .tooltip:hover .tooltip__text{
+//     visibility: visible;
+//     opacity: 1;
+// }
+
+#tooltip
+{
+    text-align: center;
+    color: palette(text-alt);
+    background: palette(bg-contrast);
+    position: absolute;
+    z-index: 100;
+    padding: 0.3em;
+    border-radius: 0.3rem;
+    border: 0.15rem solid palette(accent1);
+
+    font-size: medium;
+}
+ 
+#tooltip:after /* triangle decoration */
+{
+    width: 0;
+    height: 0;
+    border-left: 0.6rem solid transparent;
+    border-right: 0.6rem solid transparent;
+    border-top: 0.6rem solid palette(accent1);
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -0.6rem;
+    margin-left: -0.6rem;
+}
+
+#tooltip.top:after
+{
+    border-top-color: transparent;
+    border-bottom: 0.6rem solid palette(accent1);
+    top: -1.2rem;
+    bottom: auto;
+}
+
+#tooltip.left:after
+{
+    left: 0.6rem;
+    margin: 0;
+}
+
+#tooltip.right:after
+{
+    right: 0.6rem;
+    left: auto;
+    margin: 0;
+}
