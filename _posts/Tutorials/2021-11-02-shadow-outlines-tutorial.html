@@ -251,7 +251,9 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_03_Res2048.jpg" alt="Shadow Resolution: 2048" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_03_Res4096.jpg" alt="Shadow Resolution: 4096" class="round">
-        <div class="reveal-caption round">Shadow resolution. Left: 2048, right: 4096</div>
+    </div>
+    <div class="caption__text round">
+        Shadow resolution. Left: 2048, right: 4096
     </div>
 </div>
 <p>Next up is <b>Cascade Count</b>. This splits your shadow map into different sections that are sampled depending on how far away your object is. This way you can have a higher resolution for nearby objects, compared to far away objects. When using this setting you need to define the keyword <b>_MAIN_LIGHT_SHADOWS_CASCADE</b>, like we did in the previous section.</p>
@@ -259,7 +261,9 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_04_Cas1.jpg" alt="Cascades: 1" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_04_Cas2.jpg" alt="Cascades: 2" class="round">
-        <div class="reveal-caption round">Cascades. Left: 1 cascade, right: 2 cascades with the split at 6m so you can see the difference between the sphere’s shadow and the other shadows.</div>
+    </div>
+    <div class="caption__text round">
+        Cascades. Left: 1 cascade, right: 2 cascades with the split at 6m so you can see the difference between the sphere’s shadow and the other shadows.
     </div>
 </div>
 <p>The <b>Soft Shadows</b> tick box changes whether you sample the shadow map only once, or if you take multiple samples to calculate the shadow. Having it on results in softer shadows, as you take neighbouring shadow values into account, but it also decreases your performance as you need to sample the map multiple times.</p>
@@ -267,7 +271,9 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Hard shadows" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_05_SoftShadows.jpg" alt="Soft shadows" class="round">
-        <div class="reveal-caption round">Soft shadows. Left: no soft shadows, right: soft shadows.</div>
+    </div>
+    <div class="caption__text round">
+        Soft shadows. Left: no soft shadows, right: soft shadows.
     </div>
 </div>
 <p>Finally there are the <b>Depth Bias</b> and <b>Normal Bias</b>. These settings are used to counteract so called shadow-acne or self-shadowing. I won’t go into their details, but you can take a look at <em>Unity’s</em> <a href="https://docs.unity3d.com/Manual/ShadowPerformance.html" target="_blank">documentation</a> on them. Note that these biases are applied in the vertex function of the <b>ShadowCaster</b> pass.</p>
@@ -275,7 +281,9 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Depth bias 1, normal bias 1" class="round">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_06_DepthNormalBias.jpg" alt="Depth bias 0.3, normal bias 0.3" class="round">
-        <div class="reveal-caption round">Depth and Normal bias. Left: d=1 n=1, right: d=3 n=0.3.</div>
+    </div>
+    <div class="caption__text round">
+        Depth and Normal bias. Left: d=1 n=1, right: d=3 n=0.3.
     </div>
 </div>
 <div class="grid__columns--exactly2 grid__align--bottom">

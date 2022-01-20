@@ -87,17 +87,3 @@
 	color: palette(accent3);
 	text-align: center;
 }
-
-.reveal-caption{
-    position: absolute;
-    bottom: 0;
-    background: rgb(0,0,0);
-    background: rgba(0,0,0,0.5);
-    color: palette(text-alt);
-    width: 100%;
-    text-align: center;
-    max-height: 100%;
-    padding: 0.5em;
-
-	z-index: 2;
-}
