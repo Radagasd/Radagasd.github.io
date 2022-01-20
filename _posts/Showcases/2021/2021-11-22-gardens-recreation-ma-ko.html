@@ -23,16 +23,16 @@ preview-video: assets/posts/2021/gardens-recreation-ma-ko/preview.mp4
     <div class="container__list round">
         <h2>Tools used</h2>
         <ul>
-            <li><i class="fas fa-cube"></i> Blender</li>
-            <li><i class="fas fa-cube"></i> Houdini (rocks)</li>
-            <li><i class="fas fa-chess-board"></i> <a href="https://github.com/alelievr/Mixture" target="_blank">Mixture</a> (noise texutres)</li>
-            <li><i class="fab fa-unity"></i> Unity URP</li>
+            <li><i class="fas fa-cube"></i> <em>Blender</em></li>
+            <li><i class="fas fa-cube"></i> <em>Houdini</em> (rocks)</li>
+            <li><i class="fas fa-chess-board"></i> <a href="https://github.com/alelievr/Mixture" target="_blank"><em>Mixture</em></a> (noise texutres)</li>
+            <li><i class="fab fa-unity"></i> <em>Unity</em> URP</li>
         </ul>
     </div>
 </div>
 
 <h1>Description</h1>
-<p>This scene is an attempt to recreate this <a href="https://twitter.com/blurring_my_day/status/1442911760197971969" target="_blank">scene</a> drawn by <a href="https://twitter.com/blurring_my_day" target="_blank">Ma-ko</a> for <a href="https://twitter.com/GardensDevs" target="_blank">Gardens‘</a> upcoming game. The clip above shows my process frame by frame.</p>
+<p>This scene is an attempt to recreate this <a href="https://twitter.com/blurring_my_day/status/1442911760197971969" target="_blank">scene</a> drawn by <a href="https://twitter.com/blurring_my_day" target="_blank"><em>Ma-ko</em></a> for <a href="https://twitter.com/GardensDevs" target="_blank"><em>Gardens‘</em></a> upcoming game. The clip above shows my process frame by frame.</p>
 <p>The clip below shows a 3D view of the scene, with the camera swinging from left to right. It also shows a custom data pass, the outline pass and the scene without outlines.</p>
 <p>The custom data pass is used for the inner outlines and “ambient occlusion”, where red is the outline data and green the occlusion. The outline pass shows depth outlines in red, normal outlines in green, and custom data outlines in blue.</p>
 
@@ -41,20 +41,20 @@ preview-video: assets/posts/2021/gardens-recreation-ma-ko/preview.mp4
 </div>
 
 <p>This scene consists mostly of procedural geometry. For instance, the leaves are done through a compute shader that draws geometry (see picture). It works very similar to a grass system where you can paint the leaves onto objects. Each leaf can have a different color, scale, grow direction and normal. In this scene there are approximately 40.000 leaves. </p> 
-<p>For the rocks I roughly model a silhouette in Blender, which I then take to Houdini. There I procedurally deform it and bake the height position and “ambient occlusion” into the vertex colors, which I later use in my shaders.</p>
+<p>For the rocks I roughly model a silhouette in <em>Blender</em>, which I then take to <em>Houdini</em>. There I procedurally deform it and bake the height position and “ambient occlusion” into the vertex colors, which I later use in my shaders.</p>
 
 <div class="grid__columns--exactly2">
     <div class="container image__container round">
         <img src="/assets/posts/2021/gardens-recreation-ma-ko/LeafGeometry.jpg" alt="The procedural geometry of 1 leaf" class="image__caption image__modal round">
     </div>
     <div class="container image__container round">
-        <img src="/assets/posts/2021/gardens-recreation-ma-ko/HoudiniRock.jpg" alt="Example rock in Houdini" class="image__caption image__modal round">
+        <img src="/assets/posts/2021/gardens-recreation-ma-ko/HoudiniRock.jpg" alt="Example rock in <em>Houdini</em>" class="image__caption image__modal round">
     </div>
 </div>
 
 
 
 <h1>Acknowledgements</h1>
-<p>The first 2 parts of <a href="https://www.sidefx.com/tutorials/magic-market-procedural-rocks/" target="_blank">this</a> tutorial helped me get started on the procedural rock modelling in Houdini.</p>
+<p>The first 2 parts of <a href="https://www.sidefx.com/tutorials/magic-market-procedural-rocks/" target="_blank">this</a> tutorial, by <em>Moeen Sayed</em> helped me get started on the procedural rock modelling in <em>Houdini</em>.</p>
 
 

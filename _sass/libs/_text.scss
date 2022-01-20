@@ -1,23 +1,40 @@
-
-.style1 a{
+a{
     color: inherit;
     font-weight: normal;
     text-decoration: underline;
-    text-decoration-style: dashed;
-    text-decoration-thickness: 0.05rem;
+    text-decoration-style:solid;
+    text-decoration-thickness: 0.05em;
 }
 
-.style1 a:hover{
-    text-decoration-style: solid;
+a:hover{
+    text-decoration-style: dashed;
 }
+
+
+
+// Testing -------------------------------------------------------------------
+
+// .style1 a{
+//     color: inherit;
+//     font-weight: normal;
+//     text-decoration: underline;
+//     text-decoration-style: dashed;
+//     text-decoration-thickness: 0.05rem;
+// }
+
+// .style1 a:hover{
+//     text-decoration-style: solid;
+// }
 
 .style1 a.a--local{
     text-decoration-style: dotted;
 }
 
 .style1 a:hover.a--local{
-    text-decoration-style: solid;
+    text-decoration-style: dashed;
 }
+
+
 
 .style1 .tooltip{
     position: relative;
@@ -28,45 +45,6 @@
     text-decoration-style: dotted;
     text-decoration-thickness: 0.05rem;
 }
-
-// .style1 .tooltip .tooltip__text{
-//     background-color: palette(bg-contrast);
-//     border-radius: 0.3rem;
-//     color: palette(text-alt);
-//     font-size: medium;
-//     // font-size: 1rem;
-//     // font-size: 85%;
-//     font-weight: normal;
-//     opacity: 0;
-//     padding: .3em .5em;
-//     position: absolute;
-//     text-align: center;
-//     text-transform: none;
-//     transition: opacity .3s;
-//     visibility: hidden;
-//     white-space: nowrap;
-//     z-index: 1;
-
-//     bottom: 100%;
-//     left: 50%;
-//     transform: translate(-50%);
-// }
-
-// .style1 .tooltip .tooltip__text::after{
-//     content: "";
-//     position: absolute;
-//     top: 100%;
-//     left: 50%;
-//     margin-left: -0.3rem;
-//     border-width: 0.3rem;
-//     border-style: solid;
-//     border-color: palette(bg-contrast) transparent transparent transparent;
-// }
-
-// .style1 .tooltip:hover .tooltip__text{
-//     visibility: visible;
-//     opacity: 1;
-// }
 
 #tooltip
 {

@@ -1,5 +1,8 @@
 .image__container{
     position: relative;
+
+    display:grid;
+    gap: 0.3rem;
     
     width: fit-content;
     height: fit-content;

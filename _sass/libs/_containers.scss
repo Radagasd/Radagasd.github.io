@@ -24,6 +24,24 @@
 }
 
 .caption__text{
+    position: relative;
+    // display: flex;
+    background: palette(bg-contrast);
+
+    // position: absolute;
+    // bottom: 0;
+    // background: rgb(0,0,0);
+    // background: rgba(0,0,0,0.5);
+    color: palette(text-alt);
+    width: 100%;
+    text-align: center;
+    max-height: 100%;
+    padding: 0.5em;
+
+    z-index: 1;
+}
+
+.caption__text--overlay{
     position: absolute;
     bottom: 0;
     background: rgb(0,0,0);
@@ -45,8 +63,6 @@
 .container:hover .caption__text--hover{
     opacity: 1;
 }
-
-.container
 
 .caption__text--fill{
     display: grid;

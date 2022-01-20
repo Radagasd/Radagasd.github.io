@@ -10,21 +10,18 @@ preview-video: assets/posts/tutorials/shadow-outlines-tutorial/preview.mp4
     <video src="/assets/posts/tutorials/shadow-outlines-tutorial/preview.mp4" autoplay muted loop></video>
 </div>
 
+<p>In one of my showcases I recreated a piece of art by <a href="https://twitter.com/malintfalch" target="_blank"><em>Malin</em></a>, which involves <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">these</a> warm shadow outlines that I really liked. There are however few sources or tutorials on how to achieve this, so I made this “beginner” friendly tutorial on how to get shadow outlines in <b>Unity 2020.3 URP</b> with a written <b>HLSL</b> shader.</p>
+<p>In this tutorial I will show you how to sample the shadow map of the main light, make a <em>Lambert</em> based toon lighting model and draw outlines around the shadows.</p>
+<p>This tutorial was made with <b>Unity 2020.3.1f1</b> and the <b>Universal Render Pipeline</b> (URP). Note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/ShadowOutlines" target="_blank">here</a>, including the initial and finished shader.</p>
 
-<p>In one of my showcases I recreated a piece of art by <a href="https://twitter.com/malintfalch" target="_blank">Malin</a>, which involves <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">these</a> warm shadow outlines that I really liked. There are however few sources or tutorials on how to achieve this, so I made this “beginner” friendly tutorial on how to get shadow outlines in <mark>Unity 2020.3 URP</mark> with a written <mark>HLSL</mark> shader.</p>
-
-<p>In this tutorial I will show you how to sample the shadow map of the main light, make a Lambert based toon lighting model and draw outlines around the shadows.</p>
-
-<p>This tutorial was made with <mark>Unity 2020.3.1f1</mark> and the <mark>Universal Render Pipeline</mark> (URP). Note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/ShadowOutlines" target="_blank">here</a>, including the initial and finished shader.</p>
 
 <h1>Acknowledgements</h1>
 
-<p>This tutorial is based on my <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin">Art recreation (Malin)</a> post, and thus I’d first like to acknowledge <a href="https://twitter.com/malintfalch" target="_blank">Malin</a> for the beautiful art piece that set me on this path. On a more technical note, the following tutorials/breakdowns/articles were used directly or useful for the making of this tutorial:</p>
-
+<p>This tutorial is based on my <a href="{{ site.baseurl }}/2021/10/18/art-recreation-malin"><em>Art recreation (Malin)</em></a> post, and thus I’d first like to acknowledge <a href="https://twitter.com/malintfalch" target="_blank"><em>Malin</em></a> for the beautiful art piece that set me on this path. On a more technical note, the following tutorials/breakdowns/articles were used directly or useful for the making of this tutorial:</p>
 <ul>
-    <li><a href="https://twitter.com/IRCSS/status/1081515753403232256" target="_blank">This</a> tweet on shadow outlines in Unity’s built-in render pipeline, by <a href="https://twitter.com/IRCSS" target="_blank">Shahriar Shahrabi</a></li>
-    <li><a href="https://www.youtube.com/watch?v=RMt6DcaMxcE" target="_blank">This</a> video on edge detection, by <a href="https://twitter.com/NedMakesGames" target="_blank">NedMakesGames</a></li>
-    <li><a href="https://alexanderameye.github.io/notes/rendering-outlines/" target="_blank">This</a> article on edge detection, by <a href="https://twitter.com/alexanderameye" target="_blank">Alex Ameye</a></li>
+    <li><a href="https://twitter.com/IRCSS/status/1081515753403232256" target="_blank">This</a> tweet on shadow outlines in <em>Unity’s</em> built-in render pipeline, by <a href="https://twitter.com/IRCSS" target="_blank"><em>Shahriar Shahrabi</em></a></li>
+    <li><a href="https://www.youtube.com/watch?v=RMt6DcaMxcE" target="_blank">This</a> video on edge detection, by <a href="https://twitter.com/NedMakesGames" target="_blank"><em>NedMakesGames</em></a></li>
+    <li><a href="https://alexanderameye.github.io/notes/rendering-outlines/" target="_blank">This</a> article on edge detection, by <a href="https://twitter.com/alexanderameye" target="_blank"><em>Alex Ameye</em></a></li>
 </ul>
 
 <h1>Contents</h1>
@@ -62,22 +59,21 @@ preview-video: assets/posts/tutorials/shadow-outlines-tutorial/preview.mp4
 </ol>
 </div>
 
+
 <h1 id="basic-setup">1 Basic setup</h1>
 
 <p><em>If you’re using the project files you can simply open “InitialScene.scene” and “ShadowOutlines.shader” and skip to section <a href="#urp-asset">1.2</a></em>.</p>
-
-<p>We start by creating a new scene consisting of a plane and some primitive shapes (cube, sphere & cylinder). As well as a new unlit shader ShadowOutlines.shader and its material, which we’ll apply to all objects in the scene. All objects in the scene should be white now, with no shadows what so ever.</p>
-
+<p>We start by creating a new scene consisting of a plane and some primitive shapes (cube, sphere & cylinder). As well as a new unlit shader <b>ShadowOutlines.shader</b> and its material, which we’ll apply to all objects in the scene. All objects in the scene should be white now, with no shadows what so ever.</p>
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_01.jpg" alt="Image of our non-shaded scene. All is white and you can see part of the cube sticking out above the plane." class="image__caption image__modal round">
 </div>
 
+
 <h2 id="hlsl-shader">1.1 HLSL shader</h2>
 
-<p>The standard unlit shader we made is a <mark>CGPROGRAM</mark>, but we’ll be using URP’s HLSL library files so we’ll rewrite the shader as a <mark>HLSLPROGRAM</mark>. Replace all lines in ShadowOutlines.shader with the following code block. This shader contains two passes, the <mark>ForwardLit</mark> pass and the <mark>ShadowCaster</mark> pass. The ForwardLit pass only calculates the vertex position and normal in world space and outputs a white colour. The ShadowCaster pass renders our object to the shadow map. Note that we don’t see any shadows yet, this is because we are not sampling the shadow map in the ForwardLit pass.</p>
-
+<p>The standard unlit shader we made is a <b>CGPROGRAM</b>, but we’ll be using URP’s HLSL library files so we’ll rewrite the shader as a <b>HLSLPROGRAM</b>. Replace all lines in <b>ShadowOutlines.shader</b> with the following code block.</p>
+<p>This shader contains two passes, the <b>ForwardLit</b> pass and the <b>ShadowCaster</b> pass. The ForwardLit pass only calculates the vertex position and normal in world space and outputs a white colour. The ShadowCaster pass renders our object to the shadow map. Note that we don’t see any shadows yet, this is because we are not sampling the shadow map in the ForwardLit pass.</p>
 <p>For the rest of the tutorial you can ignore the ShadowCaster pass, as the shadows and outlines are calculated and applied in the ForwardLit pass.</p>
-
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">Shader "KelvinvanHoorn/ShadowOutlines"
@@ -198,27 +194,25 @@ preview-video: assets/posts/tutorials/shadow-outlines-tutorial/preview.mp4
 }</code></pre>
 </div>
 
+
 <h2 id="urp-asset">1.2 URP asset</h2>
 
-<p>For this tutorial we’ll also need to create a new universal render pipeline asset, as certain shadow settings can be found there. Create a new asset within your asset folder by going <mark>Create</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Rendering</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Universal Render Pipeline</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Pipeline Asset (Forward Renderer)</mark>.</p>
+<p>For this tutorial we’ll also need to create a new universal render pipeline asset, as certain shadow settings can be found there. Create a new asset within your asset folder by going <b>Create</b> <i class="fas fa-long-arrow-alt-right"></i> <b>Rendering</b> <i class="fas fa-long-arrow-alt-right"></i> <b>Universal Render Pipeline</b> <i class="fas fa-long-arrow-alt-right"></i> <b>Pipeline Asset (Forward Renderer)</b>.</p>
+<p>For now we’ll keep the default settings, but we still need to apply them in our project settings. Go to <b>Edit</b> <i class="fas fa-long-arrow-alt-right"></i> <b>Project settings</b> in the top window bar and change to our new pipeline asset in the select menus under the sections <b>Graphics</b> and <b>Quality</b>.</p>
+<p>If you’re using the project files you can set either <b>UnversalRenderPipeLineAsset</b> or <b>UnversalRenderPipeLineAsset_Finished</b> as your active pipeline asset, both are found in Assets/Settings.</p>
 
-<p>For now we’ll keep the default settings, but we still need to apply them in our project settings. Go to <mark>Edit</mark> <i class="fas fa-long-arrow-alt-right"></i> <mark>Project settings</mark> in the top window bar and change to our new pipeline asset in the select menus under the sections <mark>Graphics</mark> and <mark>Quality</mark>.</p>
-
-<p>If you’re using the project files you can set either <mark>UnversalRenderPipeLineAsset</mark> or <mark>UnversalRenderPipeLineAsset_Finished</mark> as your active pipeline asset, both are found in Assets/Settings.</p>
 
 <h1 id="shadows">2 Shadows</h1>
 
 <p>In this section we will add some very simple toon shading by sampling the shadow map, as well as calculating the dot product between the light direction and our object’s normal direction.</p>
 
+
 <h2 id="shadow-map-sampling">2.1 Shadow map sampling</h2>
 
-<p>In order to access the shadow map and relevent functions we need to add the <mark>Lighting.hlsl</mark> include file. We do this by adding the following highlighted line to our ForwardLit pass just below our other #include line.</p>
-
+<p>In order to access the shadow map and relevent functions we need to add the <b>Lighting.hlsl</b> include file. We do this by adding the following highlighted line to our ForwardLit pass just below our other #include line.</p>
 <div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-hlsl">#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"</code></pre></div>
-
-<p>Before we can sample the shadow map we first need to calculate the <mark>shadowCoord</mark>. We do this by calling the <mark>TransformWorldToShadowCoord</mark> function is our fragment shader and passing it our world position. Add the following highlighted line to the <mark>frag</mark> function.</p>
-
+<p>Before we can sample the shadow map we first need to calculate the <b>shadowCoord</b>. We do this by calling the <b>TransformWorldToShadowCoord</b> function is our fragment shader and passing it our world position. Add the following highlighted line to the <b>frag</b> function.</p>
 <div class="container__code"><pre class="line-numbers round" data-line="3"><code class="language-hlsl">float4 frag (Varyings IN) : SV_Target
 {
     float4 shadowCoord = TransformWorldToShadowCoord(IN.posWS);
@@ -227,41 +221,32 @@ preview-video: assets/posts/tutorials/shadow-outlines-tutorial/preview.mp4
     
     return float4(col, 1);
 }</code></pre></div>
-
 <div class="note__base round">
-    <p>Note that I’ve calculated the shadowCoord in the fragment function, you could also calculate it in the vertex function and pass it on. This would be more performant at the cost of visual quality.</p>
+    <p>Note that I’ve calculated <b>shadowCoord</b> in the fragment function, you could also calculate it in the vertex function and pass it on. This would be more performant at the cost of visual quality.</p>
 </div>
-
-<p>Now sampling the shadow map is as easy as calling the <mark>MainLightRealtimeShadow</mark> function and passing it the <mark>shadowCoord</mark>. In order to see the result we will also multiply <mark>col</mark> by our <mark>shadowMap</mark> value. Add/change the highlighted lines in the fragment function.</p>
-
+<p>Now sampling the shadow map is as easy as calling the <b>MainLightRealtimeShadow</b> function and passing it the <b>shadowCoord</b>. In order to see the result we will also multiply <b>col</b> by our <b>shadowMap</b> value. Add/change the highlighted lines in the fragment function.</p>
 <div class="container__code"><pre class="line-numbers round" data-line="2, 4"><code class="language-hlsl">float4 shadowCoord = TransformWorldToShadowCoord(IN.posWS);
 float shadowMap = MainLightRealtimeShadow(shadowCoord);
     
 float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
-
 <p>If you look in the scene view now you’ll notice nothing changed, we still can’t see the shadows even though we’re sampling the shadow map. Why is this?</p>
-
-<p>Well, we still need to define some <mark><a href="https://docs.unity3d.com/Manual/shader-keywords.html" target="blank">keywords</a></mark> so that Unity knows how to calculate its shadows. We’ll be defining 3 keywords, the first one being necessary to get the shadows from the main light, and the other 2 are for handling settings from our URP asset from section 1.2. Add the following 3 highlighted lines just above the includes. Each <mark>multi_compile</mark> basically tells Unity to make 2 shader variants, one in which the setting is on and one in which it is off.</p>
-
+<p>Well, we still need to define some <b><a href="https://docs.unity3d.com/Manual/shader-keywords.html" target="blank"><b>keywords</b></a></b> so that <em>Unity</em> knows how to calculate its shadows. We’ll be defining 3 keywords, the first one being necessary to get the shadows from the main light, and the other 2 are for handling settings from our URP asset from section 1.2. Add the following 3 highlighted lines just above the includes. Each <b>multi_compile</b> basically tells <em>Unity</em> to make 2 shader variants, one in which the setting is on and one in which it is off.</p>
 <div class="container__code"><pre class="line-numbers round" data-line="1-3"><code class="language-hlsl">#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
 #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
 #pragma multi_compile _ _SHADOWS_SOFT
     
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"</code></pre></div>
-
 <p>Now we can finally see some shadows!</p>
-
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Finally some shadows! Though they are a bit harsh and that cylinder’s top is wider that its body?" class="image__caption image__modal round">
 </div>
 
+
 <h2 id="pipeline-settings">2.2 Pipeline settings</h2>
 
 <p>Now that we have our shadow map sampling setup I’ll give a quick overview of the different shadow settings in our URP asset.</p>
-
-<p>The most obvious one is the <mark>Shadow Resolution</mark> (found under <mark>Lighting</mark>), where increasing the resolution gives sharper shadows.</p>
-
+<p>The most obvious one is the <b>Shadow Resolution</b> (found under <b>Lighting</b>), where increasing the resolution gives sharper shadows.</p>
 <div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_03_Res2048.jpg" alt="Shadow Resolution: 2048" class="round">
@@ -269,9 +254,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
         <div class="reveal-caption round">Shadow resolution. Left: 2048, right: 4096</div>
     </div>
 </div>
-
-<p>Next up is <mark>Cascade Count</mark>. This splits your shadow map into different sections that are sampled depending on how far away your object is. This way you can have a higher resolution for nearby objects, compared to far away objects. When using this setting you need to define the keyword <mark>_MAIN_LIGHT_SHADOWS_CASCADE</mark>, like we did in the previous section.</p>
-
+<p>Next up is <b>Cascade Count</b>. This splits your shadow map into different sections that are sampled depending on how far away your object is. This way you can have a higher resolution for nearby objects, compared to far away objects. When using this setting you need to define the keyword <b>_MAIN_LIGHT_SHADOWS_CASCADE</b>, like we did in the previous section.</p>
 <div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_04_Cas1.jpg" alt="Cascades: 1" class="round">
@@ -279,9 +262,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
         <div class="reveal-caption round">Cascades. Left: 1 cascade, right: 2 cascades with the split at 6m so you can see the difference between the sphere’s shadow and the other shadows.</div>
     </div>
 </div>
-
-<p>The <mark>Soft Shadows</mark> tick box changes whether you sample the shadow map only once, or if you take multiple samples to calculate the shadow. Having it on results in softer shadows, as you take neighbouring shadow values into account, but it also decreases your performance as you need to sample the map multiple times.</p>
-
+<p>The <b>Soft Shadows</b> tick box changes whether you sample the shadow map only once, or if you take multiple samples to calculate the shadow. Having it on results in softer shadows, as you take neighbouring shadow values into account, but it also decreases your performance as you need to sample the map multiple times.</p>
 <div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Hard shadows" class="round">
@@ -289,9 +270,7 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
         <div class="reveal-caption round">Soft shadows. Left: no soft shadows, right: soft shadows.</div>
     </div>
 </div>
-
-<p>Finally there are the <mark>Depth Bias</mark> and <mark>Normal Bias</mark>. These settings are used to counteract so called shadow-acne or self-shadowing. I won’t go into their details, but you can take a look at Unity’s <a href="https://docs.unity3d.com/Manual/ShadowPerformance.html" target="_blank">documentation</a> on them. Note that these biases are applied in the vertex function of the ShadowCaster pass.</p>
-
+<p>Finally there are the <b>Depth Bias</b> and <b>Normal Bias</b>. These settings are used to counteract so called shadow-acne or self-shadowing. I won’t go into their details, but you can take a look at <em>Unity’s</em> <a href="https://docs.unity3d.com/Manual/ShadowPerformance.html" target="_blank">documentation</a> on them. Note that these biases are applied in the vertex function of the <b>ShadowCaster</b> pass.</p>
 <div class="container image__container round">
     <div class="reveal">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_02.jpg" alt="Depth bias 1, normal bias 1" class="round">
@@ -299,7 +278,6 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
         <div class="reveal-caption round">Depth and Normal bias. Left: d=1 n=1, right: d=3 n=0.3.</div>
     </div>
 </div>
-
 <div class="grid__columns--exactly2 grid__align--bottom">
     <div class="container image__container round margin--vertical">
         <img src="/assets/posts/tutorials/shadow-outlines-tutorial/URPSettings.png" alt="I will be using the following settings for the rest of this tutorial." class="image__caption image__modal round">
@@ -307,12 +285,11 @@ float3 col = float3(1, 1, 1) * shadowMap;</code></pre></div>
     <div></div>
 </div>
 
+
 <h2 id="ndotl-shadows">2.3 NdotL shadows</h2>
 
 <p>As you might have noticed the edge between self-shadowing and the lit surface is quite rough. We can circumvent this by also calculating shadows based on the light direction and the object’s normal direction and taking the minimum of the two shadows.</p>
-
-<p>We calculate if a surface is lit by taking the dot product between the main light direction and object normal direction. This result is often abbreviated as <mark>NdotL</mark>. Our final shadow value is then simply the minimum of the <mark>shadow map</mark> and <mark>NdotL</mark>. Add the highlighted lines and change the value of <mark>col</mark> to reflect the final shadowing.</p>
-
+<p>We calculate if a surface is lit by taking the dot product between the main light direction and object normal direction. This result is often abbreviated as <b>NdotL</b>. Our final shadow value is then simply the minimum of the <b>shadow map</b> and <b>NdotL</b>. Add the highlighted lines and change the value of <b>col</b> to reflect the final shadowing.</p>
 <div class="container__code"><pre class="line-numbers round" data-line="4,6,8"><code class="language-hlsl">float4 shadowCoord = TransformWorldToShadowCoord(IN.posWS);
 float shadowMap = MainLightRealtimeShadow(shadowCoord);
     
@@ -321,21 +298,17 @@ float NdotL = saturate(dot(_MainLightPosition.xyz, IN.normalWS));
 float combinedShadow = min(NdotL, shadowMap);
     
 float3 col = float3(1, 1, 1) * combinedShadow;</code></pre></div>
-
-<p>Note that I’ve taken the <mark>saturate()</mark> of <mark>NdotL</mark>, this isn’t strictly necessary but I wanted to restrict the shadow values to a 0 to 1 range (0 = shadow, 1 = no shadow).</p>
-
-<p>This basic type of <mark>NdotL</mark> lighting is often referred to as the <mark>Lambert lighting model</mark> or <mark>Lambertian reflectance model</mark>.</p>
-
+<p>Note that I’ve taken the <b>saturate()</b> of <b>NdotL</b>, this isn’t strictly necessary but I wanted to restrict the shadow values to a 0 to 1 range (0 = shadow, 1 = no shadow).</p>
+<p>This basic type of NdotL lighting is often referred to as the <em>Lambert lighting model</em> or <em>Lambertian reflectance model</em>.</p>
 <div class="container image__container round">
-    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_07_NdotL.jpg" alt="NdotL and shadow map lighting, often referred to as the Lambert lighting model." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_07_NdotL.jpg" alt="NdotL and shadow map lighting, often referred to as the <em>Lambert lighting model</em>." class="image__caption image__modal round">
 </div>
+
 
 <h2 id="toon-shading">2.4 Toon shading</h2>
 
-<p>This is not a tutorial on toon shading so we will be using the simplest form of it that is just 1 line of code. We take the <mark>combinedShadow</mark> and step it with a small number, so that if there is any shadow we consider it to be fully shaded. In addition we’ll add a small number to the result so that the fully shaded area still shows some light and I saturate it to prevent <mark>shadowValue</mark> from exceeding 1.</p>
-
-<p>Add two properties to control the step and minimum shadow value and declare them just below the <mark>vert</mark> function. Finally apply them in the <mark>frag</mark> function. Add/change the highlighted lines from the following code block.</p>
-
+<p>This is not a tutorial on toon shading so we will be using the simplest form of it that is just 1 line of code. We take the <b>combinedShadow</b> and step it with a small number, so that if there is any shadow we consider it to be fully shaded. In addition we’ll add a small number to the result so that the fully shaded area still shows some light and I saturate it to prevent <b>shadowValue</b> from exceeding 1.</p>
+<p>Add two properties to control the step and minimum shadow value and declare them just below the <b>vert</b> function. Finally apply them in the <b>frag</b> function. Add/change the highlighted lines from the following code block.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="3-4,12,22,24"><code class="language-hlsl">Properties
@@ -366,51 +339,46 @@ float4 frag (Varyings IN) : SV_Target
     return float4(col, 1);
 }</code></pre>
 </div>
-
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_08_ToonShading.jpg" alt="Toon shaded scene. _ShadowStep = 0.1, _ShadowMin = 0.2." class="image__caption image__modal round">
 </div>
 
+
 <h1 id="edge-detection">3 Edge detection</h1>
 
-<p>Now that the shadows are done we can move on to the outlines. These will be drawn by detecting the edges of the shadow, or in more mathematical terms where there is a discontinuity in the shadow, using a <mark>convolution matrix</mark>.</p>
+<p>Now that the shadows are done we can move on to the outlines. These will be drawn by detecting the edges of the shadow, or in more mathematical terms where there is a discontinuity in the shadow, using a <b>convolution matrix</b>.</p>
+
 
 <h2 id="convolution">3.1 Convolution</h2>
 
-<p>The most common way of finding discontinuities in an image is using a <mark>convolution matrix</mark>, also known as a <mark>kernel</mark>. The convolution is an operation between the image and the kernel, where we take samples from the image, multiply them by the corresponding kernel value and add them together, resulting in a single number.</p>
-
-<p>As an example we look at the image below, which uses a single 3×3 kernel for edge detection (approximation of the <mark><a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank">Laplace operator</a>)</mark>. The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
-
+<p>The most common way of finding discontinuities in an image is using a <b>convolution matrix</b>, also known as a <b>kernel</b>. The convolution is an operation between the image and the kernel, where we take samples from the image, multiply them by the corresponding kernel value and add them together, resulting in a single number.</p>
+<p>As an example we look at the image below, which uses a single 3×3 kernel for edge detection (approximation of the <b><a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank"><em>Laplace operator</em></a>)</b>. The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Convolution_LongWide_WhiteBG.png" alt="" class="image__modal round">
 </div>
-
 <p>The result is 1.2, and depending on our threshold we would count this result as an edge or not. Note that if all image pixels were white the convolution would result in 0, and the same if all pixels were black or another single value.</p>
-
-<p>For other visual representations of <mark>convolution</mark> and <mark>kernels</mark> I recommend these:</p>
+<p>For other visual representations of <b>convolution</b> and <b>kernels</b> I recommend these:</p>
 <ul>
-    <li><a href="https://www.raywenderlich.com/92-unreal-engine-4-toon-outlines-tutorial#toc-anchor-006" target="_blank">Article</a>, specifically the “What is Convolution?” chapter</li>
-    <li><a href="https://www.youtube.com/watch?v=C_zFhWdM4ic" target="_blank">Video</a>, 8 minutes showing you how a blur filter works using convolution</li>
+    <li><a href="https://www.raywenderlich.com/92-unreal-engine-4-toon-outlines-tutorial#toc-anchor-006" target="_blank">Article</a> by <em>Tommy Tran</em>, specifically the “What is Convolution?” chapter</li>
+    <li><a href="https://www.youtube.com/watch?v=C_zFhWdM4ic" target="_blank">Video</a> by <em>Computerphile</em>, 8 minutes showing you how a blur filter works using convolution</li>
 </ul>
+
 
 <h2 id="sobel-operator">3.2 Sobel operator</h2>
 
-<p>For our shadow outlines we will be using a different <mark>edge detecting operator</mark>, namely the <mark><a href="https://en.wikipedia.org/wiki/Sobel_operator" target="_blank">Sobel operator</a></mark>. The <mark>Sobel operator</mark> consists of two <mark>kernels</mark>, one for detecting the gradient (rate of change) in the x-direction and one for the y-direction. The kernels look as follows.</p>
-
+<p>For our shadow outlines we will be using a different <b>edge detecting operator</b>, namely the <b><a href="https://en.wikipedia.org/wiki/Sobel_operator" target="_blank"><em>Sobel operator</em></a></b>. The <em>Sobel operator</em> consists of two kernels, one for detecting the gradient (rate of change) in the x-direction and one for the y-direction. The kernels look as follows.</p>
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/SobelKernels_WhiteBG.png" alt="" class="image__modal round">
 </div>
-
 <div class="note__base round">
     <p>Note that these are weighted gradients, the values near the centre are higher and thus influence the result more than the outer values.</p>
 </div>
-
 <p>In order to get to a single value we take the magnitude of the kernel results \(S_X\) and \(S_Y\), resulting in a single value \(S = \sqrt{S_X^2 + S_Y^2}\).</p>
+
 
 <h2 id="implementation">3.3 Implementation</h2>
 
-<p>In order to implement the convolution we’ll be adding 3 arrays with 9 entries, corresponding to our 3×3 region. The first array is for the sample points, including the centre at (0, 0), the second and third are the <mark>x-Sobel</mark> and <mark>y-Sobel</mark> kernels respectively. Add the following lines below the <mark>vert</mark> function, but before the <mark>frag</mark> function.</p>
-
+<p>In order to implement the convolution we’ll be adding 3 arrays with 9 entries, corresponding to our 3×3 region. The first array is for the sample points, including the centre at (0, 0), the second and third are the x-Sobel and y-Sobel kernels respectively. Add the following lines below the <b>vert</b> function, but before the <b>frag</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// 3x3 sample points
@@ -432,11 +400,8 @@ static float sobelYKernel[9] = {
     -1, -2, -1
 };</code></pre>
 </div>
-
-<p>Now in order to calculate the convolution we’ll add a separate function that we can call from the <mark>frag</mark> function, we’ll call it <mark>ShadowSobelOperator</mark>.</p>
-
-<p>Because we’re going to sample the shadow map at 9 points, the pixel we’re rendering and its 8 neighbouring pixels, we first need to get the <mark>texel size</mark> (i.e. the distance between each pixel). Next we do a for loop over all 9 entries of the <mark>sobelSamplePoints</mark> array and enumerate the convolution values of the x- and y-Sobel. Finally we return the magnitude by taking the square root of the sum of squares. Add the following function below the arrays.</p>
-
+<p>Now in order to calculate the convolution we’ll add a separate function that we can call from the <b>frag</b> function, we’ll call it <b>ShadowSobelOperator</b>.</p>
+<p>Because we’re going to sample the shadow map at 9 points, the pixel we’re rendering and its 8 neighbouring pixels, we first need to get the <b>texel size</b> (i.e. the distance between each pixel). Next we do a for loop over all 9 entries of the <b>sobelSamplePoints</b> array and enumerate the convolution values of the x- and y-Sobel. Finally we return the magnitude by taking the square root of the sum of squares. Add the following function below the arrays.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Calculate the Sobel operator of the shadowmap
@@ -465,9 +430,7 @@ float ShadowSobelOperator(float4 shadowCoord)
     return sqrt(sobelX * sobelX + sobelY * sobelY);
 }</code></pre>
 </div>
-
-<p>The <mark>ShadowSobelOperator</mark> will return values greater than 0 if there is a change in <mark>shadow map</mark> value. In order to show the shadow outline we’ll add a property for outline colour and lerp between this and our previously shaded <mark>col</mark> depending on the outcome of the <mark>ShadowSobelOperator</mark>. Add the highlighted lines for the property, its declaration and add the two lines in the <mark>frag</mark> function to find the outline and lerp the colour.</p>
-
+<p>The <b>ShadowSobelOperator</b> will return values greater than 0 if there is a change in <b>shadow map</b> value. In order to show the shadow outline we’ll add a property for outline colour and lerp between this and our previously shaded <b>col</b> depending on the outcome of the <b>ShadowSobelOperator</b>. Add the highlighted lines for the property, its declaration and add the two lines in the <b>frag</b> function to find the outline and lerp the colour.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="5, 11, 19, 22"><code class="language-hlsl">Properties
@@ -496,25 +459,20 @@ float4 frag (Varyings IN) : SV_Target
     return float4(col, 1);
 }</code></pre>
 </div>
-
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_01.jpg" alt="First implementation of the shadow outlines." class="image__caption image__modal round">
 </div>
-
 <p>Soooo, this doesn’t look too great yet because we have our rough edges back and the edge width isn’t consistent (see the shadow of the sphere on the ground). The rough edges is simply how the shadow map looks and something we’ll remove through masking. The inconsistent width is caused by the shadow cascades, which we’ll lessen using the cascade index. But first let’s add a way of changing the width of our outlines through dilation.</p>
+
 
 <h3 id="dilation">3.3.1 Dilation</h3>
 
-<p>The idea of <mark>dilation</mark> is that instead of sampling a 3×3 area directly surrounding the centre pixel we expand (dilate) the 8 surrounding sample points. The concept is best shown in an illustration, here red are the pixels that are sampled.</p>
-
+<p>The idea of <b>dilation</b> is that instead of sampling a 3×3 area directly surrounding the centre pixel we expand (dilate) the 8 surrounding sample points. The concept is best shown in an illustration, here red are the pixels that are sampled.</p>
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Dilation_WhiteBG.png" alt="" class="image__modal round">
 </div>
-
 <p>Dilation will increase the width of the outlines because we sample further away. Because we still only do 9 samples it won’t impact performance, but the edge detection will be less accurate.</p>
-
 <p>We’ll add a property to the shader to control the amount of dilation. Add/change the highlighted lines to add the property and declare it.</p>
-
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="6, 11"><code class="language-hlsl">Properties
@@ -530,13 +488,10 @@ float4 frag (Varyings IN) : SV_Target
 float _ShadowStep, _ShadowMin, _ShadowDilation;
 float3 _OutlineColor;</code></pre>
 </div>
-
 <div class="note__base round">
     <p>Note that the dilation can also be set to 0, where only the centre pixel is sampled and thus no outline is drawn.</p>
 </div>
-
-<p>Implementing the dilation is as simple as multiplying the sample points by the <mark>_ShadowDilation</mark>. Change the highlighted lines in the <mark>ShadowSobelOperator</mark> function and <mark>frag</mark> function.</p>
-
+<p>Implementing the dilation is as simple as multiplying the sample points by the <b>_ShadowDilation</b>. Change the highlighted lines in the <b>ShadowSobelOperator</b> function and <b>frag</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="1, 15, 31"><code class="language-hlsl">float ShadowSobelOperator(float4 shadowCoord, float dilation)
@@ -577,37 +532,30 @@ float4 frag (Varyings IN) : SV_Target
     return float4(col, 1);
 }</code></pre>
 </div>
-
-<p>If you look at the result below (with <mark>_ShadowOutlines</mark> = 4) it seems to be getting worse, and it is, but I promise that by the end it will look better.</p>
-
+<p>If you look at the result below (with <b>_ShadowOutlines</b> = 4) it seems to be getting worse, and it is, but I promise that by the end it will look better.</p>
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_02.jpg" alt="Dilated shadow outlines, _ShadowDilation = 4." class="image__caption image__modal round">
 </div>
 
+
 <h3 id="cascade-index">3.3.2 Cascade index</h3>
 
-<p>Now that we have <mark>dilation</mark>, we can alter it depending on the <mark>cascade index</mark>. The cascade index increases the further away the shadows are and we can use that to decrease the dilation and have more consistent line width.</p>
-
-<p>The best part is that we already know the cascade index, as it is the w-component of the <mark>shadowCoord</mark>. We’ll implement it by dividing the dilation by 2 to the power of the cascade index (the index starts at 0). Change the following line in the <mark>frag</mark> function.</p>
-
+<p>Now that we have dilation, we can alter it depending on the <b>cascade index</b>. The cascade index increases the further away the shadows are and we can use that to decrease the dilation and have more consistent line width.</p>
+<p>The best part is that we already know the cascade index, as it is the w-component of the <b>shadowCoord</b>. We’ll implement it by dividing the dilation by 2 to the power of the cascade index (the index starts at 0). Change the following line in the <b>frag</b> function.</p>
 <div class="container__code"><pre class="line-numbers round"><code class="language-hlsl">float shadowOutlineMask = ShadowSobelOperator(shadowCoord, _ShadowDilation / pow(2, shadowCoord.w));</code></pre></div>
-
 <p>While not perfect you can see that the shadow outlines are more consistent over the different cascades. The choice of dividing by a power of two is rather arbitrary and you could play around using different powers or functions to get better results.</p>
-
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_03.jpg" alt="Dilated outlines that are altered by the cascade index. You can still see a change in width, but it’s a lot less notable." class="image__caption image__modal round">
 </div>
-
 <div class="note__base round">
     <p>Note that through this division the dilation can get very low, where near 0 the outline would disappear. If you want you can limit the dilation to be at least 1 through a min(1, dilation) function.</p>
 </div>
 
+
 <h3 id="masking">3.3.3 Masking</h3>
 
 <p>Although the previous steps have improved the shadow outlines, the self-shadowing outlines don’t look good. Unfortunately I’ve not yet found a way to do them proper, and thus we will only mask them away.</p>
-
-<p>We’ll be masking it so that there are shadow outlines where the <mark>shadow map</mark> has strong enough shadows, but not where there are <mark>NdotL</mark> shadows. Add the highlighted lines in the <mark>frag</mark> function.</p>
-
+<p>We’ll be masking it so that there are shadow outlines where the <b>shadow map</b> has strong enough shadows, but not where there are <b>NdotL</b> shadows. Add the highlighted lines in the <b>frag</b> function.</p>
 <div class="container__code"><pre class="line-numbers round" data-line="3,5"><code class="language-hlsl">float shadowOutlineMask = ShadowSobelOperator(shadowCoord, _ShadowDilation / pow(2, shadowCoord.w));
 // Mask, 1 = shadowmap shadows, 0 = no shadowmap shadows
 shadowOutlineMask *= (1 - step(_ShadowStep, shadowMap));
@@ -618,20 +566,20 @@ float3 col = float3(1, 1, 1) * shadowValue;
 col = lerp(col, _OutlineColor, saturate(shadowOutlineMask));
     
 return float4(col, 1);</code></pre></div>
-
 <p>In the resulting image below I’ve added another cube, so that you can see that the shadow casted by the cube onto the sphere has an outline that stops where the sphere is shaded by it’s NdotL value.</p>
-
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/ShadowOutlines_Sobel_04.jpg" alt="Masked shadow outlines, with _ShadowDilation = 6." class="image__caption image__modal round">
 </div>
 
+
 <h1 id="conclusion">4 Conclusion</h1>
+
 <p>Congratulations, you’ve reached the end of the tutorial! You now know how to:</p>
 <ul>
     <li>sample the shadow map in URP,</li>
     <li>change the pipeline settings,</li>
     <li>calculate NdotL shadows,</li>
-    <li>apply the Lambert lighting model,</li>
+    <li>apply the <em>Lambert lighting model</em>,</li>
     <li>do some simplistic toon shading,</li>
     <li>do convolution and edge detection,</li>
     <li>and finally how to make shadow outlines.</li>

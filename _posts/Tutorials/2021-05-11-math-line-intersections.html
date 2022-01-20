@@ -10,15 +10,15 @@ preview-video: assets/posts/tutorials/math-line-intersections/preview.mp4
     <video src="/assets/posts/tutorials/math-line-intersections/preview.mp4" autoplay muted loop></video>
 </div>
 
-<p>Lately a lot of my shaders have used a bit of raymarching, where I primarily rely on finding the intersections between a line (ray) and a shape. In this post I will go over the general approach for calculating these intersections and provide a list of HLSL implementations. The shapes discussed here will include planes, quadric surfaces (e.g. a sphere) and some useful combinations of them.</p>
-<p>This tutorial was made with Unity 2020.3.1f1 and the Universal Render Pipeline (URP). Note that the general concept can be applied to any shader or coding environment. You can download the finished HLSL file, including an example shader, as Unity package through my <a href="https://github.com/Radagasd/line-intersections" target="_blank">git repository</a>. If you’ve never imported a Unity package via a git repository <a href="https://docs.unity3d.com/Manual/upm-ui-giturl.html" target="_blank">this</a> documentation will be helpful.</p>
+<p>Lately a lot of my shaders have used a bit of raymarching, where I primarily rely on finding the intersections between a line (ray) and a shape. In this post I will go over the general approach for calculating these intersections and provide a list of <b>HLSL</b> implementations. The shapes discussed here will include planes, quadric surfaces (e.g. a sphere) and some useful combinations of them.</p>
+<p>This tutorial was made with <b>Unity 2020.3.1f1</b> and the <b>Universal Render Pipeline</b> (URP). Note that the general concept can be applied to any shader or coding environment. You can download the finished HLSL file, including an example shader, as Unity package through my <a href="https://github.com/Radagasd/line-intersections" target="_blank"><b>git repository</b></a>. If you’ve never imported a Unity package via a git repository <a href="https://docs.unity3d.com/Manual/upm-ui-giturl.html" target="_blank">this</a> documentation will be helpful.</p>
 
 
 <h1>Acknowledgements</h1>
 
 <p>As this is mostly a tutorial on mathematics and its implementation my main acknowledgement would be my university level classes in Calculus and Linear Algebra. For those interested I shall list the Calculus book I’ve used, but know that I’ve put plenty of links to the relevant wiki articles throughout this tutorial as well.</p>
 <ul>
-    <li>Calculus: A Complete Course (8th edition), by Robert Adams and Christopher Essex.</li>
+    <li><em>Calculus: A Complete Course (8th edition), by Robert Adams and Christopher Essex.</em></li>
 </ul>
 
 
@@ -80,12 +80,12 @@ preview-video: assets/posts/tutorials/math-line-intersections/preview.mp4
 <p>Most of our shapes will point in some direction, like a plane that has its normal pointing upward along the y-axis. For simplicity’s sake we will define each shape equation in its own local space where the shape is centred on the origin and y is always the up axis, z is the forward axis and x is the right axis.</p>
 <p>In order to translate and rotate our shapes to any place or direction we will be transforming our input line (that is likely defined in world space) to our shape’s local space, somewhat similar to transforming from world space to object space except we don’t adjust the scale. In order to do this we will provide two <a href="https://en.wikipedia.org/wiki/Orthonormality#:~:text=In%20linear%20algebra%2C%20two%20vectors,and%20all%20of%20unit%20length." target="_blank">orthonormal</a> vectors that form a <a href="https://en.wikipedia.org/wiki/Standard_basis" target="_blank">basis</a> of our shape space, the forward and up direction, in addition to the origin of the shape. These vectors must be defined within the same space as our input line. With this transformation we can easily define our shapes in their local x, y and z coordinates and use a transformation matrix to rotate and the origin to translate the shape to any location/rotation we want.</p>
 <p>In short, our equations will be defined in their own space, where it is centred on the origin and always pointing upward. However, our input is defined in world space (or any other space), which consists of the line’s origin, the line’s direction, the shape’s origin and the shape’s direction (up and forward vectors). Finally, we use the shape’s origin and direction to transform our line to shape space.</p>
-<p>I know this might be a bit much and the next sections will show it implemented in code, but let me know if you want a more in-depth tutorial on matrix transformations. In the meanwhile you can also check out <a href="https://catlikecoding.com/unity/tutorials/rendering/part-1/" target="_blank">this</a> tutorial by Catlike Coding on matrix transformations.</p>
+<p>I know this might be a bit much and the next sections will show it implemented in code, but let me know if you want a more in-depth tutorial on matrix transformations. In the meanwhile you can also check out <a href="https://catlikecoding.com/unity/tutorials/rendering/part-1/" target="_blank">this</a> tutorial by <em>Catlike Coding</em> on matrix transformations.</p>
 
 
 <h2 id="hlsl-include-file">1.2 HLSL include file</h1>
 
-<p>The actual HLSL implemenation of our line intersections will be in the form of a HLSL include file that we can add to any shader. Create a new text file and change its name (including format) to “<mark>LineIntersections.hlsl</mark>” and add the following lines.</p>
+<p>The actual HLSL implemenation of our line intersections will be in the form of a HLSL include file that we can add to any shader. Create a new text file and change its name (including format) to “<b>LineIntersections.hlsl</b>” and add the following lines.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">#ifndef LINE_INTERSECTIONS_INCLUDED
@@ -100,7 +100,7 @@ float3x3 constructTransitionMatrix(float3 forwardDir, float3 upDir)
     
 #endif</code></pre>
 </div>
-<p>The <mark>constructTransitionMatrix</mark> function uses the shape’s forward and up direction to construct a rotation matrix to transform from our input space to the shape’s space. Notice the definition lines starting with a #. These are used to ensure that we don’t accidently include our functions twice in a shader. Basically, it checks if <mark>LINE_INTERSECTIONS_INCLUDED</mark> is defined, if not, define it and add our functions.</p>
+<p>The <b>constructTransitionMatrix</b> function uses the shape’s forward and up direction to construct a rotation matrix to transform from our input space to the shape’s space. Notice the definition lines starting with a #. These are used to ensure that we don’t accidently include our functions twice in a shader. Basically, it checks if <b>LINE_INTERSECTIONS_INCLUDED</b> is defined, if not, define it and add our functions.</p>
 
 
 <h2 id="plane-intersection">1.3 Plane intersection</h1>
@@ -116,7 +116,7 @@ float3x3 constructTransitionMatrix(float3 forwardDir, float3 upDir)
     \[t = -\frac{s_x O_x + s_y O_y + s_z O_z + s_t}{s_x D_x + s_y D_y + s_z D_z} \]
 </div>
 <p>Because we’re transforming our line to the shape’s local space, which already defines the shape’s direction and origin/offset, we don’t have to provide the shape parameters as they overlap. In our shape space the plane always points up (the y-direction), this allows us to simplify the equation to \(t = -\frac{O_y}{D_y}\).</p>
-<p>The code block below shows how this is implemented in HLSL, where we transform the input line to shape space and calculate \(t\). As input we provide the line origin, line direction, shape origin, and shape up direction. Add the following lines to our HLSL file below the <mark>constructTransitionMatrix</mark> function but before #endif.</p>
+<p>The code block below shows how this is implemented in HLSL, where we transform the input line to shape space and calculate \(t\). As input we provide the line origin, line direction, shape origin, and shape up direction. Add the following lines to our HLSL file below the <b>constructTransitionMatrix</b> function but before #endif.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based on plane equation from https://en.wikipedia.org/wiki/Plane_(geometry)#Point%E2%80%93normal_form_and_general_form_of_the_equation_of_a_plane
@@ -140,7 +140,7 @@ float intersectPlane(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, floa
 
 <h2 id="visualise-shader">1.4 Visualise shader</h1>
 
-<p>Having this <mark>LineIntersections.hlsl</mark> is great and all, but we can’t see anything yet as we do not have a shader or material. Let’s change that by making a new shader called <mark>VisualiseIntersection.shader</mark> and fill it with the code block below.</p>
+<p>Having this <b>LineIntersections.hlsl</b> is great and all, but we can’t see anything yet as we do not have a shader or material. Let’s change that by making a new shader called <b>VisualiseIntersection.shader</b> and fill it with the code block below.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">Shader "KelvinvanHoorn/VisualiseIntersection"
@@ -231,7 +231,7 @@ float intersectPlane(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, floa
 </div>
 <p>This tutorial is primarily focussed on the mathematics and implementation behind finding line intersections, I will thus only shortly gloss over what the shader does.</p>
 <p>We use 3 properties to influence our shapes, the shape parameters which usually say something about the scale, the distance scaling which is used to colour the shape and the cap heights which will be used in section 3 for the cap positions.</p>
-<p>We include our <mark>LineIntersections.hlsl</mark> file at line 21. The #include requires the path to our HLSL file, if this is in the same folder we can simply put the name there. Otherwise it would look something like the following.</p>
+<p>We include our <b>LineIntersections.hlsl</b> file at line 21. The #include requires the path to our HLSL file, if this is in the same folder we can simply put the name there. Otherwise it would look something like the following.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;"><code class="language-hlsl">#include "Assets/folder/subfolder/LineIntersections.hlsl"
 // or if you're using the package 
@@ -259,7 +259,7 @@ float intersectPlane(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, floa
     \[t = \frac{-b \pm \sqrt{d}}{2 a}\]
 </div>
 <p>Note that depending on the discriminant there are either 2, 1 or no intersections, which respectively corresponds to \(d > 0\), \(d = 0\) or \(d < 0\).</p>
-<p>Implementing this in HLSL is a straightforward copy of the mathematical equations, except that we need to decide on what to return if there are no intersections. In my case I’ve decided to return the maximum float value as we should never deal with an intersection that far away. Add the following lines to our HLSL file just above the <mark>constructTransitionMatrix</mark> function. We will use this function to solve all our quadric surface intersections.</p>
+<p>Implementing this in HLSL is a straightforward copy of the mathematical equations, except that we need to decide on what to return if there are no intersections. In my case I’ve decided to return the maximum float value as we should never deal with an intersection that far away. Add the following lines to our HLSL file just above the <b>constructTransitionMatrix</b> function. We will use this function to solve all our quadric surface intersections.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">static const float maxLineDst = 3.402823466e+38;
@@ -308,7 +308,7 @@ float2 quadraticFormula(float a, float b, float c)
     \[b = 2(\frac{O_x D_x}{s_x^2} + \frac{O_z D_z}{s_z^2}),\]
     \[c = \frac{O_x^2}{s_x^2} + \frac{O_z^2}{s_z^2} - 1.\]
 </div>
-<p>We can then use the quadratic formula from the previous section to find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\). Add the following lines to our HLSL file below the <mark>intersectPlane</mark> function.</p>
+<p>We can then use the quadratic formula from the previous section to find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\). Add the following lines to our HLSL file below the <b>intersectPlane</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based on quadrics equations from https://en.wikipedia.org/wiki/Quadric
@@ -344,7 +344,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/Cylinder_001.jpg" alt="Elliptic cylinder on a 50 scale sphere object with parameters sx = 10, sz = 15 and distance scale = 15" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/Cylinder_001.jpg" alt="Elliptic cylinder on a 50 scale sphere object with parameters \(s_x = 10\), \(s_z = 15\) and distance scale = 15" class="image__caption image__modal round">
 </div>
 
 
@@ -374,7 +374,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     \[b = 2(\frac{O_x D_x}{s_x^2} + \frac{O_y D_y}{s_y^2} + \frac{O_z D_z}{s_z^2}),\]
     \[c = \frac{O_x^2}{s_x^2} + \frac{O_y^2}{s_y^2} + \frac{O_z^2}{s_z^2} - 1.\]
 </div>
-<p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\), \(s_y\) and \(s_z\). Add the following lines to our HLSL file below the <mark>intersectEllipticCylinder</mark> function.</p>
+<p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\), \(s_y\) and \(s_z\). Add the following lines to our HLSL file below the <b>intersectEllipticCylinder</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based on quadrics equations from https://en.wikipedia.org/wiki/Quadric
@@ -411,32 +411,35 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/Ellipsoid_002.jpg" alt="Ellipsoid on a 50 scale sphere object with parameters sx = 10, sy = 15, sz = 20 and distance scale = 20" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/Ellipsoid_002.jpg" alt="Ellipsoid on a 50 scale sphere object with parameters \(s_x = 10\), \(s_y = 15\), \(s_z = 20\) and distance scale = 20" class="image__caption image__modal round">
 </div>
 
 
 <h2 id="hyperboloid">2.3 Hyperboloid</h2>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-    <div class="container image__container round margin--vertical">
+<!-- Probably has a problem with the resizing caused by equations -->
+<div class="grid__columns--exactly3 grid__align--top">
+    <div class="container image__container round">
         <img src="https://upload.wikimedia.org/wikipedia/commons/3/34/Hyperboloid_Of_One_Sheet_Quadric.png" alt="Hyperbolic hyperboloid" class="image__modal round" style="background-color: white;">
-        <div class="caption__text round">
-            Hyperbolic hyperboloid [<a href="#references">2</a>] <div class="caption__text-mathjax">\(s_t > 0\)</div>
-        </div>
+        <span class="caption__text round">
+            Hyperbolic hyperboloid [<a href="#references">2</a>] <span class="caption__text-mathjax">\(s_t > 0\)</span>
+        </span>
     </div>
-    <div class="container image__container round margin--vertical">
+    <div class="container image__container round">
         <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Hyperboloid_Of_Two_Sheets_Quadric.png" alt="Elliptic hyperboloid" class="image__modal round" style="background-color: white;">
-        <div class="caption__text round">
-            Elliptic hyperboloid [<a href="#references">2</a>] <div class="caption__text-mathjax">\(s_t < 0\)</div>
-        </div>
+        <span class="caption__text round">
+            Elliptic hyperboloid [<a href="#references">2</a>] <span class="caption__text-mathjax">\(s_t < 0\)</span>
+        </span>
     </div>
-    <div class="container image__container round margin--vertical">
+    <div class="container image__container round">
         <img src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Elliptical_Cone_Quadric.Png" alt="Elliptic cone" class="image__modal round" style="background-color: white;">
-        <div class="caption__text round">
-            Elliptic cone [<a href="#references">2</a>] <div class="caption__text-mathjax">\(s_t = 0\)</div>
-        </div>
+        <span class="caption__text round">
+            Elliptic cone [<a href="#references">2</a>] <span class="caption__text-mathjax">\(s_t = 0\)</span>
+        </span>
     </div>
 </div>
+
+
 <p>The hyperboloid equation is very similar to the ellipsoid, except that the y component is negative and that we have an additional parameter for type (\(s_t\)). Depending on this type parameter we can have a hyperbolic (\(s_t > 0\)) or elliptic (\(s_t < 0\)) hyperboloid or an elliptic cone (\(s_t = 0\)). The equation for hyperboloids is given by the following [<a href="#references">3</a>]:</p>
 <div class="equation">
     \[\frac{x^2}{s_x^2} - \frac{y^2}{s_y^2} + \frac{z^2}{s_z^2} = s_t.\]
@@ -451,7 +454,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     \[b = 2(\frac{O_x D_x}{s_x^2} - \frac{O_y D_y}{s_y^2} + \frac{O_z D_z}{s_z^2}),\]
     \[c = \frac{O_x^2}{s_x^2} - \frac{O_y^2}{s_y^2} + \frac{O_z^2}{s_z^2} - s_t.\]
 </div>
-<p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), and the type parameter \(s_t\). Add the following lines to our HLSL file below the <mark>intersectEllipsoid</mark> function.</p>
+<p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), and the type parameter \(s_t\). Add the following lines to our HLSL file below the <b>intersectEllipsoid</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based on quadrics equations from https://en.wikipedia.org/wiki/Quadric
@@ -474,7 +477,7 @@ float2 intersectHyperboloid(float3 lineOrigin, float3 lineDir, float3 shapeOrigi
     return quadraticFormula(a, b, c);
 }</code></pre>
 </div>
-<p>To visualise this intersection change the intersection information in our visualise shader to the following. I’ve used <mark>_ShapeParams.w</mark> for the type parameter.</p>
+<p>To visualise this intersection change the intersection information in our visualise shader to the following. I’ve used <b>_ShapeParams.w</b> for the type parameter.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;"><code class="language-hlsl">// Intersect information
 float2 intersect = intersectHyperboloid(lineOrigin, lineDir, shapeOrigin, shapeForwardDir, shapeUpDir, _ShapeParams.xyz, _ShapeParams.w);
@@ -488,7 +491,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/Hyperboloid_001.jpg" alt="Hyperboloid on a 50 scale sphere object with parameters sx = 10, sy = 15, sz = 15, st = 0.5 and distance scale = 15" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/Hyperboloid_001.jpg" alt="Hyperboloid on a 50 scale sphere object with parameters \(s_x = 10\), \(s_y = 15\), \(s_z = 15\), \(s_t = 0.5\) and distance scale = 15" class="image__caption image__modal round">
 </div>
 
 
@@ -524,7 +527,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     \[\displaystyle b = 2(\frac{O_x D_x}{s_x^2} + sign(s_t) \frac{O_z D_z}{s_z^2}) - D_y,\]
     \[\displaystyle c = \frac{O_x^2}{s_x^2} + sign(s_t) \frac{O_z^2}{s_z^2} - O_y.\]
 </div>
-<p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\) and \(s_z\), and the type parameter \(s_t\). Add the following lines to our HLSL file below the <mark>intersectHyperboloid</mark> function.</p>
+<p>Using the quadratic formula we can find up to two intersections. The code below shows how this is implemented in HLSL. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\) and \(s_z\), and the type parameter \(s_t\). Add the following lines to our HLSL file below the <b>intersectHyperboloid</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based on quadrics equations from https://en.wikipedia.org/wiki/Quadric
@@ -563,7 +566,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/Paraboloid_001.jpg" alt="Paraboloid on a 50 scale sphere object with parameters sx = 10, sz = 5, st = 1 and distance scale = 10" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/Paraboloid_001.jpg" alt="Paraboloid on a 50 scale sphere object with parameters \(s_x = 10\), \(s_z = 5\), \(s_t = 1\) and distance scale = 10" class="image__caption image__modal round">
 </div>
 
 
@@ -578,7 +581,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     \[\frac{x^2}{s_x^2} + \frac{z^2}{s_z^2} \leq 1.\]
 </div>
 <p>To check if a point is within the ellipse we substitute the x and z coordinate with our plane intersection coordinates.</p>
-<p>The HLSL implementation for the ellipse thus starts the same as the plane. Only the end is different where check if the intersection point is within an ellipse, if it is we return the intersection, if not we return the max float. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\) that define the ellipse. Add the following lines to our HLSL file below the <mark>intersectParaboloid</mark> function.</p>
+<p>The HLSL implementation for the ellipse thus starts the same as the plane. Only the end is different where check if the intersection point is within an ellipse, if it is we return the intersection, if not we return the max float. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\) that define the ellipse. Add the following lines to our HLSL file below the <b>intersectParaboloid</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float intersectEllipse(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, float3 shapeForwardDir, float3 shapeUpDir, float2 scaleParams)
@@ -611,7 +614,7 @@ if(intersect < maxLineDst && intersect > 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/Ellipse_001.jpg" alt="Ellipse on a 50 scale sphere object with parameters sx = 15, sz = 20 and distance scale = 20" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/Ellipse_001.jpg" alt="Ellipse on a 50 scale sphere object with parameters \(s_x = 15\), \(s_z = 20\) and distance scale = 20" class="image__caption image__modal round">
 </div>
 
 
@@ -620,7 +623,7 @@ if(intersect < maxLineDst && intersect > 0)
 <p>Now that we have the ellipse function we can use it for other things like a capped cylinder, which consists of the infinite elliptical cylinder and two ellipses as caps.</p>
 <p>To cap the cylinder we define it’s height through a scale parameter \(s_y\), meaning that the top cap is located at \(y = 0.5 s_y\) and the bottom cap at \(y = -0.5 s_y\). Anything above the top cap or below the bottom cap is no longer part of the shape.</p>
 <p>In order to implement this we will first do the elliptical cylinder intersection and check if this intersection is between the caps, if not we set the distance to the max float. Next we’ll calculate the intersections for both ellipses and compare all 4 possible intersections. Luckily a capped cylinder can only have 2 intersections, the other 2 possible intersections will return the max float. Thus we can calculate and return the minimum and maximum distance intersections and return the 2 values like all our other functions.</p>
-<p>The HLSL implementation follows the method above. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\), \(s_y\) and \(s_z\), where \(s_x\) and \(s_z\) define the scales for both the cylinder and the ellipses and \(s_y\) the height of the cylinder. Add the following lines to our HLSL file below the <mark>intersectEllipse</mark> function.</p>
+<p>The HLSL implementation follows the method above. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\), \(s_y\) and \(s_z\), where \(s_x\) and \(s_z\) define the scales for both the cylinder and the ellipses and \(s_y\) the height of the cylinder. Add the following lines to our HLSL file below the <b>intersectEllipse</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float2 intersectCappedCylinder(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, float3 shapeForwardDir, float3 shapeUpDir, float3 scaleParams)
@@ -686,7 +689,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/CappedCylinder_001.jpg" alt="Capped cylinder on a 50 scale sphere object with parameters sx = 15, sy = 10, sz = 20 and distance scale = 20" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/CappedCylinder_001.jpg" alt="Capped cylinder on a 50 scale sphere object with parameters \(s_x = 15\), \(s_y = 10\), \(s_z = 20\) and distance scale = 20" class="image__caption image__modal round">
 </div>
 <div class="note__base round">
     <p>A slightly different version of the capped cylinder was used in my <a href="{{ site.baseurl}}/2021/04/20/supermassive-black-hole-tutorial">supermassive black hole shader</a>. There it was used to describe the accretion disc circling around the centre of the black hole. The only difference being an additional condition of an inner radius, where there is no cylinder or ellipse in the middle.</p>
@@ -702,7 +705,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     \[s_{e,z} \rightarrow z (x=0) = s_z \sqrt{1 - \frac{h^2}{s_y^2}}.\]
 </div>
 <p>Here \(s_{e,x}\) denotes the x-scale parameter of the ellipse, \(s_x\) the x-scale parameter of the ellipsoid and \(h\) the height position of the cap. Note that, because an ellipsoid has a finite height determined by \(s_y\), we can remap it to a range of -1 to 1 range (-1 being the bottom of the ellipsoid and 1 the top) which is nicer to handle. In that case the equations would be of form \(s_{e,x} = s_x \sqrt{1 - h^2}\), with the new \(h\) between -1 and 1.</p>
-<p>The HLSL implementation is similar to the capped cylinder, meaning we first find the ellipsoid intersections and check if they are between the caps followed by a comparison with the two ellipses. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), and two cap heights which get clamped between -1 and 1. Add the following lines to our HLSL file below the <mark>intersectCappedCylinder</mark> function.</p>
+<p>The HLSL implementation is similar to the capped cylinder, meaning we first find the ellipsoid intersections and check if they are between the caps followed by a comparison with the two ellipses. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), and two cap heights which get clamped between -1 and 1. Add the following lines to our HLSL file below the <b>intersectCappedCylinder</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float2 intersectCappedEllipsoid(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, float3 shapeForwardDir, float3 shapeUpDir, float3 scaleParams, float2 capHeight)
@@ -763,7 +766,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     return float2(minDst,maxDst);
 }</code></pre>
 </div>
-<p>To visualise this intersection change the intersection information in our visualise shader to the following. We use the <mark>_CapHeights</mark> float2 property to set the heights of the caps.</p>
+<p>To visualise this intersection change the intersection information in our visualise shader to the following. We use the <b>_CapHeights</b> float2 property to set the heights of the caps.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;"><code class="language-hlsl">// Intersect information
 float2 intersect = intersectCappedEllipsoid(lineOrigin, lineDir, shapeOrigin, shapeForwardDir, shapeUpDir, _ShapeParams.xyz, _CapHeights);
@@ -777,7 +780,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/CappedEllipsoid_001.jpg" alt="Capped ellipsoid on a 50 scale sphere object with parameters sx = 15, sy = 10, sz = 20, distance scale = 20 and cap heights 0 and 0.75" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/CappedEllipsoid_001.jpg" alt="Capped ellipsoid on a 50 scale sphere object with parameters \(s_x = 15\), \(s_y = 10\), \(s_z = 20\), distance scale = 20 and cap heights 0 and 0.75" class="image__caption image__modal round">
 </div>
 <div class="note__base round">
     <p>The capped ellipsoid function was used in my <a href="{{ site.baseurl }}/2021/05/04/potion-showcase">potions showcase</a>, where the volume of the potion is a sphere with a single cap. The shape (and thus cap) direction was handled by a separate c# script on the gameObject that modifies shapeUpDir.</p>
@@ -794,7 +797,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     \[s_{e,z} \rightarrow z (x=0) = s_z \sqrt{s_t + \frac{h^2}{s_y^2}}.\]
 </div>
 <p>Here \(s_{e,x}\) denotes the x-scale parameter of the ellipse, \(s_x\) the x-scale parameter of the hyperboloid, \(s_t\) the type parameter of the hyperboloid and \(h\) the height position of the cap. Because we’re only looking at the lower half of the hyperboloid we have the extra condition that \(h \leq 0\).</p>
-<p>The HLSL implementation is again similar to the capped cylinder and capped ellipsoid, meaning we first find the hyperboloid intersections and check if they are between the caps followed by a comparison with the two ellipses. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), type parameter \(s_t\), and two cap heights which get clamped between <mark>-maxLineDst</mark> and 0. Add the following lines to our HLSL file below the <mark>intersectCappedEllipsoid</mark> function.</p>
+<p>The HLSL implementation is again similar to the capped cylinder and capped ellipsoid, meaning we first find the hyperboloid intersections and check if they are between the caps followed by a comparison with the two ellipses. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, the scale parameters \(s_x\), \(s_y\) and \(s_z\), type parameter \(s_t\), and two cap heights which get clamped between <b>-maxLineDst</b> and 0. Add the following lines to our HLSL file below the <b>intersectCappedEllipsoid</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float2 intersectCappedHalfHyperboloid(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, float3 shapeForwardDir, float3 shapeUpDir, float3 scaleParams, float typeParam, float2 capHeight)
@@ -870,7 +873,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/CappedHalfHyperboloid_001.jpg" alt="Capped half hyperboloid on a 50 scale sphere object with parameters sx = 5, sy = 5, sz = 5, st = 0, distance scale = 15 and cap heights -3 and -15" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/CappedHalfHyperboloid_001.jpg" alt="Capped half hyperboloid on a 50 scale sphere object with parameters \(s_x = 5\), \(s_y = 5\), \(s_z = 5\), \(s_t = 0\), distance scale = 15 and cap heights -3 and -15" class="image__caption image__modal round">
 </div>
 
 
@@ -882,7 +885,7 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
     \[|z| \leq s_z.\]
 </div>
 <p>Here \(|x|\) stands for the absolute value of x. To check if a point is within the rectangle we substitute the x and z coordinate with our plane intersection coordinates.</p>
-<p>The HLSL implementation for the rectangle thus starts the same as the plane. Only the end is different where check if the intersection point is within an rectangle, if it is we return the intersection, if not we return the max float. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\) that define the bounds of the rectangle. Note that the rectangle’s length is \(2 s_x\). Add the following lines to our HLSL file below the <mark>intersectCappedHalfHyperboloid</mark> function.</p>
+<p>The HLSL implementation for the rectangle thus starts the same as the plane. Only the end is different where check if the intersection point is within an rectangle, if it is we return the intersection, if not we return the max float. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\) and \(s_z\) that define the bounds of the rectangle. Note that the rectangle’s length is \(2 s_x\). Add the following lines to our HLSL file below the <b>intersectCappedHalfHyperboloid</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float intersectRectangle(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, float3 shapeForwardDir, float3 shapeUpDir, float2 scaleParams)
@@ -915,15 +918,15 @@ if(intersect < maxLineDst && intersect > 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/Rectangle_001.jpg" alt="Rectangle on a 50 scale sphere object with parameters sx = 10, sz = 20 and distance scale = 20" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/Rectangle_001.jpg" alt="Rectangle on a 50 scale sphere object with parameters \(s_x = 10\), \(s_z = 20\) and distance scale = 20" class="image__caption image__modal round">
 </div>
 
 
 <h2 id="box">3.6 Box</h2>
 
-<p>A box simply consists of 6 rectangles that each form a face. In this section we will find the intersection of a box through comparing 6 rectangle intersections, but I want to let you know that this is not the most optimal way of finding box intersections. If you are looking for a more optimal way I’d suggest looking at the boxIntersection function by <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a>.</p>
+<p>A box simply consists of 6 rectangles that each form a face. In this section we will find the intersection of a box through comparing 6 rectangle intersections, but I want to let you know that this is not the most optimal way of finding box intersections. If you are looking for a more optimal way I’d suggest looking at the boxIntersection function by <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank"><em>Inigo Quilez</em></a>.</p>
 <p>For our approach there isn’t really more to it than doing a rectangle intersection for the up, down, forward, backward, right and left face of the box. You only need to remind yourself what the rectangle’s up direction and origin would be, and how the scale parameters should be ordered with respect to the forward direction.</p>
-<p>The HLSL implementation thus consists of 6 rectangle intersections, which are then compared using min and max functions. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\), \(s_y\) and \(s_z\) that define the bounds of the box. Note that the box’s length is \(2 s_x\). Add the following lines to our HLSL file below the <mark>intersectCappedHalfHyperboloid</mark> function.</p>
+<p>The HLSL implementation thus consists of 6 rectangle intersections, which are then compared using min and max functions. As input we provide the line origin, line direction, shape origin, shape forward direction, shape up direction, and the scale parameters \(s_x\), \(s_y\) and \(s_z\) that define the bounds of the box. Note that the box’s length is \(2 s_x\). Add the following lines to our HLSL file below the <b>intersectCappedHalfHyperboloid</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float2 intersectBox(float3 lineOrigin, float3 lineDir, float3 shapeOrigin, float3 shapeForwardDir, float3 shapeUpDir, float3 scaleParams)
@@ -973,21 +976,21 @@ if(frontIntersection < maxLineDst && frontIntersection >= 0)
 }</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/math-line-intersections/Box_001.jpg" alt="Box on a 50 scale sphere object with parameters sx = 10, sy = 5, sz = 20 and distance scale = 20" class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/math-line-intersections/Box_001.jpg" alt="Box on a 50 scale sphere object with parameters \(s_x = 10\), \(s_y = 5\), \(s_z = 20\) and distance scale = 20" class="image__caption image__modal round">
 </div>
 
 
 <h1 id="conclusion">4 Conclusion</h1>
 
 <p>While there are still more combinations to add to this list I think 11 shape functions is a good start. This tutorial in of itself is obviously not that exiting from a visual perspective, but these functions can be used to create more interesting shaders like my <a href="{{ site.baseurl }}/2021/04/20/supermassive-black-hole-tutorial">black hole</a> shader or <a href="{{ site.baseurl }}/2021/05/04/potion-showcase">potion</a> shader. Be sure to show me your shaders that implement these functions by tagging me on twitter (<a href="https://twitter.com/KelvinvanHoorn" target="_blank">@kelvinvanhoorn</a>) or on reddit (<a href="https://www.reddit.com/user/Radagasd" target="_blank">u/Radagasd</a>). Also, while not necessary I’ll very much appreciate it if you credit me when using these functions in your projects.</p>
-<p>I do want to emphasise that while these functions give the correct answer, they aren’t necessarily the most optimal way (computation-wise) of getting there. If you’re interested you could take a look at Inigo Quilez’s functions <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">here</a> that covers most functions in a more optimal way.</p>
+<p>I do want to emphasise that while these functions give the correct answer, they aren’t necessarily the most optimal way (computation-wise) of getting there. If you’re interested you could take a look at <em>Inigo Quilez’s</em> functions <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">here</a> that covers most functions in a more optimal way.</p>
 <p>Thank you very much for reading and I hope you learned something new. If you want to support me financially you can do so using my <a href="https://ko-fi.com/kelvinvanhoorn" target="_blank">ko-fi</a> page.</p>
 
 <h1 id="references">References</h1>
 
 <ul class="n">
-    <li>Plane equation from Wikipedia’s page on <a href="https://en.wikipedia.org/wiki/Plane_(geometry)#Point%E2%80%93normal_form_and_general_form_of_the_equation_of_a_plane" target="_blank">planes</a>.</li>
-    <li>Images made by Sam Derbyshire for Wikipedia’s page on <a href="https://en.wikipedia.org/wiki/Quadric" target="_blank">quadric surfaces</a>.</li>
-    <li>Equations for real quadric surfaces in Euclidean space from Wikipedia’s page on <a href="https://en.wikipedia.org/wiki/Quadric#Euclidean_space" target="_blank">quadrics</a>.</li>
-    <li><a href="https://keisan.casio.com/keisan/image/volume%20of%20an%20ellipsoidal%20cap.pdf" target="_blank">Overview</a> of finding the ellipses on an ellipsoid by Keisan</li>
+    <li>Plane equation from <em>Wikipedia’s</em> page on <a href="https://en.wikipedia.org/wiki/Plane_(geometry)#Point%E2%80%93normal_form_and_general_form_of_the_equation_of_a_plane" target="_blank">planes</a>.</li>
+    <li>Images made by <em>Sam Derbyshire</em> found on <em>Wikipedia’s</em> page on <a href="https://en.wikipedia.org/wiki/Quadric" target="_blank">quadric surfaces</a>.</li>
+    <li>Equations for real quadric surfaces in <em>Euclidean space</em> from <em>Wikipedia’s</em> page on <a href="https://en.wikipedia.org/wiki/Quadric#Euclidean_space" target="_blank">quadrics</a>.</li>
+    <li><a href="https://keisan.casio.com/keisan/image/volume%20of%20an%20ellipsoidal%20cap.pdf" target="_blank">Overview</a> of finding the ellipses on an ellipsoid by <em>Keisan</em></li>
 </ul>

@@ -12,7 +12,7 @@ preview-video: assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.m
 
 <p>Due to the interest in my supermassive black hole (SMBH) shader I’ve decided to write a tutorial on it. Note that it is my first tutorial, and thus the format will be a bit janky as I try to figure out a good way of communicating my process. Also, I’m not a professional when it comes to writing shaders and thus do not take any of this as best practices or the “correct” way of making them.</p>
 <p>In this tutorial I will walk you through the individual components and process of recreating my SMBH shader. It combines raymarching and the law of gravity to simulate the iconic visualisation of black holes.</p>
-<p>This tutorial was made with Unity 2020.3.1f1 and the Universal Render Pipeline (URP). Note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/Supermassive-black-hole-shader-tutorial" target="_blank">here</a>, including the initial and finished shader.</p>
+<p>This tutorial was made with <b>Unity 2020.3.1f1</b> and the <b>Universal Render Pipeline</b> (URP). The shaders are written in <b>HLSL</b>, but note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/Supermassive-black-hole-shader-tutorial" target="_blank"><b>here</b></a>, including the initial and finished shader.</p>
 
 
 <h1>Acknowledgements</h1>
@@ -20,13 +20,13 @@ preview-video: assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.m
 <p>Before I get into the meat of things I would like to acknowledge some of my inspirations for this specific tutorial and add some general acknowledgements for tutorials that helped me get here.</p>
 <ul>
     <li>The artistic aspects and overal visuals were mainly guided by <a href="https://t.co/lHNfMTqUxx?amp=1" target="_blank">this</a> stunning visualisation done by NASA.</li>
-    <li>The math behind finding the intersections of cylinders and spheres are based on <a href="https://t.co/BwJgivbrcA?amp=1" target="_blank">these</a> slides by Prof. Denis Zorin of the New York University and <a href="https://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection/#:~:text=When%20the%20ray%20and%20sphere,equations%20and%20solving%20for%20t." target="_blank">this</a> page by Victor Li respectively.</li>
-    <li>In order to change the HDR color in shader I’ve used code from <a href="https://forum.unity.com/threads/how-to-change-hdr-colors-intensity-via-shader.531861/#post-3501895" target="_blank">this</a> forum post by <a href="https://bgolus.medium.com/" target="_blank">Ben Golus</a></li>
+    <li>The math behind finding the intersections of cylinders and spheres are based on <a href="https://t.co/BwJgivbrcA?amp=1" target="_blank">these</a> slides by Prof. <em>Denis Zorin</em> of the <em>New York University</em> and <a href="https://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection/#:~:text=When%20the%20ray%20and%20sphere,equations%20and%20solving%20for%20t." target="_blank">this</a> page by <em>Victor Li</em> respectively.</li>
+    <li>In order to change the HDR color in shader I’ve used code from <a href="https://forum.unity.com/threads/how-to-change-hdr-colors-intensity-via-shader.531861/#post-3501895" target="_blank">this</a> forum post by <a href="https://bgolus.medium.com/" target="_blank"><em>Ben Golus</em></a></li>
 </ul>
 <p>In more general terms I would like to thank the following tutorial creators</p>
 <ul>
-    <li><a href="https://www.alanzucconi.com/" target="_blank">Alan Zucconi</a>, <a href="https://minionsart.github.io/tutorials/" target="_blank">Joyce</a> (Minions Art) and <a href="https://catlikecoding.com/unity/tutorials/" target="_blank">Jasper Flick</a> (Catlike Coding), whose tutorials helped me get into shader programming. Obviously the format of this tutorial is also inspired by theirs.</li>
-    <li><a href="https://www.youtube.com/user/Cercopithecan" target="_blank">Sebastian Lague</a> and specifically his coding adventure on <a href="https://www.youtube.com/watch?v=4QOcCGI6xOU&t=1s" target="_blank">clouds</a>, which is what got me started on raymarching shaders.</li>
+    <li><a href="https://www.alanzucconi.com/" target="_blank"><em>Alan Zucconi</em></a>, <a href="https://minionsart.github.io/tutorials/" target="_blank"><em>Joyce</em></a> (<em>Minions Art</em>) and <a href="https://catlikecoding.com/unity/tutorials/" target="_blank"><em>Jasper Flick</em></a> (<em>Catlike Coding</em>), whose tutorials helped me get into shader programming. Obviously the format of this tutorial is also inspired by theirs.</li>
+    <li><a href="https://www.youtube.com/user/Cercopithecan" target="_blank"><em>Sebastian Lague</em></a> and specifically his coding adventure on <a href="https://www.youtube.com/watch?v=4QOcCGI6xOU&t=1s" target="_blank">clouds</a>, which is what got me started on raymarching shaders.</li>
 </ul>
 
 
@@ -65,10 +65,10 @@ preview-video: assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.m
 
 <h1 id="shader-setup">1 Shader setup</h1>
 
-<p><em>If you’re using the project files you can skip this section and start at 1.1 Ray information by opening SMBH_Initial.</em></p>
-<p>This shader will be written as a HLSL program and applied to the basic Unity sphere. In our scene we will only have a camera, a post-processing volume (for some bloom) and a Unity sphere with the scale set to (5, 5, 5) to which we will apply our shader. Don’t forget to set post processing to true on our camera, like I always do.</p>
-<p>The basic shader setup will look as follows from the code block. It doesn’t do much yet but it contains all the vertex information we’ll need, most notably the centre and scale of our sphere gameObject. The fragment shader simply returns a red color for now. Note that we’ve also set the culling to front and the queue to transparent, this will be necessary if we want to move into the black holes space and to get data on what’s behind it later.</p>
-<p>I’ve also included the opaque texture, a rendering of the screen before transparent objects are drawn, which will be used to distort the area around our black hole. However, for this to work in URP we will need to activate the opaque texture in the <mark>Universal Render Pipeline Asset</mark>, found in the settings folder when we create a new URP project.</p>
+<p><em>If you’re using the project files you can skip this section and start at <a href="#ray-information">1.1</a> Ray information by opening SMBH_Initial.</em></p>
+<p>This shader will be written as a HLSL program and applied to the basic <em>Unity</em> sphere. In our scene we will only have a camera, a post-processing volume (for some bloom) and a <em>Unity</em> sphere with the scale set to (5, 5, 5) to which we will apply our shader. Don’t forget to set post processing to true on our camera, like I always do.</p>
+<p>The basic shader setup will look as follows from the code block. It doesn’t do much yet but it contains all the vertex information we’ll need, most notably the centre and scale of our sphere <em>gameObject</em>. The fragment shader simply returns a red color for now. Note that we’ve also set the culling to front and the queue to transparent, this will be necessary if we want to move into the black holes space and to get data on what’s behind it later.</p>
+<p>I’ve also included the opaque texture, a rendering of the screen before transparent objects are drawn, which will be used to distort the area around our black hole. However, for this to work in URP we will need to activate the opaque texture in the <b>Universal Render Pipeline Asset</b>, found in the settings folder when we create a new URP project.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">Shader "KelvinvanHoorn/SMBH"
@@ -139,9 +139,9 @@ preview-video: assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.m
 </div>
 
 
-<h2 id="ray-information">1.2 Ray information</h2>
+<h2 id="ray-information">1.1 Ray information</h2>
 
-<p>In order to start raytracing we need to know where our ray starts (to calculate distances) and what direction it has. We determine this using the camera’s position, as our rays travel from there, by adding the highlighted code to the <mark>frag</mark> function.</p>
+<p>In order to start raytracing we need to know where our ray starts (to calculate distances) and what direction it has. We determine this using the camera’s position, as our rays travel from there, by adding the highlighted code to the <b>frag</b> function.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;" data-line="3-5"><code class="language-hlsl">float4 frag (v2f IN) : SV_Target
 {
@@ -152,7 +152,7 @@ preview-video: assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.m
     return float4(1,0,0,1);
 }</code></pre>
 </div>
-<p>Before we tackle a disc let’s first raytrace an outer sphere to which we can confine any further raytracing. For this we want to know when our ray intersects a sphere. To do this add the following function between the <mark>vert</mark> and <mark>frag</mark> functions. I won’t go into the details of this function here, but you can read up on it following the commented link, or look at my <a href="{{ site.baseurl }}/2021/05/11/math-line-intersections">other tutorial</a> that is all about finding intersections.</p>
+<p>Before we tackle a disc let’s first raytrace an outer sphere to which we can confine any further raytracing. For this we want to know when our ray intersects a sphere. To do this add the following function between the <b>vert</b> and <b>frag</b> functions. I won’t go into the details of this function here, but you can read up on it following the commented link, or look at my <a href="{{ site.baseurl }}/2021/05/11/math-line-intersections">other tutorial</a> that is all about finding intersections.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based upon https://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection/#:~:text=When%20the%20ray%20and%20sphere,equations%20and%20solving%20for%20t.
@@ -184,8 +184,8 @@ float2 intersectSphere(float3 rayOrigin, float3 rayDir, float3 centre, float rad
     return float2(maxFloat, 0);
 }</code></pre>
 </div>
-<p>Now to use this function we’ll need to add some extra code to the <mark>frag</mark> function. First we determine the radius of our raytraced sphere, let’s set it to the smallest scale of our sphere gameObject. By passing the information of the raytracing sphere and our ray we can determine if, how far, and how long they intersect.</p>
-<p>In order to show the raytraced sphere we’re going to lerp between a solid color and the opaque texture. To do this we calculate the appropriate UV of our screen to sample the opaque texture and set our lerp interpolator (<mark>transmittance</mark>) to 1 if we find an intersection. Add the highlighted code just below our ray information in the <mark>frag</mark> function and change the return to our new lerped color.</p>
+<p>Now to use this function we’ll need to add some extra code to the <b>frag</b> function. First we determine the radius of our raytraced sphere, let’s set it to the smallest scale of our sphere <em>gameObject</em>. By passing the information of the raytracing sphere and our ray we can determine if, how far, and how long they intersect.</p>
+<p>In order to show the raytraced sphere we’re going to lerp between a solid color and the opaque texture. To do this we calculate the appropriate UV of our screen to sample the opaque texture and set our lerp interpolator (<b>transmittance</b>) to 1 if we find an intersection. Add the highlighted code just below our ray information in the <b>frag</b> function and change the return to our new lerped color.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="4-18"><code class="language-hlsl">float3 rayOrigin = _WorldSpaceCameraPos;
@@ -207,16 +207,16 @@ float3 backgroundCol = SampleSceneColor(screenUV);
 float3 col = lerp(backgroundCol, float3(1,0,0), transmittance);
 return float4(col,1);</code></pre>
 </div>
-<p>To see if it works we can change one of the scales of the sphere gameObject and see that the raytraced sphere changes its radius to the smallest scale. Congratulations, we made our first raytracing shader.</p>
+<p>To see if it works we can change one of the scales of the sphere <em>gameObject</em> and see that the raytraced sphere changes its radius to the smallest scale. Congratulations, we made our first raytracing shader.</p>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_02.png" alt="Raytraced sphere, where the radius equals the smallest scale of our sphere gameObject. The x-scale has been set to 2 instead of 5." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_02.png" alt="Raytraced sphere, where the radius equals the smallest scale of our sphere <em>gameObject</em>. The x-scale has been set to 2 instead of 5." class="image__caption image__modal round">
 </div>
 
 
 <h1 id="raytracing-a-disc">2 Raytracing a disc</h1>
 
 <p>Raytracing a disc? I thought we were going to make a black hole? Well, you can’t actually see a black hole, you can only see how it affects its environment. To do that we’ll be making an accretion disc (a disc of hot matter that spins around the black hole).</p>
-<p>To raytrace our disc we need three more intersection functions, one for an infinite cylinder, one for an infinite plane and one for the disc (which depends on the first two). Add the following three functions below the <mark>intersectSphere</mark> function. Again I wont go over the details of these functions here, but you can read up on it following the commented links, or look at my <a href="{{ site.baseurl }}/2021/05/11/math-line-intersections">other tutorial</a> that is all about finding intersections.</p>
+<p>To raytrace our disc we need three more intersection functions, one for an infinite cylinder, one for an infinite plane and one for the disc (which depends on the first two). Add the following three functions below the <b>intersectSphere</b> function. Again I wont go over the details of these functions here, but you can read up on it following the commented links, or look at my <a href="{{ site.baseurl }}/2021/05/11/math-line-intersections">other tutorial</a> that is all about finding intersections.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based upon https://mrl.cs.nyu.edu/~dzorin/rend05/lecture2.pdf
@@ -310,7 +310,7 @@ float intersectDisc(float3 rayOrigin, float3 rayDir, float3 p1, float3 p2, float
     return discDst;
 }</code></pre>
 </div>
-<p>In order to define our disc we’ll want to know its inner and outer radius, width, direction and where the top and bottom caps are. The first three we’ll define through properties, add the following properties near the top of the file and declare them just below the <mark>vert</mark> function (but before the other functions).</p>
+<p>In order to define our disc we’ll want to know its inner and outer radius, width, direction and where the top and bottom caps are. The first three we’ll define through properties, add the following properties near the top of the file and declare them just below the <b>vert</b> function (but before the other functions).</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="3-5, 10-12"><code class="language-hlsl">Properties
@@ -326,7 +326,7 @@ float _DiscWidth;
 float _DiscOuterRadius;
 float _DiscInnerRadius;</code></pre>
 </div>
-<p>The disc’s direction and the position of the caps we’ll calculate in the <mark>frag</mark> function, where we set the direction equal to the local y-axis of our sphere gameObject. Add the highlighted lines just below the outerSphereIntersection. Here p1 and p2 are the bottom and top cap positions respectively.</p>
+<p>The disc’s direction and the position of the caps we’ll calculate in the <b>frag</b> function, where we set the direction equal to the local y-axis of our sphere <em>gameObject</em>. Add the highlighted lines just below the outerSphereIntersection. Here <b>p1</b> and <b>p2</b> are the bottom and top cap positions respectively.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;" data-line="3-8"><code class="language-hlsl">float2 outerSphereIntersection = intersectSphere(IN.centre, sphereRadius, rayOrigin, rayDir);
 
@@ -337,7 +337,7 @@ float3 p2 = IN.centre + 0.5 * _DiscWidth * discDir;
 float discRadius = sphereRadius * _DiscOuterRadius;
 float innerRadius = sphereRadius * _DiscInnerRadius;</code></pre>
 </div>
-<p>Now in order to raytrace our disc we’ll change our <mark>transmittance</mark> value only if it both intersects with the outer sphere and with the disc. Go back to the <mark>frag</mark> function and change the commented code into the new highlighted code. We should now be able to see a red disc of which we can change the radius and width through properties and the direction by rotating the sphere gameObject.</p>
+<p>Now in order to raytrace our disc we’ll change our <b>transmittance</b> value only if it both intersects with the outer sphere and with the disc. Go back to the <b>frag</b> function and change the commented code into the new highlighted code. We should now be able to see a red disc of which we can change the radius and width through properties and the direction by rotating the sphere <em>gameObject</em>.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="5-13"><code class="language-hlsl">// Ray intersects with the outer sphere
@@ -362,7 +362,7 @@ if(outerSphereIntersection.x < maxFloat)
 <h2 id="uv-mapping">2.1 UV mapping</h2>
 
 <p>So we have a disc, but a simple red disc is a bit boring. In order to apply some texture to it we will have to define our UV space. Because we’re working with a disc that will be thin I’ve chosen to make a polar coordinate mapping of the disc. This is a 2D mapping where the U will be our radial distance from the centre, and the V will be the angular distance with respect to some vector tangent to the disc. Note that our texture will thus be stretched along the width, but this is no problem as it will be a very thin disc.</p>
-<p>Before we do any mapping we need to get some more information from our raytraced disc. We need to know where our ray intersects the disc, let’s call it the sample position. Add the <mark>samplePos</mark> variable to our Ray information and change it where we change the <mark>transmittance</mark>.</p>
+<p>Before we do any mapping we need to get some more information from our raytraced disc. We need to know where our ray intersects the disc, let’s call it the sample position. Add the <b>samplePos</b> variable to our Ray information and change it where we change the <b>transmittance</b>.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;" data-line="3, 9"><code class="language-hlsl">//Ray information
 float transmittance = 0;
@@ -375,7 +375,7 @@ if(discDst < maxFloat)
     samplePos = rayOrigin + rayDir * discDst;
 }</code></pre>
 </div>
-<p>In order to get the UV we’ll be adding two new functions, <mark>remap</mark> and <mark>discUV</mark>. The <mark>remap</mark> function simply remaps a float from a given range to a new range. The <mark>discUV</mark> function calculates our polar coordinates and remaps them to a 0 to 1 range. Add these two functions above the <mark>frag</mark> function.</p>
+<p>In order to get the UV we’ll be adding two new functions, <b>remap</b> and <b>discUV</b>. The <b>remap</b> function simply remaps a float from a given range to a new range. The <b>discUV</b> function calculates our polar coordinates and remaps them to a 0 to 1 range. Add these two functions above the <b>frag</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float remap(float v, float minOld, float maxOld, float minNew, float maxNew) {
@@ -404,7 +404,7 @@ float2 discUV(float3 planarDiscPos, float3 discDir, float3 centre, float radius)
     return float2(u,v);
 }</code></pre>
 </div>
-<p>In order to check if everything is working alright we’ll display the UV as a color on the disc. But before we do that we also need retrieve the planar part of our <mark>samplePos</mark> before calling <mark>discUV</mark> in the <mark>frag</mark> function. After the raytracing but before the opaque texture section add the highlighted lines and change the col lerp.</p>
+<p>In order to check if everything is working alright we’ll display the UV as a color on the disc. But before we do that we also need retrieve the planar part of our <b>samplePos</b> before calling <b>discUV</b> in the <b>frag</b> function. After the raytracing but before the opaque texture section add the highlighted lines and change the col lerp.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="4-10, 15"><code class="language-hlsl">if(outerSphereIntersection.x < maxFloat)
@@ -428,14 +428,15 @@ return float4(col,1);</code></pre>
     <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_04.png" alt="Raytrace disc as seen from above with the color’s red and green channel set to the UV coordinates." class="image__caption image__modal round">
 </div>
 <div class="note__base round">
-    <p>Note that there is an abrupt change in value on the left. This is caused by the atan2 function in our discUV function. This discontinuity will cause problems when using mipmaps in our textures. Because of the scope of this tutorial we won’t fix it and simply turn off mipmaps in our texture later on. However, if you are interested I would recommend looking at <a href="https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b" target="_blank">this</a> recent article by Ben Golus that discusses exactly this problem.</p>
+    <p>Note that there is an abrupt change in value on the left. This is caused by the <b>atan2</b> function in our <b>discUV</b> function. This discontinuity will cause problems when using mipmaps in our textures. Because of the scope of this tutorial we won’t fix it and simply turn off mipmaps in our texture later on. However, if you are interested I would recommend looking at <a href="https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b" target="_blank">this</a> recent article by <em>Ben Golus</em> that discusses exactly this problem.</p>
 </div>
 
 
 <h2 id="applying-a-texture">2.2 Applying a texture</h2>
 
-<p>For the texture I’ll use some tileable Perlin noise but it can be anything we want. We can generate such a texture on <a href="http://kitfox.com/projects/perlinNoiseMaker/" tabindex="_blank">this website</a>, made by Mark McKay. I’ve changed my cell size to 32, the levels to 3 and attenuation to 2. Be sure to turn off Generate Mip Maps once we’ve imported the texture to Unity. <em>If your using the project files you can find the texture in the textures folder with the name noiseTexture.</em></p>
-<p>Now to get our texture add it to the properties and declare them just below the <mark>vert</mark> function, similar to our disc properties.</p>
+<p><em>If your using the project files you can find the texture in the textures folder with the name noiseTexture.</em></p>
+<p>For the texture I’ll use some tileable <em>Perlin noise</em> but it can be anything we want. We can generate such a texture on <a href="http://kitfox.com/projects/perlinNoiseMaker/" tabindex="_blank">this website</a>, made by <em>Mark McKay</em>. I’ve changed my cell size to 32, the levels to 3 and attenuation to 2. Be sure to turn off Generate Mip Maps once we’ve imported the texture to <em>Unity</em>.</p>
+<p>Now to get our texture add it to the properties and declare them just below the <b>vert</b> function, similar to our disc properties.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="4, 10-12"><code class="language-hlsl">Properties
@@ -451,7 +452,7 @@ Texture2D<float4> _DiscTex;
 SamplerState sampler_DiscTex;
 float4 _DiscTex_ST;</code></pre>
 </div>
-<p>Now we can sample this texture in the <mark>frag</mark> function and adjust our <mark>transmittance</mark> accordingly by adding the highlighted code after we’ve set the UV. Note that we multiply <mark>uv</mark> by <mark>_DiscTex_ST.xy</mark>, this way we can use the tiling properties in the Unity editor to tile our texture. Be sure to keep the Y tiling an integer, otherwise our texture won’t tile seamlessly. Also, don’t forget to actually set the texture in the Unity editor.</p>
+<p>Now we can sample this texture in the <b>frag</b> function and adjust our <b>transmittance</b> accordingly by adding the highlighted code after we’ve set the UV. Note that we multiply <b>uv</b> by <b>_DiscTex_ST.xy</b>, this way we can use the tiling properties in the <em>Unity</em> editor to tile our texture. Be sure to keep the Y tiling an integer, otherwise our texture won’t tile seamlessly. Also, don’t forget to actually set the texture in the <em>Unity</em> editor.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="6, 11-13"><code class="language-hlsl">if(samplePos.x < maxFloat)
@@ -475,7 +476,7 @@ return float4(col,1);</code></pre>
 
 <h2 id="texture-animation">2.3 Texture animation</h2>
 
-<p>Our accretion disc should be spinning, so let’s add that. Due to our polar coordinate UV this is actually really simple, we just increase our V over time. To control this let’s add a speed property and add it to our V coordinate in the <mark>frag</mark> function.</p>
+<p>Our accretion disc should be spinning, so let’s add that. Due to our polar coordinate UV this is actually really simple, we just increase our V over time. To control this let’s add a speed property and add it to our V coordinate in the <b>frag</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="3, 9, 16"><code class="language-hlsl">Properties{
@@ -506,7 +507,7 @@ if(samplePos.x < maxFloat)
 
 <h2 id="adding-color-and-physics">2.4 Adding color and physics</h2>
 
-<p>Our red disc is looking a lot better, but it’s a bit hard to see and a bit red. Let’s do some interesting things with the color, like change it’s hue and intensity depending on the distance to the centre and alter its intensity further based on to the Doppler beaming shown in the NASA visualisation.</p>
+<p>Our red disc is looking a lot better, but it’s a bit hard to see and a bit red. Let’s do some interesting things with the color, like change it’s hue and intensity depending on the distance to the centre and alter its intensity further based on to the <em>Doppler beaming</em> shown in the NASA visualisation.</p>
 <p>Let’s start as usual by adding some new properties to control our effects and declare them as well.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
@@ -526,7 +527,7 @@ float _DopplerBeamingFactor;
 float _HueRadius;
 float _HueShiftFactor;</code></pre>
 </div>
-<p>In order to do these hue and intensity changes we’ll be adding a bunch of helper functions of which I shall spare you the details. Add the following code just below the <mark>discUV</mark> function.</p>
+<p>In order to do these hue and intensity changes we’ll be adding a bunch of helper functions of which I shall spare you the details. Add the following code just below the <b>discUV</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">// Based upon UnityCG.cginc, used in hdrIntensity 
@@ -596,8 +597,8 @@ float3 RotateAboutAxis(float3 In, float3 Axis, float Rotation)
     return mul(rot_mat,  In);
 }</code></pre>
 </div>
-<p>The color function <mark>discColor</mark> will change our base color in three ways. First, it will increase the color’s intensity at the centre and decrease it over radial distance. Second, it will implement a Doppler beaming effect, where parts of the disc that move towards the camera have a higher intensity than parts that move away from the camera. And third, it will shift the hue of our color over radial distance from a controlled starting radius. Add the <mark>discColor</mark> function below our helper functions.</p>
-<p>Note that the Doppler beaming effect is coupled to the <mark>_DiscSpeed</mark>, while this is more physically acurate you could simply remove <mark>_DiscSpeed</mark> on line 12 and purely control it with the <mark>_DopplerBeamingFactor</mark>.</p>
+<p>The color function <b>discColor</b> will change our base color in three ways. First, it will increase the color’s intensity at the centre and decrease it over radial distance. Second, it will implement a <em>Doppler beaming effect</em>, where parts of the disc that move towards the camera have a higher intensity than parts that move away from the camera. And third, it will shift the hue of our color over radial distance from a controlled starting radius. Add the <b>discColor</b> function below our helper functions.</p>
+<p>Note that the <em>Doppler beaming effect</em> is coupled to the <b>_DiscSpeed</b>, while this is more physically acurate you could simply remove <b>_DiscSpeed</b> on line 12 and purely control it with the <b>_DopplerBeamingFactor</b>.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-hlsl">float3 discColor(float3 baseColor, float3 planarDiscPos, float3 discDir, float3 cameraPos, float u, float radius)
@@ -624,7 +625,7 @@ float3 RotateAboutAxis(float3 In, float3 Axis, float Rotation)
     return newColor;
 }</code></pre>
 </div>
-<p>Now all that is left is to call it in the <mark>frag</mark> function. In addition we’ll multiply our <mark>transmittance</mark> by the alpha of our <mark>_DiscColor</mark> property, so that we can use that to control the disc’s transparency. Add the highlighted code and change the <mark>col</mark> lerp and transmitance at the end of the <mark>frag</mark> function.</p>
+<p>Now all that is left is to call it in the <b>frag</b> function. In addition we’ll multiply our <b>transmittance</b> by the alpha of our <b>_DiscColor</b> property, so that we can use that to control the disc’s transparency. Add the highlighted code and change the <b>col</b> lerp and transmitance at the end of the <b>frag</b> function.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;" data-line="4, 6-7"><code class="language-hlsl">float2 screenUV = IN.posCS.xy / _ScreenParams.xy;
 float3 backgroundCol = SampleSceneColor(screenUV);
@@ -669,7 +670,7 @@ vert(){}
 int _Steps;
 float _StepSize;</code></pre>
 </div>
-<p>Now add the current ray position and direction variables to our ray information in the <mark>frag</mark> function. We add the <mark>outerSphereIntersection</mark> distance to our initial <mark>currentRayPos</mark> because we know there is nothing to evaluate before entering the outer sphere.</p>
+<p>Now add the current ray position and direction variables to our ray information in the <b>frag</b> function. We add the <b>outerSphereIntersection</b> distance to our initial <b>currentRayPos</b> because we know there is nothing to evaluate before entering the outer sphere.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;" data-line="4-5"><code class="language-hlsl">// Ray information
 float transmittance = 0;
@@ -677,7 +678,7 @@ float3 samplePos = float3(maxFloat, 0, 0);
 float3 currentRayPos = rayOrigin + rayDir * outerSphereIntersection.x;
 float3 currentRayDir = rayDir;</code></pre>
 </div>
-<p>Finally we’ll encapsulate our previous ray intersection code with a for loop and move our ray forward each loop. Now whenever we used to call <mark>rayOrigin</mark> or <mark>rayDir</mark> we will call <mark>currentRayPos</mark> and <mark>currentRayDir</mark> instead and check if we will intersect the disc within the next step. Replace the intersection code in the <mark>frag</mark> function with the highlighted code.</p>
+<p>Finally we’ll encapsulate our previous ray intersection code with a for loop and move our ray forward each loop. Now whenever we used to call <b>rayOrigin</b> or <b>rayDir</b> we will call <b>currentRayPos</b> and <b>currentRayDir</b> instead and check if we will intersect the disc within the next step. Replace the intersection code in the <b>frag</b> function with the highlighted code.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="4-16"><code class="language-hlsl">// Ray intersects with the outer sphere
@@ -705,7 +706,7 @@ if(outerSphereIntersection.x < maxFloat)
 
 <h2 id="black-hole">3.1 Black hole</h2>
 
-<p>With what we already have adding the black hole in the middle is surprisingly easy. All we need to do is check if our ray enters a sphere and then use that as a mask for our background color. Of course we need to know how big this black hole is, so let’s start by adding a new property for it called <mark>_SSRadius</mark>.</p>
+<p>With what we already have adding the black hole in the middle is surprisingly easy. All we need to do is check if our ray enters a sphere and then use that as a mask for our background color. Of course we need to know how big this black hole is, so let’s start by adding a new property for it called <b>_SSRadius</b>.</p>
 <div class="container__code">
     <pre class="line-numbers round" style="margin:0;" data-line="3, 9"><code class="language-hlsl">Properties{
     ...
@@ -718,9 +719,9 @@ vert(){}
 float _SSRadius;</code></pre>
 </div>
 <div class="note__base round">
-    _SSRadius refers to the <a href="https://en.wikipedia.org/wiki/Schwarzschild_radius" target="_blank">Schwarzschild radius</a>, the radius that defines the event horizon of a Schwarzschild type black hole. Fun fact, the _SSRadius of the black hole imaged by the Event Horizon Telescope is about 0.002 light-years (or 3.7 trillion km), but we’ll set it to a modest ~1 m for now.
+    <b>_SSRadius</b> refers to the <a href="https://en.wikipedia.org/wiki/Schwarzschild_radius" target="_blank"><em>Schwarzschild radius</em></a>, the radius that defines the event horizon of a <em>Schwarzschild type</em> black hole. Fun fact, the <b>_SSRadius</b> of the black hole imaged by the <em>Event Horizon Telescope</em> is about 0.002 light-years (or 3.7 trillion km), but we’ll set it to a modest ~1 m for now.
 </div>
-<p>For our mask we’ll add a new variable to the ray information and default it to 0, no black hole. Then in the raymarching we’ll check for nearby intersections with the black hole through our sphere intersection function. If the black hole is nearby we set the mask to 1. Note that we also break out of the loop, which is logical as light can’t escape the black hole and neither should our ray be able to continue. Add the highlighted code in the <mark>frag</mark> function and apply the mask to our <mark>backgroundCol</mark>.</p>
+<p>For our mask we’ll add a new variable to the ray information and default it to 0, no black hole. Then in the raymarching we’ll check for nearby intersections with the black hole through our sphere intersection function. If the black hole is nearby we set the mask to 1. Note that we also break out of the loop, which is logical as light can’t escape the black hole and neither should our ray be able to continue. Add the highlighted code in the <b>frag</b> function and apply the mask to our <b>backgroundCol</b>.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="4-16"><code class="language-hlsl">// Ray information
@@ -750,7 +751,7 @@ float2 screenUV = IN.posCS.xy / _ScreenParams.xy;
 float3 backgroundCol = SampleSceneColor(screenUV) * (1 - blackHoleMask);</code></pre>
 </div>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_09.png" alt="Still image of the black hole and accretion disc. _SSRadius set to 0.2." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_09.png" alt="Still image of the black hole and accretion disc. <b>_SSRadius</b> set to 0.2." class="image__caption image__modal round">
 </div>
 
 
@@ -768,7 +769,7 @@ vert(){}
 ...
 float _GConst;</code></pre>
 </div>
-<p>Now in our for loop we need to know the direction and distance towards the gravitational centre (the centre of our object) with regards to our current ray position. With this information we can also add another break statement, namely if our ray has left the outer sphere’s radius we no longer need to evaluate it. Note that we add the <mark>_StepSize</mark> to our check, this is to prevent situations where our initial ray might be ever so slightly outside the sphere’s radius. Finally, we calculate the gravitational force and redirect our ray by adding a scaled vector directed towards the gravitational centre. Add the highlighted code in the <mark>frag</mark> function.</p>
+<p>Now in our for loop we need to know the direction and distance towards the gravitational centre (the centre of our object) with regards to our current ray position. With this information we can also add another break statement, namely if our ray has left the outer sphere’s radius we no longer need to evaluate it. Note that we add the <b>_StepSize</b> to our check, this is to prevent situations where our initial ray might be ever so slightly outside the sphere’s radius. Finally, we calculate the gravitational force and redirect our ray by adding a scaled vector directed towards the gravitational centre. Add the highlighted code in the <b>frag</b> function.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="6-16"><code class="language-hlsl">// Ray intersects with the outer sphere
@@ -796,14 +797,14 @@ if(outerSphereIntersection.x < maxFloat)
     </div>
 </div>
 <div class="note__base round">
-    You can play quite a lot with the gravitational constant to get slightly different looking black holes, even negative gravity if you want to be really weird about it. Note that also the size of the black hole changes with the gravity constant, as rays further away are pulled in. If we want to be physically correct we would need to replace our _SSRadius with a very small constant, as the gravitational pull already determines which rays are beyond the event horizon. However, I kept the _SSRadius as it grants more flexibility for art direction.
+    You can play quite a lot with the gravitational constant to get slightly different looking black holes, even negative gravity if you want to be really weird about it. Note that also the size of the black hole changes with the gravity constant, as rays further away are pulled in. If we want to be physically correct we would need to replace our <b>_SSRadius</b> with a very small constant, as the gravitational pull already determines which rays are beyond the event horizon. However, I kept the <b>_SSRadius</b> as it grants more flexibility for art direction.
 </div>
 
 
 <h2 id="space-warping">3.3 Space warping</h2>
 
-<p>We finally get to the part why we’ve been using this checkered skybox all this time, warping. In order to get some spatial warping we’ll be distorting the <mark>screenUV</mark> using the last ray position and use that to sample the opaque texture. We do this using a camera projection of a distorted ray direction, which we can use as UV coordinates. Ideally we would use <mark>currentRayDir</mark>, but those UVs could point to places that are outside our camera view. So instead we point to the last ray position where the loop terminated.</p>
-<p>Replacing our <mark>screenUV</mark> with the distorted UVs would create very sharp transitions at the edge of our sphere gameObject and screen. In order to smooth these out a bit we’ll lerp between the normal <mark>screenUV</mark> and the <mark>distortedScreenUV</mark>, based on our distance to these edges. Add the highlighted code to the <mark>frag</mark> function and change the <mark>backgroundCol</mark> to use the <mark>distortedScreenUV</mark>.</p>
+<p>We finally get to the part why we’ve been using this checkered skybox all this time, warping. In order to get some spatial warping we’ll be distorting the <b>screenUV</b> using the last ray position and use that to sample the opaque texture. We do this using a camera projection of a distorted ray direction, which we can use as UV coordinates. Ideally we would use <b>currentRayDir</b>, but those UVs could point to places that are outside our camera view. So instead we point to the last ray position where the loop terminated.</p>
+<p>Replacing our <b>screenUV</b> with the distorted UVs would create very sharp transitions at the edge of our sphere <em>gameObject</em> and screen. In order to smooth these out a bit we’ll lerp between the normal <b>screenUV</b> and the <b>distortedScreenUV</b>, based on our distance to these edges. Add the highlighted code to the <b>frag</b> function and change the <b>backgroundCol</b> to use the <b>distortedScreenUV</b>.</p>
 <button class="collapsible round">Code block</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;" data-line="3-15"><code class="language-hlsl">float2 screenUV = IN.posCS.xy / _ScreenParams.xy;
@@ -851,9 +852,9 @@ float3 backgroundCol = SampleSceneColor(distortedScreenUV) * (1 - blackHoleMask)
 <div class="container image__container round margin--vertical">
     <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_Limitations_Opaque_001.png" alt="The second black hole you see to the right is clipped by the first." class="image__caption image__modal round">
 </div>
-<p>Secondly, we are culling the front and thus any opaque object that is within the sphere gameObjects radius is drawn on top of it. This could likely be fixed by setting the Cull to Off and instead doing some depth testing to see if the opaque object would be in front or behind the black hole.</p>
+<p>Secondly, we are culling the front and thus any opaque object that is within the sphere <em>gameObject's</em> radius is drawn on top of it. This could likely be fixed by setting the Cull to Off and instead doing some depth testing to see if the opaque object would be in front or behind the black hole.</p>
 <div class="container image__container round margin--vertical">
-    <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_Limitations_Cull_Front_001.png" alt="You can see the grey sphere object in front of the black hole, while it has been placed directly behind it (but within the black hole’s sphere gameObject)." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_Limitations_Cull_Front_001.png" alt="You can see the grey sphere object in front of the black hole, while it has been placed directly behind it (but within the black hole’s sphere <em>gameObject</em>)." class="image__caption image__modal round">
 </div>
 <p>Thirdly, reducing the inner radius to be within the black hole creates stepping artifacts. Among other things the accuracy of our step size is too small here, where depending on the camera’s position a ray might or might not sample the accretion disc. While reducing the step size lessens this problem it increases the load of the shader. It’s best to keep your inner radius above the black hole’s range.</p>
 <div class="container image__container round margin--vertical">
