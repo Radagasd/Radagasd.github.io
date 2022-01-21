@@ -57,7 +57,11 @@
 .modal-content {
     margin: auto;
     display: block;
-    width: 80%;
+    width: 90%;
+    max-height: 90%;
+
+    object-fit: contain;
+    
     // max-width: 1200px;
 }
 
@@ -65,8 +69,8 @@
 #caption {
     margin: auto;
     display: block;
-    width: 80%;
-    // max-width: 1200px;
+    width: 90%;
+
     text-align: center;
     color: palette(text-alt);
     padding: 0.5em 0;
@@ -93,10 +97,10 @@
 /* The Close Button */
 .close {
     position: absolute;
-    top: 15px;
-    right: 35px;
+    top: 2.5%;
+    right: 2.5%;
     color: #f1f1f1;
-    font-size: 40px;
+    font-size: xx-large;
     font-weight: bold;
     transition: 0.3s;
 }

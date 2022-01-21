@@ -189,8 +189,8 @@
     var altText = $(this).attr('alt');
 
     var newDiv = document.createElement("div");
-    $(newDiv).html(altText);
-    $(newDiv).attr('class','caption__text round');
-    $(this).after(newDiv);
+    newDiv.innerHTML = altText;
+    newDiv.classList.add('caption__text', 'round');
+    this.after(newDiv);
     });
 </script>    

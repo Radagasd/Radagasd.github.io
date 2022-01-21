@@ -360,7 +360,7 @@ float4 frag (Varyings IN) : SV_Target
 <h2 id="convolution">3.1 Convolution</h2>
 
 <p>The most common way of finding discontinuities in an image is using a <b>convolution matrix</b>, also known as a <b>kernel</b>. The convolution is an operation between the image and the kernel, where we take samples from the image, multiply them by the corresponding kernel value and add them together, resulting in a single number.</p>
-<p>As an example we look at the image below, which uses a single 3×3 kernel for edge detection (approximation of the <b><a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank"><em>Laplace operator</em></a>)</b>. The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
+<p>As an example we look at the image below, which uses a single 3×3 kernel for edge detection (approximation of the <a href="https://en.wikipedia.org/wiki/Discrete_Laplace_operator" target="_blank"><em>Laplace operator</em></a>). The image has grayscale values ranging from 0 to 1, and the sum is depicted from left to right, top to bottom.</p>
 <div class="container image__container round">
     <img src="/assets/posts/tutorials/shadow-outlines-tutorial/Convolution_LongWide_WhiteBG.png" alt="" class="image__modal round">
 </div>
