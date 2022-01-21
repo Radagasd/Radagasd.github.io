@@ -169,8 +169,12 @@ li ol > li:before {
     position: relative;
     display: grid;
     align-items: center;
-    width: 100%;
     grid-template-columns: 1fr 1fr;
+
+    width: 100%;
+
+    // width: auto;
+    // margin: 0 -1rem;
 }
 
 .list-container{
