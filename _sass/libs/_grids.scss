@@ -3,7 +3,7 @@
     display: grid;
     width: 100%;
     gap: 1rem;
-    grid-template-columns: repeat(2, 1fr);// 1fr;
+    grid-template-columns: repeat(2, 1fr);
     margin: 1rem 0;
 }
 
@@ -31,7 +31,7 @@
     align-items: top;
 }
 
-.grid__columns-2-1--exact{
+.grid__columns-2-1{
     position: relative;
     display: grid;
     width: 100%;
@@ -39,7 +39,7 @@
     grid-template-columns: 2fr 1fr;
 }
 
-.grid__columns-2-1{
+.grid__columns-2-1--exact{
     position: relative;
     display: grid;
     width: 100%;

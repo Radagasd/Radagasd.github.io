@@ -2,41 +2,4 @@
     text-align: left;
     border-top: 0.2rem solid palette(divider);
     background-color: palette(bg);
-
-    .socials__a{
-        text-decoration: none;
-    }
-
-    .socials__container{
-        margin: 0 1rem;
-    }
-
-    .social__container{
-        display: flex;
-        width: fit-content;
-        color: palette(text-alt);
-    
-        border-radius: 0.3rem;
-        border: 0.3rem solid palette(text);
-        background-color: palette(text);
-        transition: ease-in-out 0.3s;
-    
-        margin: 0.5rem;
-    }
-    
-    .social__container:hover{
-        border-color: palette(accent1);
-        background-color: palette(accent1);
-    }
-
-    #footer__socials{
-        color: palette(text);
-        font-size: xx-large;
-        transition: ease-in-out 0.3s;
-        // margin: 1em 0;
-    }
-
-    #footer__socials:hover{
-        color: palette(accent1);
-    }
 }

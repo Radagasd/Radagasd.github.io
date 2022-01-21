@@ -7,13 +7,13 @@
     width: 100%;
     // height:100%;
 
-    background-color: palette(video-box);
-    border: 0.3rem solid palette(video-box);
+    background-color: palette(accent2);
+    border: 0.3rem solid palette(accent2);
 }
 
 .video__container.gif{
-    background-color: palette(accent3);
-    border: 0.3rem solid palette(accent3);
+    background-color: palette(accent2);
+    border: 0.3rem solid palette(accent2);
 }
 
 .video__container.preview{
@@ -21,20 +21,20 @@
     border: 0.3rem solid palette(accent1);
 }
 
-.video__container video{
-    position: relative;
-    display: flex;
-    width: 100%;
-    height: 100%;
-}
-
 .video__container.youtube{
     position: relative;
 	padding-bottom: 56.25%; /* 16:9 */
 	height: 0;
 
-    background-color: palette(video-box);
-    border: 0.3rem solid palette(video-box);
+    background-color: palette(accent2);
+    border: 0.3rem solid palette(accent2);
+}
+
+.video__container video{
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
 }
 
 .video__container iframe{

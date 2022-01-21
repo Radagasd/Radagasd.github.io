@@ -1,3 +1,4 @@
+// Links
 a{
     color: inherit;
     // font-weight: normal;
@@ -10,33 +11,8 @@ a:hover{
     text-decoration-style: dashed;
 }
 
-
-
-// Testing -------------------------------------------------------------------
-
-// .style1 a{
-//     color: inherit;
-//     font-weight: normal;
-//     text-decoration: underline;
-//     text-decoration-style: dashed;
-//     text-decoration-thickness: 0.05rem;
-// }
-
-// .style1 a:hover{
-//     text-decoration-style: solid;
-// }
-
-.style1 a.a--local{
-    text-decoration-style: dotted;
-}
-
-.style1 a:hover.a--local{
-    text-decoration-style: dashed;
-}
-
-
-
-.style1 .tooltip{
+// Tooltips
+.tooltip{
     position: relative;
     display: inline-block;
 
@@ -93,4 +69,14 @@ a:hover{
     right: 0.6rem;
     left: auto;
     margin: 0;
+}
+
+
+// Testing -------------------------------------------------------------------
+.style1 a.a--local{
+    text-decoration-style: dotted;
+}
+
+.style1 a:hover.a--local{
+    text-decoration-style: dashed;
 }

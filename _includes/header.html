@@ -6,11 +6,11 @@
 
         <div class="navbar">
             
-            <a href="{{ "" | absolute_url }}" class="logo">{{ site.title }}</a>
+            <a href="{{ site.baseurl }}/" class="logo">{{ site.title }}</a>
 
             <div></div>
             
-            <div class="navbar-right">
+            <div>
                 {% assign navlist = site.html_pages | where_exp:"item","item.nav-menu >= 0" | sort: 'nav-menu' %}
                 {% for page in navlist %}
                     <a href="{{ page.url | absolute_url }}">{{ page.title }}</a>
