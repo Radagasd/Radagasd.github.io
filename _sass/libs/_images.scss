@@ -7,8 +7,8 @@
     width: fit-content;
     height: fit-content;
 
-    background-color: palette(accent3);
-    border: 0.3rem solid palette(accent3);
+    background-color: var(--accent3);
+    border: 0.3rem solid var(--accent3);
 }
 
 .image__container img{
@@ -72,7 +72,7 @@
     width: 90%;
 
     text-align: center;
-    color: palette(text-alt);
+    color: var(--text-white);
     padding: 0.5em 0;
 }
 

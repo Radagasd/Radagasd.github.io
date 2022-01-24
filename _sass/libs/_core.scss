@@ -15,14 +15,18 @@ pre {
 }
 
 mark{
-    background-color: palette(bg-mark);
+    background-color: var(--text-mark);
     border-radius: 0.3em;
     padding: 0 0.15em;
-    color: palette(text);
+    color: inherit;
+}
+
+.note__base mark{
+    background-color: var(--text-mark-contrast);
 }
 
 hr{
-    border-top: 0.2rem solid palette(divider);
+    border-top: 0.2rem solid var(--accent1);
 }
 
 .equation{
@@ -31,9 +35,7 @@ hr{
     overflow: auto;
 }
 
-.caption__text-mathjax{
-    color: palette(text-alt);
-}
+
 
 .container__code{
     display: grid;
@@ -51,10 +53,10 @@ hr{
     text-align: center;
     width: 100%;
 
-    background-color: palette(bg);
+    background-color: var(--bg-header);
 
-    border-bottom: .2em solid palette(accent1);
-    border-top: .2em solid palette(accent1);
+    border-bottom: .2em solid var(--accent1);
+    border-top: .2em solid var(--accent1);
 
     margin-bottom: 2em;
     margin-top: 1em;
@@ -89,16 +91,14 @@ li ol > li:before {
     content: counters(item, ".") " ";
 }
 
-
-
 .social__container--extended{
     display: flex;
     width: fit-content;
-    color: palette(text-alt);
+    color: var(--text-contrast);
 
     border-radius: 0.3rem;
-    border: 0.3rem solid palette(text);
-    background-color: palette(text);
+    border: 0.3rem solid var(--text);
+    background-color: var(--text);
     transition: ease-in-out 0.3s;
 
     // text-decoration: none;
@@ -107,26 +107,26 @@ li ol > li:before {
 }
 
 .social__container--extended:hover{
-    border-color: palette(accent1);
-    background-color: palette(accent1);
+    border-color: var(--accent1);
+    background-color: var(--accent1);
 }
 
 .social__container--extending{
     display: inline-flex;
     width: fit-content;
-    color: palette(text-alt);
+    color: var(--text-contrast);
 
     border-radius: 0.3rem;
-    border: 0.3rem solid palette(text);
-    background-color: palette(text);
+    border: 0.3rem solid var(--text);
+    background-color: var(--text);
     transition: ease-in-out 0.3s;
 
     margin: 0.5rem 0;
 }
 
 .social__container--extending:hover{
-    border-color: palette(accent1);
-    background-color: palette(accent1);
+    border-color: var(--accent1);
+    background-color: var(--accent1);
 }
 
 .social__container--extending span{
@@ -146,10 +146,10 @@ li ol > li:before {
 
 
 .post__navigation{
-    padding: 0.5rem 0;
-    background-color: palette(bg);
-    border-top: 0.2rem solid palette(accent1);
-    border-bottom: 0.2rem solid palette(accent1);
+    padding: 0.5rem 0.5rem;
+    background-color: var(--bg-header);
+    border-top: 0.2rem solid var(--accent1);
+    border-bottom: 0.2rem solid var(--accent1);
     position: relative;
     display: grid;
     align-items: center;
@@ -173,9 +173,9 @@ li ol > li:before {
     z-index: 1;
     font-size: medium;
     outline: none;
-    border: 0.2em solid palette(accent1);
-    background-color: palette(accent1);
-    color: palette(text-alt);
+    border: 0.2em solid var(--accent1);
+    background-color: var(--accent1);
+    color: var(--text-white);
     cursor: pointer;
     padding: 0.5em;
     border-radius: 0.5em;
@@ -188,9 +188,9 @@ li ol > li:before {
     font-size: large;
     font-weight: bold;
     // outline: none;
-    border: 0.2em solid palette(accent4);
-    background-color: palette(accent4);
-    color: palette(text-alt);
+    border: 0.2em solid var(--accent4);
+    background-color: var(--accent4);
+    color: var(--text-white);
     cursor: pointer;
     padding: 0.5em;
     border-radius: 0.3em;
@@ -198,9 +198,17 @@ li ol > li:before {
 
 .note__base{
     position: relative;
-    border: 0.3rem solid palette(bg-contrast);
-    background-color: palette(bg-contrast);
-    color: palette(text-alt);
+    border: 0.3rem solid var(--bg-contrast);
+    background-color: var(--bg-contrast);
+    color: var(--text-contrast);
     padding: 0 0.5rem;
     margin: 0.5rem 0;
+}
+
+.theme-btn{
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: xx-large;
+    vertical-align: middle;
 }

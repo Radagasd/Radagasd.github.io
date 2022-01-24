@@ -1,5 +1,5 @@
 <!-- Wrapper -->
-<div id="wrapper">
+<!-- <div id="wrapper"> -->
 
     <!-- Header -->
     <header id="header">
@@ -15,6 +15,7 @@
                 {% for page in navlist %}
                     <a href="{{ page.url | absolute_url }}">{{ page.title }}</a>
                 {% endfor %}
+                <button class="theme-btn" onclick="mySwitchTheme()"><i class="fas fa-adjust"></i></button>
             </div>
         </div>
     </header>

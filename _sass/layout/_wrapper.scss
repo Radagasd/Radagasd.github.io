@@ -1,6 +1,6 @@
 /* Wrapper */
 #wrapper {
     text-align: left;
-    color: palette(text);
-    background-color: palette(bg-contrast);
+    color: var(--text);
+    // background-color: var(--bg-contrast);
 }

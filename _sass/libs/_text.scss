@@ -25,13 +25,13 @@ a:hover{
 #tooltip
 {
     text-align: center;
-    color: palette(text-alt);
-    background: palette(bg-contrast);
+    color: var(--text-contrast);
+    background: var(--bg-contrast);
     position: absolute;
     z-index: 100;
     padding: 0.3em;
     border-radius: 0.3rem;
-    border: 0.15rem solid palette(accent1);
+    border: 0.15rem solid var(--accent1);
 
     font-size: medium;
 }
@@ -42,7 +42,7 @@ a:hover{
     height: 0;
     border-left: 0.6rem solid transparent;
     border-right: 0.6rem solid transparent;
-    border-top: 0.6rem solid palette(accent1);
+    border-top: 0.6rem solid var(--accent1);
     content: '';
     position: absolute;
     left: 50%;
@@ -53,7 +53,7 @@ a:hover{
 #tooltip.top:after
 {
     border-top-color: transparent;
-    border-bottom: 0.6rem solid palette(accent1);
+    border-bottom: 0.6rem solid var(--accent1);
     top: -1.2rem;
     bottom: auto;
 }

@@ -23,9 +23,9 @@
 
 .caption__text{
     position: relative;
-    background: palette(bg-contrast);
+    background: var(--bg-caption);
 
-    color: palette(text-alt);
+    color: var(--text-white);
     width: 100%;
     text-align: center;
     max-height: 100%;
@@ -34,12 +34,16 @@
     z-index: 1;
 }
 
+.caption__text-mathjax{
+    color: var(--text-contrast);
+}
+
 .caption__text--overlay{
     position: absolute;
     bottom: 0;
     background: rgb(0,0,0);
     background: rgba(0,0,0,0.5);
-    color: palette(text-alt);
+    color: var(--text-white);
     width: 100%;
     text-align: center;
     max-height: 100%;
@@ -66,8 +70,8 @@
 
 .container__list{
     position: relative;
-    border: 0.3rem solid palette(accent4);
-    background-color: palette(accent4);
-    color: palette(text-alt);
+    border: 0.3rem solid var(--accent4);
+    background-color: var(--accent4);
+    color: var(--text-white);
     padding: 0.5rem;
 }

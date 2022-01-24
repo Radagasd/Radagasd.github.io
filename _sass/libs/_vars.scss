@@ -1,23 +1,49 @@
-// Palette.
-$palette: (
-    bg              : hsl(0, 0%, 100%),
-    bg-alt          : hsl(0, 0%, 92%),
-    bg-contrast     : hsl(0, 0, 20%),
-    bg-lightcontrast: hsl(0, 0, 50%),
+:root,
+:root.light {
+    --bg-header             : hsl(0, 0%, 100%);
+    --bg-main               : hsl(0, 0%, 92%);
+    --bg-variation          : hsl(0, 0%, 95%);
+    --bg-contrast           : hsl(0, 0%, 20%);
+    --bg-caption            : hsl(0, 0%, 20%);
 
-    bg-mark    : hsl(0, 0%, 100%),
+    --shadow-main           : hsl(0, 0%, 75%);
+    --shadow-sides          : hsl(0, 0%, 66%);
 
-    divider         : hsl(0, 0%, 10%),
+    --text                  : hsl(0, 0%, 10%);
+    --text-contrast         : hsl(0, 0%, 100%);
+    --text-white            : hsl(0, 0%, 100%);
+    --text-mark             : hsl(123, 50%, 80%);
+    --text-mark-contrast    : hsl(123, 50%, 20%);
 
-    text            : hsl(0, 0%, 10%),
-    text-alt        : hsl(0, 0%, 100%),
+    --accent1               : #4abf50;
+    --accent2               : #ee5622;
+    --accent3               : #eca72c;
+    --accent4               : #2d7dd2;
+    --accent5               : #914d76;
+}
 
-    accent1         : #4abf50,
-    accent2         : #ee5622,
-    accent3         : #eca72c,
-    accent4         : #2d7dd2,
-    accent5         : #914d76
-);
+:root.dark {
+    --bg-header             : hsl(0, 0%, 20%);
+    --bg-main               : hsl(0, 0%, 30%);
+    --bg-variation          : hsl(0, 0%, 25%);
+    --bg-contrast           : hsl(0, 0%, 80%);
+    --bg-caption            : hsl(0, 0%, 20%);
+
+    --shadow-main           : hsl(0, 0%, 15%);
+    --shadow-sides          : hsl(0, 0%, 10%);
+
+    --text                  : hsl(0, 0%, 100%);
+    --text-contrast         : hsl(0, 0%, 10%);
+    --text-white            : hsl(0, 0%, 100%);
+    --text-mark             : hsl(123, 50%, 20%);
+    --text-mark-contrast    : hsl(123, 50%, 80%);
+
+    --accent1               : #4abf50;
+    --accent2               : #ee5622;
+    --accent3               : #eca72c;
+    --accent4               : #2d7dd2;
+    --accent5               : #914d76;
+}
 
 // $phone-width: 600px;
 $mediumdevice-width: 768px;

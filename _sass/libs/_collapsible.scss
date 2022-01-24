@@ -1,6 +1,6 @@
 .collapsible {
-    background-color: palette(accent5);
-    color: palette(text-alt);
+    background-color: var(--accent5);
+    color: var(--text-white);
     cursor: pointer;
     padding: 1rem;
     width: 100%;
@@ -12,7 +12,7 @@
 .collapsible:after {
     // unicode +
     content: '\002B';
-    color: palette(text-alt);
+    color: var(--text-white);
     font-weight: bold;
     float: right;
     margin-left: 1rem;
@@ -34,9 +34,9 @@
     max-height: 0;
     overflow: hidden;
     // transition: max-height 0.2s ease-out;
-    background-color: palette(bg);
+    background-color: var(--bg-header);
 
-    border: 0rem solid palette(accent5);
+    border: 0rem solid var(--accent5);
     margin-bottom: 1rem;
     visibility: hidden;
 }
@@ -48,6 +48,6 @@
 }
 
 .collapsible__content.code{
-    border-color: palette(accent5);
-    background-color: palette(accent5);
+    border-color: var(--accent5);
+    background-color: var(--accent5);
 }
