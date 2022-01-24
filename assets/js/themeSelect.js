@@ -12,7 +12,7 @@ getTheme();
 
 const mySwitchTheme = _ =>
 {
-  if(document.documentElement.className == "light")
+  if(document.documentElement.className == "light" || document.documentElement.className == "")
   {
     setTheme('dark');
   }
