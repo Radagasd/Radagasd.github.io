@@ -20,7 +20,7 @@ plugins:
 sass:
   style: compressed
 
-highlighter: rouge
+# highlighter: rouge
 
 exclude:
 - "*.gemspec"
