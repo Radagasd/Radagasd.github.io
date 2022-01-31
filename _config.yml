@@ -7,7 +7,7 @@ twitter:
   username: kelvinvanhoorn
   card: summary
 
-permalink: /:year/:month/:day/:title:output_ext
+permalink: /:year/:month/:day/:title/
 
 google_analytics: G-VC7QPS7X8J
 # google_analytics: G-4ERF4SWF6C
