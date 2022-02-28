@@ -1,0 +1,54 @@
+---
+title: Aurora polaris🌌
+layout: post
+category: showcase
+preview-video: assets/posts/2022/aurora-polaris/preview.mp4
+---
+
+<div class="container video__container youtube round margin--vertical">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/cIPP9h-b7zo?autoplay=0&rel=0" title="YouTube video player" frameborder="0" autoplay="false" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+
+<div class="grid__maxcolumns--2 grid__align--bottom">
+    <div class="container__list round">
+        <h2>Main components</h2>
+        <ul>
+            <li>Aurora raymarching shader</li>
+        </ul>
+    </div>
+    <div class="container__list round">
+        <h2>Tools used </h2>
+        <ul>
+            <li><i class="fas fa-chess-board"></i> <a href="https://github.com/alelievr/Mixture" target="_blank"><em>Mixture</em></a> (noise texutres)</li>
+            <li><i class="fab fa-unity"></i> <em>Unity</em> URP</li>
+        </ul>
+    </div>
+</div>
+
+
+<h1>📝Description</h1>
+
+<p>The latest challenge on the Technically Speaking Discord had the theme of "aurora", and as such I had add one to my sky. It is a raymarching shader, which means it is quite performance heavy and somewhat complex, but I think it captures the look and feeling of an aurora rather well.</p>
+<p>From a very basic point of view the shader can be summarised as follows. I calculate the intersection points between the view direction and two spheres that represent the atmosphere layer in which auroras take place. These intersections are the start and end point of the raymarch. For each step I calculate the distance and direction from the current ray position towards the planet's centre, which I define as below the camera at \(y = -6.371\)km (the earth's radius). From this direction I calculate spherical UVs using \(u = \frac{atan2(z, x)}{2\pi}\) and \(v = \frac{acos(y)}{\pi}\).</p>   
+<p>I use these UVs to sample a noise texture multiple times. Each sample is a set of 2 samples, where I pan the 2 in opposite directions and add them together to reduce the directionality of the noise. One noise sample is used to distort a line texture, resulting in the wave motion of the aurora. Another is panned much faster with high density to cause the flickering of the aurora. And a final noise sample is used to breakup the aurora into different parts that move in and out of existence.</p>
+<p>The colour of the aurora is determined by sampling a gradient texture, depending on the height of the current ray position. It is goes from purplish-blue at the start of the atmosphere, followed by a bright green, moving towards a turquoise-like colour and ending in a pinkish red. The colour of each raymarch step is then added together and blended additively with the background.</p>
+
+<div class="grid__columns--exactly2">
+    <div class="container image__container round">
+        <img src="/assets/posts/2022/aurora-polaris/Still_01.jpg" alt="Aurora at start of dusk." class="image__modal round">
+    </div>
+    <div class="container image__container round">
+        <img src="/assets/posts/2022/aurora-polaris/Still_02.jpg" alt="Aurora at end of dusk." class="image__modal round">
+    </div>
+    <div class="container image__container round">
+        <img src="/assets/posts/2022/aurora-polaris/Still_03.jpg" alt="Aurora at night." class="image__modal round">
+    </div>
+    <div class="container image__container round">
+        <img src="/assets/posts/2022/aurora-polaris/Still_04.jpg" alt="Aurora at night." class="image__modal round">
+    </div>
+</div>
+
+<h1>📘Acknowledgements</h1>
+
+<p>There are no notable Acknowledgements for this post, as it is mostly a culmination of previous knowledge. Mainly the previous post on my <a href="{{ site.baseurl}}/2022/02/14/astronomical-skybox">new skybox</a> and my experience with raymarching shaders for <a href="{{site.baseurl}}/2020/08/07/volumetric-clouds-showcase">clouds</a> and <a href="{{site.baseurl}}/2021/04/07/raymarching-blackhole">black holes</a>.</p>

@@ -32,7 +32,7 @@
     --shadow-main           : rgba(0, 0, 0, 5%);
     --shadow-sides          : rgba(0, 0, 0, 10%);
 
-    --text                  : hsl(0, 0%, 100%);
+    --text                  : hsl(0, 0%, 80%);
     --text-contrast         : hsl(0, 0%, 10%);
     --text-white            : hsl(0, 0%, 100%);
     --text-mark             : hsl(123, 50%, 20%);
@@ -42,7 +42,7 @@
     --accent2               : #ee5622;
     --accent3               : #eca72c;
     --accent4               : #2d7dd2;
-    --accent5               : #914d76;
+    --accent5               : hsl(324, 31%, 50%);
 }
 
 // $phone-width: 600px;
