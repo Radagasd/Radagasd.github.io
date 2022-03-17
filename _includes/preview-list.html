@@ -13,7 +13,7 @@
                 title: "{{post.title}}",
                 videoUrl: "{{post.preview-video}}",
                 url: "{{ site.baseurl }}{{ post.url }}",
-                description: "{{post.description}}"
+                blurb: "{{post.blurb}}"
             }{% unless forloop.last %},{% endunless %}
         {% endfor %}
     ];
@@ -90,10 +90,10 @@
         captionLink.appendChild(captionTitle);
         captionContainer.appendChild(captionLink);
 
-        if(post.description != "")
+        if(post.blurb != "")
         {
             var blurbText = document.createElement('p');
-            blurbText.innerHTML = post.description;
+            blurbText.innerHTML = post.blurb;
             captionContainer.appendChild(blurbText);
         }
 
