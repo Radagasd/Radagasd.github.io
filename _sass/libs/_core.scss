@@ -111,6 +111,24 @@ li ol > li:before {
     background-color: var(--accent1);
 }
 
+.social__container--compact{
+    display: inline-flex;
+    width: fit-content;
+    color: var(--text-contrast);
+
+    border-radius: 0.3rem;
+    border: 0.3rem solid var(--text);
+    background-color: var(--text);
+    transition: ease-in-out 0.3s;
+
+    margin: 0.5rem 0;
+}
+
+.social__container--compact:hover{
+    border-color: var(--accent1);
+    background-color: var(--accent1);
+}
+
 .social__container--extending{
     display: inline-flex;
     width: fit-content;
