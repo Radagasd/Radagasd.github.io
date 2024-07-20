@@ -180,6 +180,11 @@ li ol > li:before {
     border-radius: 0.3rem;
 }
 
+// If only css had inheritance :'(
+.innerRound, .image__modal, .caption__text, .caption__text--hover, .caption__text--overlay, .video__youtube, .video_local{
+    border-radius: 0.2rem;
+}
+
 #toTopBtn {
     visibility: hidden;
     opacity: 0;

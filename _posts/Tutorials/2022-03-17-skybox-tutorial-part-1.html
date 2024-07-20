@@ -9,7 +9,7 @@ image: /assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Constell
 
 
 <div class="video__container round gif">
-    <video src="/assets/posts/tutorials/skybox-tutorial-part-1/Preview.mp4" autoplay muted loop></video>
+    <video class="video_local" src="/assets/posts/tutorials/skybox-tutorial-part-1/Preview.mp4" autoplay muted loop></video>
 </div>
 
 <p>Recently I've shown my <a href="{{site.baseurl}}/2022/02/14/astronomical-skybox/">skybox</a>, which has a new shader and code to calculate the positions of the sun and moon. People quite liked the result, and as such I thought it was time to also write a tutorial on this. It will be split in a series of at least 2 parts, where this part focuses on the shader for the sky colours, as well as the sun, moon, and stars. In part 2 we'll do the calculations for the sun and moon position as function of date and geographical location.</p>
@@ -69,7 +69,7 @@ For this part the main acknowledgement would be <em>NASA's</em> <a href="https:/
 
 <div style="display: grid; align-items: center; justify-items: center;">
     <div class="container image__container round" style="width:50%;">
-        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/Directions.png" alt="Four main directions: M = moon, Z = zenith, S = sun, V = view. H represents the horizon plane." class="image__caption image__modal round">
+        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/Directions.png" alt="Four main directions: M = moon, Z = zenith, S = sun, V = view. H represents the horizon plane." class="image__caption image__modal">
     </div>
 </div>
 
@@ -198,7 +198,7 @@ public class SkyboxController : MonoBehaviour
 <p>In order to see something create a material from this shader, and set it as your skybox material. The skybox material can be set in the environment tab from the Lighting window, if it is not open you can find it in the top-bar under Window <i class="fas fa-long-arrow-alt-right"></i> Rendering <i class="fas fa-long-arrow-alt-right"></i> Lighting. The sky should now be black, with a bright red and green spot that correspond to the positions of the sun and moon (it is yellow when they overlap). You can test this by rotating the <em>Sun</em> and <em>Moon</em> gameObjects from the previous section.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SunMoonDir.jpg" alt="Depiction of the skybox, showing the sun and moon directions as a red and green circle respectively. The grey at the bottom is a standard Unity plane and not part of the skybox." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SunMoonDir.jpg" alt="Depiction of the skybox, showing the sun and moon directions as a red and green circle respectively. The grey at the bottom is a standard Unity plane and not part of the skybox." class="image__caption image__modal">
 </div>
 
 
@@ -277,7 +277,7 @@ float3 col = skyColor;
 <p>I've used the following small gradient texture as my sunZenith gradient, where if the sun is directly below us it is nearly black and transitions to a brighter blue as the sun rises. You can download it, by right-clicking and save image, and set it as your texture or create one that better suits your needs.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SunZenith_Gradient.png" alt="Gradient texture representing the main colour of the sky." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SunZenith_Gradient.png" alt="Gradient texture representing the main colour of the sky." class="image__caption image__modal">
 </div>
 
 <div class="note__base round">
@@ -285,7 +285,7 @@ float3 col = skyColor;
 </div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_01.png" alt="Depiction of the skybox main colour, given at different altitudes of the sun." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_01.png" alt="Depiction of the skybox main colour, given at different altitudes of the sun." class="image__caption image__modal">
 </div>
 
 
@@ -304,13 +304,13 @@ float3 skyColor = sunZenithColor + vzMask * viewZenithColor;
 <p>For the gradient texture I've used the following, where you should note that near the middle the texture becomes orange before transitioning towards a pale blue. This represents the colour of the horizon during a sunset or sunrise. You can once again download it and use it as your gradient.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/ViewZenith_Gradient.png" alt="Gradient texture representing the haze colour near the horizon." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/ViewZenith_Gradient.png" alt="Gradient texture representing the haze colour near the horizon." class="image__caption image__modal">
 </div>
 
 <p></p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_02.png" alt="Depiction of the skybox with viewZenith haze, given at different altitudes of the sun." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_02.png" alt="Depiction of the skybox with viewZenith haze, given at different altitudes of the sun." class="image__caption image__modal">
 </div>
 
 <div class="note__base round">
@@ -331,13 +331,13 @@ float3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewCo
 <p>For the gradient texture I've used the following, where most of the action occurs at the centre during sunrise/sunset. You can once again either download this texture or create one that suits your needs.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SunView_Gradient.png" alt="Gradient texture representing the colour around the sun." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SunView_Gradient.png" alt="Gradient texture representing the colour around the sun." class="image__caption image__modal">
 </div>
 
 <p></p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_03.png" alt="Depiction of the skybox with sun bloom, given at different altitudes of the sun. This is by far most noticeable at 0°, though you could alter the gradient to also be more vibrant at other values." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_03.png" alt="Depiction of the skybox with sun bloom, given at different altitudes of the sun. This is by far most noticeable at 0°, though you could alter the gradient to also be more vibrant at other values." class="image__caption image__modal">
 </div>
 
 
@@ -379,7 +379,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 <p>You can now control the colour and intensity of the sun through the light options on the Sun gameObject. If you don't want it linked to that you can instead create some properties for the shader to control the colour and intensity. I've kept the default values, but you can of course tweak them to your hearts desire.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheSun.png" alt="The sun with bloom post-processing, with a sun radius of 0.05." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheSun.png" alt="The sun with bloom post-processing, with a sun radius of 0.05." class="image__caption image__modal">
 </div>
 
 
@@ -426,7 +426,7 @@ float3 moonColor = moonMask;
 float3 col = skyColor + sunColor + moonColor;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Raytrace.png" alt="The moon mask, with a radius of 0.07." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Raytrace.png" alt="The moon mask, with a radius of 0.07." class="image__caption image__modal">
 </div>
 
 <div class="note__base round"><p>Note that in the picture above the moon and sun have a similar size, while the moon radius is 0.07 and the sun radius is 0.05. Unfortunately their radius variables do not scale the same.</p></div>
@@ -438,7 +438,7 @@ float3 col = skyColor + sunColor + moonColor;</code></pre></div>
 
 <div style="display: grid; align-items: center; justify-items: center;">
     <div class="container image__container round" style="width:50%">
-        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonNormal.png" alt="Schematic for calculating the moon's normal, where M is the moon direction, V view direction, I intersection point, and N the normal." class="image__caption image__modal round">
+        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonNormal.png" alt="Schematic for calculating the moon's normal, where M is the moon direction, V view direction, I intersection point, and N the normal." class="image__caption image__modal">
     </div>
 </div>
 
@@ -453,7 +453,7 @@ float3 moonNormal = normalize(_MoonDir - viewDir * moonIntersect);</code></pre><
 
 <div style="display: grid; align-items: center; justify-items: center;">
     <div class="container image__container round" style="width:50%">
-        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonLightingDirection.png" alt="Schematic of lighting direction \(d_l\). Sun and moon distance are not drawn to scale." class="image__caption image__modal round">
+        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonLightingDirection.png" alt="Schematic of lighting direction \(d_l\). Sun and moon distance are not drawn to scale." class="image__caption image__modal">
     </div>
 </div>
 
@@ -483,7 +483,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Lighting.png" alt="A partially lit moon during the setting sun, with moon exposure set to 1." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Lighting.png" alt="A partially lit moon during the setting sun, with moon exposure set to 1." class="image__caption image__modal">
 </div>
 
 
@@ -492,7 +492,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 <p>For a stylised look a textureless moon might suffice, but more often than not you do want some texture for it. You could create your own, but we're going to use the publicly available color map from NASA's <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank"><em>Scientific Visualization Studio</em></a>. You can download the picture below or download it directly, and in higher resolutions, from NASA's site <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank">here</a>. </p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonColorMap.jpg" alt="Color map of the moon, made by NASA's Scientific Visualization Studio." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonColorMap.jpg" alt="Color map of the moon, made by NASA's Scientific Visualization Studio." class="image__caption image__modal">
 </div>
 
 <p>We'll be sampling this texture as a cube map, so be sure to set the Texture Shape to Cube in the import settings. A benefit of sampling it as a cube map is that we can reuse the normals we've calculated as a 3 component UV for the cube map texture, which we'll refer to as UVW.</p>
@@ -522,7 +522,7 @@ TEXTURECUBE(_MoonCubeMap);      SAMPLER(sampler_MoonCubeMap);
 float3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal">
 </div>
 
 <p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see 1 side). The texture changes because our UVW is the normal in world-space, meaning that it changes with the moon's rotation in the sky. What we want as UVW is the normal in the moon's local space, moon-space. In order to get that we need a space transformation matrix. We'll construct it in our C# script, <em>SkyboxController.cs</em>, from section <a href="#skybox-controller">2.1</a>. The transformation matrix consists of the 3 basis vectors that make up the local space, which are the forward, right and up vectors. Add the highlighted line to the <em>SkyboxController.cs</em> script, where we set a global shader matrix called <cn>_MoonSpaceMatrix</cn>. Note that we again use the negative directions.</p>
@@ -570,7 +570,7 @@ float3 GetMoonTexture(float3 normal)
 }</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Texture_02.png" alt="The textured moon with rotation correction." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Texture_02.png" alt="The textured moon with rotation correction." class="image__caption image__modal">
 </div>
 
 <h1 id="the-stars">5. The stars</h1>
@@ -580,7 +580,7 @@ float3 GetMoonTexture(float3 normal)
 <p>The texture we'll be using again comes from NASA's <em>Scientific Visualization Studio</em>, and can be found <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">here</a>. It is the star map at the top of the page, where I'm using the 8192x4096 x-exr version. Don't forget to set the Texture Shape to Cube in the import settings in Unity, and also set the Max Size appropriately (8192 in this case).</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/starmap_2020.jpg" alt="The star map, though be sure to download a higher resolution from NASA's website." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/starmap_2020.jpg" alt="The star map, though be sure to download a higher resolution from NASA's website." class="image__caption image__modal">
 </div>
 
 <p>Let's start by simply displaying the star map, by using the view direction directly as UVW. Add the cube map to the properties, declare it, and sample it in the <cn>Fragment</cn> function.</p>
@@ -605,7 +605,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_01.png" alt="The sky with the star map drawn." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_01.png" alt="The sky with the star map drawn." class="image__caption image__modal">
 </div>
 
 <p>That was easy, but looking at the result you might see a few problems, one of them being that the stars are drawn on top of the moon (and also sun). To fix this we multiply the starColor by 1 minus the moon and sun masks.</p>
@@ -645,7 +645,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 starColor *= (1 - sunMask) * (1 - moonMask) * exp2(_StarExposure) * starStrength;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_02.png" alt="The night sky, with star exposure and power set to 3 and 1.5 respectively. These values are pure personal preference to have the brightest stars affected by the bloom post-processing, without too much background noise." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_02.png" alt="The night sky, with star exposure and power set to 3 and 1.5 respectively. These values are pure personal preference to have the brightest stars affected by the bloom post-processing, without too much background noise." class="image__caption image__modal">
 </div>
 
 
@@ -721,8 +721,8 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 <div class="container video__container round gif">
-    <video src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Rotation.mp4" autoplay muted loop></video>
-    <div class="caption__text round">
+    <video class="video_local" src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Rotation.mp4" autoplay muted loop></video>
+    <div class="caption__text">
         Animation of the stars at a highly exaggerated speed, you can see Polaris (the North Star) at the top. Latitude is 52° (The Netherlands), speed = 0.01.
     </div>
 </div>
@@ -733,7 +733,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 <p>The star map is technically finished, however, when looking for a star map I found that NASA also has a constellation map and it might be fun to add it to our sky. It is also really easy to add with what we already have. Download the constellation map from the picture below or from NASA <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">directly</a>, it is the "Constellation figures in celestial coordinates." at 4096x2048 resolution. Don't forget to set the import setting's Texture Shape to Cube.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/constellation_figures_4k.png" alt="The constellation map by NASA's Scientific Visualization Studio." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/constellation_figures_4k.png" alt="The constellation map by NASA's Scientific Visualization Studio." class="image__caption image__modal">
 </div>
 
 <p>Now add the map as property, as well as a colour for the constellation lines. We can reuse the <cn>starUVW</cn> as UVW, so sample the texture and multiply it by the <cn>_ConstellationColor</cn>. Again we need to mask the sun and moon, as well as multiply it by the <cn>starStrength</cn>. Finally, add the result to the final <cn>col</cn>. Add or change the highlighted lines.</p>
@@ -763,7 +763,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Constellation.png" alt="The night sky with constellations, Ursa Minor can be seen at the top." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Constellation.png" alt="The night sky with constellations, Ursa Minor can be seen at the top." class="image__caption image__modal">
 </div>
 
 
@@ -780,7 +780,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 sunColor *= (1 - moonMask);</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_SolarEclipse_01.png" alt="The solar eclipse. I've lowered the moon radius to 0.067." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_SolarEclipse_01.png" alt="The solar eclipse. I've lowered the moon radius to 0.067." class="image__caption image__modal">
 </div>
 
 <p>I've never seen a total solar eclipse in person and finding reliable images of the sky during one is quite hard, but it seems that the sky becomes darker and the area around the sun seems brighter as a result. In order to implement this we'll use <cn>sunMoonDot</cn> to determine how much of the sun is eclipsed. As a function of this we'll lower the value of <cn>skyColor</cn> and increase the value of <cn>sunColor</cn> (so that the bloom has a greater effect).</p>
@@ -796,7 +796,7 @@ sunColor *= (1 - moonMask) * lerp(1, 16, solarEclipse01);</code></pre></div>
 <p>This is only one way of changing the sky during a solar eclipse, you could of course expand on this using more colours or colour gradients and sample those as function of <cn>solarEclipse01</cn>. Though if you do, be aware that solar eclipses can also occur at night, when you can't see the sun.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_SolarEclipse_02.png" alt="The solar eclipse, with lowered skyColor and increased sunColor." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_SolarEclipse_02.png" alt="The solar eclipse, with lowered skyColor and increased sunColor." class="image__caption image__modal">
 </div>
 
 
@@ -813,7 +813,7 @@ moonColor *= lunarEclipseMask;</code></pre></div>
 <p>The mask needs to be one minus the step because we want the moon to be visible unless it is in the mask. Technically speaking we should be defining an earth radius and use that for the mask, because the mask should represent the earth's shadow. However, for our purposes it works fine to use the sun's radius instead.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_LunarEclipse_01.png" alt="Partial lunar eclipse." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_LunarEclipse_01.png" alt="Partial lunar eclipse." class="image__caption image__modal">
 </div>
 
 <p>If you've seen a lunar eclipses you'll know that it turns slightly red once it gets fully eclipsed. Let's implement that as well. In order to do this we need to know when the moon is nearly fully eclipsed. We do this by using a <cn>smoothstep</cn> function, similarly to calculating <cn>solarEclipse01</cn>. However, this time we want it to be 0 up until the sun and moon are almost oppositely aligned. To do this we multiply the masking radius (the _SunRadius) by a small number (0.05). Finally we <cn>lerp</cn> between the mask and a dark orangish red colour and multiply the moonColor with that. Add or change the highlighted lines.</p>
@@ -826,7 +826,7 @@ moonColor *= lerp(lunarEclipseMask, float3(0.3,0.05,0), lunarEclipse01);</code><
 <p>You can of course change the red moon color or even add a property for it to control from the inspector.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_LunarEclipse_02.png" alt="Total lunar eclipse." class="image__caption image__modal round">
+    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_LunarEclipse_02.png" alt="Total lunar eclipse." class="image__caption image__modal">
 </div>
 
 
