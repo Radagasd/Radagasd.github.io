@@ -8,7 +8,7 @@ image: /assets/posts/tutorials/paper-lanterns/preview_still.jpg
 ---
 
 <div class="container video__container round gif">
-    <video src="/assets/posts/tutorials/paper-lanterns/preview.mp4" autoplay muted loop></video>
+    <video class="video_local" src="/assets/posts/tutorials/paper-lanterns/preview.mp4" autoplay muted loop></video>
 </div>
 
 <p>This is a small <b>shader graph</b> tutorial on how to recreate my Paper Lantern shader as seen above. It is a slightly simplified version of the shader in my <a href="{{ site.baseurl }}/2021/05/19/paper-lantern-festival">Paper Lantern Festival</a> post.</p>
@@ -74,7 +74,7 @@ image: /assets/posts/tutorials/paper-lanterns/preview_still.jpg
 <p>The flickering itself consists of a <b>Time</b> node which is offset by our noise. We multiply it by a float property for the speed (which is varied by our noise). We then apply our periodic function, \(\sin (t + 2 \sin (t))\), and <b>Remap</b> the outcome from a (-1, 1) range to a flickering range that we set through a property.</p>
 <p>Finally we use the output for flickering the brightness as seen in the previous section. This should result in the following behaviour.</p>
 <div class="video__container round gif">
-    <video src="/assets//posts/tutorials/paper-lanterns/Flickering_2x.mp4" autoplay muted loop></video>
+    <video class="video_local" src="/assets//posts/tutorials/paper-lanterns/Flickering_2x.mp4" autoplay muted loop></video>
     <div class="caption__text round">
         FlickerSpeed = 2, FlickerRange = (0.8, 1)
     </div>
@@ -88,7 +88,7 @@ image: /assets/posts/tutorials/paper-lanterns/preview_still.jpg
 <p>In order to have some more control on where the texture is applied we split the <b>UV</b> node and <b>Remap</b> the v-component from a <b>TextureHeightRange</b> property to a (0, 1) range and saturate it. We supply this altered uv, as well as a <b>Tiling</b> property, to a <b>Tiling And Offset</b> node. Finally we sample a 2D texture and lerp between our <b>Color</b> property and the texture depending on the texture’s alpha channel. Be sure to set your texture property mode to <b>Black</b>, such that the alpha = 0 if there is no texture applied.</p>
 <p>This texture/color is then multiplied with our previous output (wrinkle mask & light flickering) and that’s it. This should then result in our final shader that looks as follows. The texture can be found in project files (text should read <em>Sensō-ji</em>)</p>
 <div class="video__container round gif">
-    <video src="/assets//posts/tutorials/paper-lanterns/Texture_2x.mp4" autoplay muted loop></video>
+    <video class="video_local" src="/assets//posts/tutorials/paper-lanterns/Texture_2x.mp4" autoplay muted loop></video>
     <div class="caption__text round">
         HDR colour set to H = 35, S = 72, V = 75, I = 1.365. Tiling = (2,1), TextureHeightRange = (0.2, 0.8).
     </div>
