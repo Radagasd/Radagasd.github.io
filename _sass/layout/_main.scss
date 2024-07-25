@@ -21,21 +21,21 @@ h2 {
 
 .main-content{
     padding: 1rem;
-    background-color: var(--bg-main);
-    box-shadow: 0 0 0.5rem var(--shadow-main) inset;
+    //background-color: var(--bg-main);
+    //box-shadow: 0 0 0.5rem var(--shadow-main) inset;
 }
 
 .main-whitespace{
-    background-color: var(--bg-variation);
+    //background-color: var(--bg-variation);
     height: 100%;
 }
 
 .main-whitespace.shadow-left{
-    box-shadow: -0.5rem 0.5rem 0.5rem var(--shadow-sides) inset, 0rem -0.5rem 0.5rem var(--shadow-sides) inset;
+    //box-shadow: -0.5rem 0.5rem 0.5rem var(--shadow-sides) inset, 0rem -0.5rem 0.5rem var(--shadow-sides) inset;
 }
 
 .main-whitespace.shadow-right{
-    box-shadow: 0.5rem 0.5rem 0.5rem var(--shadow-sides) inset, 0rem -0.5rem 0.5rem var(--shadow-sides) inset;
+    //box-shadow: 0.5rem 0.5rem 0.5rem var(--shadow-sides) inset, 0rem -0.5rem 0.5rem var(--shadow-sides) inset;
 }
 
 
