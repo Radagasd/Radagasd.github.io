@@ -23,6 +23,15 @@
     object-fit: contain;
     width: 100%;
     max-height: 100%;
+
+    mask: 
+        linear-gradient(to top,  transparent 0%, #fff 5% 95%, transparent 100%),
+        linear-gradient(to left, transparent 0%, #fff 5% 95%, transparent 100%);
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-composite: intersect;
+
+        //mask-image: linear-gradient(black 90%, transparent);
 }
 
 @media only screen and (max-width: $mediumdevice-width){
