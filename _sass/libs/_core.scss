@@ -35,8 +35,6 @@ hr{
     overflow: auto;
 }
 
-
-
 .container__code{
     display: grid;
 }
@@ -210,13 +208,12 @@ li ol > li:before {
     position: relative;
     font-size: large;
     font-weight: bold;
-    // outline: none;
     border: 0.2em solid var(--accent4);
-    background-color: var(--accent4);
-    color: var(--text-white);
+    background-color: var(--bg-header);
+    color: var(--accent4);
     cursor: pointer;
     padding: 0.5em;
-    border-radius: 0.3em;
+    border-radius: var(--round-radius);
 }
 
 .note__base{
