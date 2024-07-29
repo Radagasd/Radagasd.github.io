@@ -52,25 +52,24 @@
 
     function addPostPreview(i)
     {
+        var post = previewIndex[i];
+
+        var link = document.createElement('a');
+        link.href = post.url;
+        previewGrid.appendChild(link);
+
         var previewContainer = document.createElement('div');
         previewContainer.classList.add('container', 'video__container', 'preview', 'round');
-        previewGrid.appendChild(previewContainer);
-
-        var post = previewIndex[i];
+        link.appendChild(previewContainer);
         
         if(post.videoUrl != "")
         {
-            var videoLink = document.createElement('a');
-            videoLink.href = post.url;
-
             var video = document.createElement('video');
             video.src = "/" + post.videoUrl;
             video.autoplay = true;
             video.muted = true;
             video.loop = true;
-
-            videoLink.appendChild(video);
-            previewContainer.appendChild(videoLink);
+            previewContainer.appendChild(video);
         }
         else
         {

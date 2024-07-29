@@ -12,8 +12,7 @@
     pointer-events: none;
 }
 
-.video__container::after
-{
+.video__container::after{
   content: '';
   position: absolute;
   top: 0;
@@ -23,6 +22,12 @@
   box-shadow: inset 0 0 12px 0 var(--container-shadow);
   border-radius: var(--round-radius);
   overflow: hidden;
+}
+
+a .video__container:hover::after{
+    box-shadow: 0 0 6px 0 var(--container-shadow);
+    // box-shadow: 0 0 0 6px var(--accent1);
+    // box-shadow: inset 0 0 6px 6px var(--bg-header);
 }
 
 // .video__container:hover{
