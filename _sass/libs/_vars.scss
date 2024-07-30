@@ -1,13 +1,20 @@
 :root {
     //--bg-header : (0,0,0,0);
-    --bg-header : hsl(80, 100%, 96%);
+    --bg-header : #ebece7;
     --container-shadow : hsl(0, 0%, 10%);
 
     --round-radius : 0.3rem;
+
+    --accent1               : #a3c86b;
+    --accent2               : #ee5622; // likely deprecate
+    --accent3               : #deb275; // likely deprecate
+    --accent4               : #228ebf;
+    --accent5               : #f76f71;
 }
 
 :root.light {
     //--bg-header             : hsl(0, 0%, 100%);
+    --bg-header : #ebece7;
     --bg-main               : hsl(0, 0%, 92%);
     --bg-variation          : hsl(0, 0%, 95%);
     --bg-contrast           : hsl(0, 0%, 20%);
@@ -22,15 +29,16 @@
     --text-mark             : hsl(123, 50%, 80%);
     --text-mark-contrast    : hsl(123, 50%, 20%);
 
-    --accent1               : #4abf50;
-    --accent2               : #ee5622;
-    --accent3               : #eca72c;
-    --accent4               : #2d7dd2;
-    --accent5               : #914d76;
+    // --accent1               : #a3c86b;
+    // --accent2               : #ee5622;
+    // --accent3               : #eca72c;
+    // --accent4               : #228ebf;
+    // --accent5               : #914d76;
 }
 
 :root.dark {
     //--bg-header             : hsl(0, 0%, 20%);
+    --bg-header             : #4d5d6a;
     --bg-main               : hsl(0, 0%, 30%);
     --bg-variation          : hsl(0, 0%, 25%);
     --bg-contrast           : hsl(0, 0%, 80%);
@@ -39,17 +47,17 @@
     --shadow-main           : rgba(0, 0, 0, 5%);
     --shadow-sides          : rgba(0, 0, 0, 10%);
 
-    --text                  : hsl(0, 0%, 80%);
+    --text                  : #ebece7;
     --text-contrast         : hsl(0, 0%, 10%);
     --text-white            : hsl(0, 0%, 100%);
     --text-mark             : hsl(123, 50%, 20%);
     --text-mark-contrast    : hsl(123, 50%, 80%);
 
-    --accent1               : #4abf50;
-    --accent2               : #ee5622;
-    --accent3               : #eca72c;
-    --accent4               : #2d7dd2;
-    --accent5               : hsl(324, 31%, 50%);
+    // --accent1               : #4abf50;
+    // --accent2               : #ee5622;
+    // --accent3               : #eca72c;
+    // --accent4               : #2d7dd2;
+    // --accent5               : hsl(324, 31%, 50%);
 }
 
 // $phone-width: 600px;
