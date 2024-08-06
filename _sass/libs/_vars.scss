@@ -15,9 +15,9 @@
 :root.light {
     //--bg-header             : hsl(0, 0%, 100%);
     --bg-header : #ebece7;
-    --bg-main               : hsl(0, 0%, 92%);
+    --bg-main               : #ebece7;
     --bg-variation          : hsl(0, 0%, 95%);
-    --bg-contrast           : hsl(0, 0%, 20%);
+    --bg-contrast           : #4d5d6a;
     --bg-caption            : hsl(0, 0%, 20%);
 
     --shadow-main           : rgba(0, 0, 0, 5%);
@@ -39,9 +39,9 @@
 :root.dark {
     //--bg-header             : hsl(0, 0%, 20%);
     --bg-header             : #4d5d6a;
-    --bg-main               : hsl(0, 0%, 30%);
+    --bg-main               : #4d5d6a;
     --bg-variation          : hsl(0, 0%, 25%);
-    --bg-contrast           : hsl(0, 0%, 80%);
+    --bg-contrast           : #ebece7;
     --bg-caption            : hsl(0, 0%, 20%);
 
     --shadow-main           : rgba(0, 0, 0, 5%);

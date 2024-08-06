@@ -4,6 +4,7 @@
 @import 'libs/images';
 @import 'libs/videos';
 @import 'libs/collapsible';
+@import 'libs/menu';
 
 html {
     scroll-behavior: smooth;
@@ -228,7 +229,7 @@ li ol > li:before {
 .theme-btn{
     border: 0;
     background: transparent;
-    color: var(--text);
+    color: var(--text-contrast);
     font-size: xx-large;
     vertical-align: middle;
     cursor: pointer;
