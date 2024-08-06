@@ -21,8 +21,13 @@
     left: 20px;
     width: 26px;
     height: 26px;
+    
     cursor: pointer;
     z-index: 2;
+    // Button background
+    box-shadow: 0 0 0 8px var(--bg-contrast);
+    border-radius: 4px;
+    background-color: var(--bg-contrast);
 }
 .menu__btn > span,
 .menu__btn > span::before,
@@ -30,17 +35,18 @@
     display: block;
     position: absolute;
     width: 100%;
-    height: 2px;
+    height: 4px;
+    top: 11px;
     background-color: var(--accent1);
     transition-duration: .25s;
 }
 .menu__btn > span::before {
     content: '';
-    top: -8px;
+    top: -11px;
 }
 .menu__btn > span::after {
     content: '';
-    top: 8px;
+    top: 11px;
 }
 .menu__box {
     display: block;
