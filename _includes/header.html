@@ -4,20 +4,24 @@
     <!-- Header -->
     <header id="header">
 
-        <div class="hamburger-menu">
+        <div id="hamburger-menu">
             <input id="menu__toggle" type="checkbox" />
             <label class="menu__btn" for="menu__toggle">
-            <span></span>
-            </label>
+                <div class="menu__icon">
+                    <span></span>
+                </div>
 
-            <ul class="menu__box">
-            <li><a class="menu__item" href="{{ site.baseurl }}/">Home</a></li>
-            {% assign navlist = site.html_pages | where_exp:"item","item.nav-menu >= 0" | sort: 'nav-menu' %}
-            {% for page in navlist %}
-                <li><a class="menu__item" href="{{ page.url | absolute_url }}">{{ page.title }}</a></li>
-            {% endfor %}
-            <li><button class="theme-btn" onclick="mySwitchTheme()"><i class="fas fa-adjust"></i></button></li>
-            </ul>
+                <ul class="menu__box">
+                    <li><a class="menu__item" href="{{ site.baseurl }}/">Home</a></li>
+                    {% assign navlist = site.html_pages | where_exp:"item","item.nav-menu >= 0" | sort: 'nav-menu' %}
+                    {% for page in navlist %}
+                    <li><a class="menu__item" href="{{ page.url | absolute_url }}">{{ page.title }}</a></li>
+                    {% endfor %}
+                    <li><button class="theme-btn" onclick="mySwitchTheme()"><i class="fas fa-adjust"></i></button></li>
+                </ul>
+
+                <div class="menu__overlay"></div>
+            </label>   
         </div>
 
         <!-- <div class="navbar">
