@@ -42,5 +42,23 @@
         font-weight: bold;
         font-size: xx-large;
         line-height: normal;
-    }    
+    }
+
+    .header-grid{
+        display: grid;
+        align-items: center;
+        grid-template-columns: 1fr $mediumdevice-width 1fr;
+    }
+    
+    @media screen and (max-width: $mediumdevice-width){
+        .header-grid{
+            grid-template-columns: 0fr 1fr 0fr;
+            position: fixed;
+
+            top:0;
+            left:0;
+            width: 100%;
+            z-index: 5;
+        }
+    }
 }
