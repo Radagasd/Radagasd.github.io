@@ -112,11 +112,19 @@
     opacity: 0.4;
 }
 
-// @media screen and (max-width: 750px) {
-//     #main-menu {
-//         display: none;
-//     }
-//     #hamburger-menu {
-//         display: inline;
-//     }
-// }
+@media screen and (max-width: $mediumdevice-width) {
+    // #main-menu {
+    //     display: none;
+    // }
+
+
+
+    // #hamburger-menu {
+    //     display: inline;
+    // }
+
+    // .menu__btn {
+    //     position: relative;
+    // }
+}
+
