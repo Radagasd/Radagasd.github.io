@@ -51,9 +51,8 @@
     }
 
     .title-box{
-        // display: grid;
+        display: block;
         align-items: center;
-        // grid-template-columns: 0fr $mediumdevice-width 0fr;
         
         text-align: center;
         width: 100%;
@@ -61,10 +60,8 @@
         background-color: var(--bg-header);
     
         border-bottom: .2em solid var(--accent1);
-        // border-top: .2em solid var(--accent1);
     
         margin-bottom: 2em;
-        // margin-top: 1em;
     }
     
     @media screen and (max-width: $mediumdevice-width){
@@ -77,9 +74,5 @@
             width: 100%;
             z-index: 5;
         }
-
-        // .title-box{
-        //     grid-template-columns: auto auto 0rem;
-        // }
     }
 }

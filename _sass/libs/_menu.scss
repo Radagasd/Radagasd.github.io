@@ -13,6 +13,7 @@
 }
 
 .menu__btn {
+    display: block;
     position: fixed;
     top: 20px;
     left: calc(1rem + 8px); // Add box-shadow
@@ -123,8 +124,8 @@
     //     display: inline;
     // }
 
-    // .menu__btn {
-    //     position: relative;
-    // }
+    .menu__btn {
+        position: relative;
+    }
 }
 
