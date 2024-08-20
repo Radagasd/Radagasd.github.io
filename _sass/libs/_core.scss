@@ -76,11 +76,11 @@ li ol > li:before {
 .social__container--extended{
     display: flex;
     width: fit-content;
-    color: var(--text-contrast);
+    color: var(--text-white);
 
     border-radius: 0.3rem;
-    border: 0.3rem solid var(--text);
-    background-color: var(--text);
+    border: 0.3rem solid var(--bg-note);
+    background-color: var(--bg-note);
     transition: ease-in-out 0.3s;
 
     // text-decoration: none;
