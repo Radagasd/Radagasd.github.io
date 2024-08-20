@@ -202,9 +202,9 @@ li ol > li:before {
 
 .note__base{
     position: relative;
-    border: 0.3rem solid var(--bg-contrast);
-    background-color: var(--bg-contrast);
-    color: var(--text-contrast);
+    border: 0.3rem solid var(--bg-note);
+    background-color: var(--bg-note);
+    color: var(--text-white);
     padding: 0 0.5rem;
     margin: 0.5rem 0;
 }
