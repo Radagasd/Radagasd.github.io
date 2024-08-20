@@ -14,7 +14,7 @@ a:hover{
 // Code names, like function or variable names
 cn{
     // color: inherit;
-    color: var(--accent5);
+    color: var(--accent3);
     font-size: 0.8em;
     font-weight: bold;
 }
@@ -33,12 +33,12 @@ cn{
 #tooltip
 {
     text-align: center;
-    color: var(--text-contrast);
-    background: var(--bg-contrast);
+    color: var(--text-white);
+    background: var(--bg-note);
     position: absolute;
     z-index: 20;
     padding: 0.3em;
-    border-radius: 0.3rem;
+    border-radius: var(--round-radius);
     border: 0.15rem solid var(--accent1);
 
     font-size: medium;

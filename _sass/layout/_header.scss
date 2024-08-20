@@ -1,5 +1,5 @@
 #header{
-    background: var(--bg-header);
+    background: var(--bg-main);
     font-family: Palatino, serif;
 
     .navbar{
@@ -25,16 +25,16 @@
         padding: 0.3em;
         margin: 0.2em;
 
-        background-color: var(--bg-header);
+        background-color: var(--bg-main);
         border: 0.2em solid var(--accent1);
-        border-radius: 0.5em;
+        border-radius: var(--round-radius);
 
         transition: all 0.3s ease-in-out;
     }     
 
     .navbar a:hover{
         background-color: var(--accent1);
-        color: var(--text-contrast);
+        color: var(--text-white);
     }
 
     .navbar .logo
@@ -60,7 +60,7 @@
         text-align: center;
         width: 100%;
     
-        background-color: var(--bg-header);
+        background-color: var(--bg-main);
     
         border-bottom: .2em solid var(--accent1);
     

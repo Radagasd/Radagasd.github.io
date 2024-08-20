@@ -31,15 +31,8 @@
     align-items: top;
 }
 
+// TODO: homepage refactor
 .grid__columns-2-1{
-    position: relative;
-    display: grid;
-    width: 100%;
-    gap: 1rem;
-    grid-template-columns: 2fr 1fr;
-}
-
-.grid__columns-2-1--exact{
     position: relative;
     display: grid;
     width: 100%;

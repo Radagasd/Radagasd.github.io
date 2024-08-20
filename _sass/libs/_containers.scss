@@ -35,7 +35,7 @@
 }
 
 .caption__text-mathjax{
-    color: var(--text-contrast);
+    color: var(--text-white);
 }
 
 .caption__text--overlay{
@@ -70,8 +70,8 @@
 
 .container__list{
     position: relative;
-    border: 0.3rem solid var(--accent4);
-    background-color: var(--accent4);
+    border: 0.3rem solid var(--accent2);
+    background-color: var(--accent2);
     color: var(--text-white);
     padding: 0.5rem;
 }

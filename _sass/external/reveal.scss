@@ -72,7 +72,7 @@
 	top: 50%;
 	width: 3rem;//50px;
 	height: 30px;
-	border-radius: 0.3rem;
+	border-radius: var(--round-radius);
 	background: var(--bg-note);
 	left: calc(2px - 1.5rem);//-23px;
 	border: 1px solid var(--accent3);

@@ -1,56 +1,37 @@
 :root {
-    //--bg-header : (0,0,0,0);
-    --bg-header             : #ebece7;
     --container-shadow      : hsl(0, 0%, 10%);
 
     --round-radius          : 0.3rem;
+    --round-radius-inner    : 0.2rem;
 
     --bg-note               : #2d2d2d;
+    --text-white            : hsl(0, 0%, 100%);
 
     --accent1               : #a3c86b;
-    --accent2               : #f76f71; // likely deprecate
-    --accent3               : #deb275; // likely deprecate
-    --accent4               : #228ebf;
-    --accent5               : #ee5622;
+    --accent2               : #228ebf;
+    --accent3               : #ee5622;
+
+    // --accent4               : #deb275;
+    // --accent5               : #f76f71;
 }
 
 :root.light {
-    --bg-header             : #ebece7;
     --bg-main               : #ebece7;
-    --bg-variation          : hsl(0, 0%, 95%);
     --bg-contrast           : #4d5d6a;
 
-    --shadow-main           : rgba(0, 0, 0, 5%);
-    --shadow-sides          : rgba(0, 0, 0, 10%);
-
     --text                  : hsl(0, 0%, 10%);
-    --text-contrast         : hsl(0, 0%, 100%);
-    --text-white            : hsl(0, 0%, 100%);
-    --text-mark             : hsl(123, 50%, 80%);
-    --text-mark-contrast    : hsl(123, 50%, 20%);
 }
 
 :root.dark {
-    --bg-header             : #4d5d6a;
     --bg-main               : #4d5d6a;
-    --bg-variation          : hsl(0, 0%, 25%);
     --bg-contrast           : #ebece7;
-    
-
-    --shadow-main           : rgba(0, 0, 0, 5%);
-    --shadow-sides          : rgba(0, 0, 0, 10%);
 
     --text                  : #ebece7;
-    --text-contrast         : hsl(0, 0%, 10%);
-    --text-white            : hsl(0, 0%, 100%);
-    --text-mark             : hsl(123, 50%, 20%);
-    --text-mark-contrast    : hsl(123, 50%, 80%);
 }
 
 // $phone-width: 600px;
-$mediumdevice-width: 1080px;//768px;
-
-$mediumdevice-width-2-1: 720px;
+$mediumdevice-width: 1080px;
+$mediumdevice-width-2-1: 720px; // TODO: home page refactor
 
 // Starting width for sticky header, taking into account hamburger button
 // medium-width + button and padding

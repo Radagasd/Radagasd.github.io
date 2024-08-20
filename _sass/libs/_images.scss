@@ -1,14 +1,7 @@
 .image__container{
-    position: relative;
-
-    // display:grid;
-    // gap: 0.3rem;
-    
+    position: relative;    
     width: fit-content;
     height: fit-content;
-
-    // background-color: var(--accent3);
-    // border: 0.3rem solid var(--accent3);
     pointer-events: none;
 }
 

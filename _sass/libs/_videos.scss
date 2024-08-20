@@ -1,14 +1,6 @@
 .video__container{
     position: relative;
-
-    // display: grid;
-    // gap: 0.3rem;
-
     width: 100%;
-    // height:100%;
-
-    // background-color: var(--accent2);
-    // border: 0.3rem solid var(--accent2);
     pointer-events: none;
 }
 
@@ -26,23 +18,7 @@
 
 a .video__container:hover::after{
     box-shadow: 0 0 6px 0 var(--container-shadow);
-    // box-shadow: 0 0 0 6px var(--accent1);
-    // box-shadow: inset 0 0 6px 6px var(--bg-header);
 }
-
-// .video__container:hover{
-//     box-shadow: inset 0 0 6px 6px var(--bg-header);
-// }
-
-// .video__container.gif{
-//     background-color: var(--accent2);
-//     border: 0.3rem solid var(--accent2);
-// }
-
-// .video__container.preview{
-//     background-color: var(--accent1);
-//     border: 0.3rem solid var(--accent1);
-// }
 
 .video__container.youtube{
     position: relative;
