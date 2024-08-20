@@ -68,3 +68,11 @@ $mediumdevice-width-2-1: 720px;
 // Starting width for sticky header, taking into account hamburger button
 // medium-width + button and padding
 $sticky-header-width: calc(1080px + 7rem);
+
+
+// Z-indices
+// 100 Modals
+// 20 Tooltip
+// 11-10 hamburger
+// 5 Header
+// 1 Container

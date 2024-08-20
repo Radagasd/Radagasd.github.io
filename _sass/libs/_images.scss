@@ -65,7 +65,7 @@ a .image__container:hover::after{
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 2; /* Sit on top */
+    z-index: 100; /* Sit on top */
     padding-top: 5vh; /* Location of the box */
     left: 0;
     top: 0;
