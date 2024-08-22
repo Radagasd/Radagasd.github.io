@@ -20,8 +20,6 @@
         {% assign postlist = site.posts | where:"category", page.category | sort %}
         {% if postlist.size > 1 %}
           <div class="post__navigation">
-            
-
             {% for item in postlist %}
               {% if item.title == page.title %}
                 {% unless forloop.last %}

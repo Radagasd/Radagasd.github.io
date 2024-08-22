@@ -23,3 +23,83 @@
     color: var(--text-white);
     padding: 0.5rem;
 }
+
+.container__code{
+    display: grid;
+}
+
+.container__code.line-numbers{
+    margin: 0;
+}
+
+// TODO: Some of the social containers could be deprecated
+.social__container--extended{
+    display: flex;
+    width: fit-content;
+    color: var(--text-white);
+
+    border-radius: var(--round-radius);
+    border: 0.3rem solid var(--bg-note);
+    background-color: var(--bg-note);
+    transition: ease-in-out 0.3s;
+
+    // text-decoration: none;
+
+    margin: 0.5rem;
+}
+
+.social__container--extended:hover{
+    border-color: var(--accent1);
+    background-color: var(--accent1);
+}
+
+.social__container--compact{
+    display: inline-flex;
+    width: fit-content;
+    color: var(--text-white);
+
+    border-radius: var(--round-radius);
+    border: 0.3rem solid var(--bg-note);
+    background-color: var(--bg-note);
+    transition: ease-in-out 0.3s;
+
+    margin: 0.5rem 0;
+}
+
+.social__container--compact:hover{
+    border-color: var(--accent1);
+    background-color: var(--accent1);
+}
+
+.social__container--extending{
+    display: inline-flex;
+    width: fit-content;
+    color: var(--text-white);
+
+    border-radius: var(--round-radius);
+    border: 0.3rem solid var(--bg-note);
+    background-color: var(--bg-note);
+    transition: ease-in-out 0.3s;
+
+    margin: 0.5rem 0;
+}
+
+.social__container--extending:hover{
+    border-color: var(--accent1);
+    background-color: var(--accent1);
+}
+
+.social__container--extending span{
+    max-width: 0;
+    -webkit-transition: max-width 1s;
+    
+    transition: ease 2s;
+    display: inline-block;
+    vertical-align: top;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.social__container--extending:hover span{
+    max-width: 30em;
+}

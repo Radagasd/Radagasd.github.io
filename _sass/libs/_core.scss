@@ -1,11 +1,12 @@
 @import 'libs/text';
 @import 'libs/grids';
+@import 'libs/menu';
 @import 'libs/containers';
+@import 'libs/buttons';
 @import 'libs/captions';
 @import 'libs/images';
 @import 'libs/videos';
 @import 'libs/collapsible';
-@import 'libs/menu';
 
 html {
     scroll-behavior: smooth;
@@ -16,17 +17,6 @@ pre {
     width: 100%;
 }
 
-mark{
-    background-color: var(--text-mark);
-    border-radius: var(--round-radius);
-    padding: 0 0.15em;
-    color: inherit;
-}
-
-.note__base mark{
-    background-color: var(--text-mark-contrast);
-}
-
 hr{
     border-top: 0.2rem solid var(--accent1);
 }
@@ -35,14 +25,6 @@ hr{
     display: grid; 
     max-width: 100%; 
     overflow: auto;
-}
-
-.container__code{
-    display: grid;
-}
-
-.container__code.line-numbers{
-    margin: 0;
 }
 
 // Decimal list
@@ -74,77 +56,14 @@ li ol > li:before {
     content: counters(item, ".") " ";
 }
 
-.social__container--extended{
-    display: flex;
-    width: fit-content;
-    color: var(--text-white);
-
+.round{
     border-radius: var(--round-radius);
-    border: 0.3rem solid var(--bg-note);
-    background-color: var(--bg-note);
-    transition: ease-in-out 0.3s;
-
-    // text-decoration: none;
-
-    margin: 0.5rem;
 }
 
-.social__container--extended:hover{
-    border-color: var(--accent1);
-    background-color: var(--accent1);
+// If only css had inheritance :'(
+.innerRound, .image__modal, .caption__text, .caption__text--hover, .caption__text--overlay{
+    border-radius: var(--round-radius-inner);
 }
-
-.social__container--compact{
-    display: inline-flex;
-    width: fit-content;
-    color: var(--text-white);
-
-    border-radius: var(--round-radius);
-    border: 0.3rem solid var(--bg-note);
-    background-color: var(--bg-note);
-    transition: ease-in-out 0.3s;
-
-    margin: 0.5rem 0;
-}
-
-.social__container--compact:hover{
-    border-color: var(--accent1);
-    background-color: var(--accent1);
-}
-
-.social__container--extending{
-    display: inline-flex;
-    width: fit-content;
-    color: var(--text-white);
-
-    border-radius: var(--round-radius);
-    border: 0.3rem solid var(--bg-note);
-    background-color: var(--bg-note);
-    transition: ease-in-out 0.3s;
-
-    margin: 0.5rem 0;
-}
-
-.social__container--extending:hover{
-    border-color: var(--accent1);
-    background-color: var(--accent1);
-}
-
-.social__container--extending span{
-    max-width: 0;
-    -webkit-transition: max-width 1s;
-    
-    transition: ease 2s;
-    display: inline-block;
-    vertical-align: top;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.social__container--extending:hover span{
-    max-width: 30em;
-}
-
 
 .post__navigation{
     padding: 0.5rem 0.5rem;
@@ -159,48 +78,6 @@ li ol > li:before {
     width: 100%;
 }
 
-.round{
-    border-radius: var(--round-radius);
-}
-
-// If only css had inheritance :'(
-.innerRound, .image__modal, .caption__text, .caption__text--hover, .caption__text--overlay{
-    border-radius: var(--round-radius-inner);
-}
-
-#toTopBtn {
-    visibility: hidden;
-    opacity: 0;
-
-    display: block;
-    position: fixed;
-    bottom: 1em;
-    right: 2em;
-    z-index: 1;
-    font-size: medium;
-    outline: none;
-    border: 0.2em solid var(--accent1);
-    background-color: var(--accent1);
-    color: var(--text-white);
-    cursor: pointer;
-    padding: 0.5em;
-    border-radius: 0.5em;
-
-    transition: 0.3s, visibility 0s, opacity 0.5s;
-}
-
-#loadMorePostsBtn {
-    position: relative;
-    font-size: large;
-    font-weight: bold;
-    border: 0.2em solid var(--accent2);
-    background-color: var(--accent2);
-    color: var(--text-white);
-    cursor: pointer;
-    padding: 0.5em;
-    border-radius: var(--round-radius);
-}
-
 .note__base{
     position: relative;
     border: 0.3rem solid var(--bg-note);
@@ -208,14 +85,4 @@ li ol > li:before {
     color: var(--text-white);
     padding: 0 0.5rem;
     margin: 0.5rem 0;
-}
-
-.theme-btn{
-    border: 0;
-    background: transparent;
-    color: var(--accent1);
-    font-size: xx-large;
-    vertical-align: middle;
-    rotate: 90deg;
-    cursor: pointer;
 }
