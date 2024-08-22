@@ -1,7 +1,6 @@
 // Links
 a{
     color: inherit;
-    // font-weight: normal;
     text-decoration: underline;
     text-decoration-style:solid;
     text-decoration-thickness: 0.05em;
@@ -13,12 +12,12 @@ a:hover{
 
 // Code names, like function or variable names
 cn{
-    // color: inherit;
     color: var(--accent3);
     font-size: 0.8em;
     font-weight: bold;
 }
 
+// TODO: find use case for tooltips, otherwise remove
 // Tooltips
 .tooltip{
     position: relative;
@@ -77,14 +76,4 @@ cn{
     right: 0.6rem;
     left: auto;
     margin: 0;
-}
-
-
-// Testing -------------------------------------------------------------------
-.style1 a.a--local{
-    text-decoration-style: dotted;
-}
-
-.style1 a:hover.a--local{
-    text-decoration-style: dashed;
 }

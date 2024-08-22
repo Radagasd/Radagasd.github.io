@@ -35,12 +35,14 @@ a .image__container:hover::after{
     pointer-events: auto;
 }
 
+// TODO: homepage refactor
 .portrait{
     object-fit: contain;
     width: 100%;
     max-height: 100%;
 }
 
+// TODO: homepage refactor
 @media only screen and (max-width: $mediumdevice-width-2-1){
     .portrait{
         // $mediumdevice-width / 3
@@ -49,6 +51,7 @@ a .image__container:hover::after{
     }
 }
 
+// TODO: Improve modals, animation and clicking to close
 // Modal Image
 .image__modal{
     cursor: pointer;
