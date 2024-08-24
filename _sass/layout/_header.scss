@@ -1,45 +1,79 @@
 #header{
-    background: var(--bg-header);
+    // TODO: remake navbar for widescreen
+    // .navbar{
+    //     position: relative;
+    //     padding: 0.5rem;
+    //     width: 100%;
 
-    .navbar{
-        position: relative;
-        padding: 0.5rem;
-        width: 100%;
+    //     display: grid;
+    //     grid-template-columns: auto 1fr auto;
 
-        display: grid;
-        grid-template-columns: auto 1fr auto;
+    //     align-items: center;
+    // }
 
-        align-items: center;
-    }
-
-    .navbar a{
-        color: var(--text);
+    // .navbar a{
+    //     color: var(--text);
         
-        text-decoration: none;
-        text-align: center;
-        font-size: large;
-        font-weight: bold;
-        display: inline-block;
+    //     text-decoration: none;
+    //     text-align: center;
+    //     font-size: large;
+    //     font-weight: bold;
+    //     display: inline-block;
 
-        padding: 0.3em;
-        margin: 0.2em;
+    //     padding: 0.3em;
+    //     margin: 0.2em;
 
-        background-color: var(--bg-header);
-        border: 0.2em solid var(--accent1);
-        border-radius: 0.5em;
+    //     background-color: var(--bg-main);
+    //     border: 0.2em solid var(--accent1);
+    //     border-radius: var(--round-radius);
 
-        transition: all 0.3s ease-in-out;
-    }     
+    //     transition: all 0.3s ease-in-out;
+    // }     
 
-    .navbar a:hover{
-        background-color: var(--accent1);
-        color: var(--text-contrast);
+    // .navbar a:hover{
+    //     background-color: var(--accent1);
+    //     color: var(--text-white);
+    // }
+
+    // .navbar .logo
+    // {
+    //     font-weight: bold;
+    //     font-size: xx-large;
+    //     line-height: normal;
+    // }
+
+    .header-grid{
+        display: grid;
+        align-items: center;
+        grid-template-columns: 1fr $mediumdevice-width 1fr;
     }
 
-    .navbar .logo
-    {
-        font-weight: bold;
-        font-size: xx-large;
-        line-height: normal;
-    }    
+    .title-box{
+        display: block;
+        align-items: center;
+
+        padding-left: 3.5rem;
+        padding-right: 3.5rem;
+        
+        text-align: center;
+        width: 100%;
+    
+        background-color: var(--bg-main);
+    
+        border-bottom: .2em solid var(--accent1);
+    
+        margin-bottom: 2em;
+    }
+    
+    @media screen and (max-width: $sticky-header-width){
+        .header-grid{
+            grid-template-columns: 0fr 1fr 0fr;
+            position: fixed;
+
+            top:0;
+            left:0;
+            width: 100%;
+            z-index: 5;
+        }
+    }
 }

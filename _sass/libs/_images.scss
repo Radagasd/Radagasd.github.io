@@ -1,14 +1,29 @@
 .image__container{
-    position: relative;
-
-    display:grid;
-    gap: 0.3rem;
-    
+    position: relative;    
     width: fit-content;
     height: fit-content;
+    pointer-events: none;
+}
 
-    background-color: var(--accent3);
-    border: 0.3rem solid var(--accent3);
+// Draw box shadow on images in container
+.image__container::after{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-shadow: inset 0 0 12px 0 var(--container-shadow);
+  border-radius: var(--round-radius);
+  overflow: hidden;
+}
+
+.image__container:has(img.image__modal):hover::after{
+    box-shadow: 0 0 6px 0 var(--container-shadow);
+}
+
+a .image__container:hover::after{
+    box-shadow: 0 0 6px 0 var(--container-shadow);
 }
 
 .image__container img{
@@ -17,15 +32,18 @@
     object-fit: contain;
 
     width:100%;
+    pointer-events: auto;
 }
 
+// TODO: homepage refactor
 .portrait{
     object-fit: contain;
     width: 100%;
     max-height: 100%;
 }
 
-@media only screen and (max-width: $mediumdevice-width){
+// TODO: homepage refactor
+@media only screen and (max-width: $mediumdevice-width-2-1){
     .portrait{
         // $mediumdevice-width / 3
         max-width: 256px;
@@ -33,6 +51,7 @@
     }
 }
 
+// TODO: Improve modals, animation and clicking to close
 // Modal Image
 .image__modal{
     cursor: pointer;
@@ -42,7 +61,7 @@
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 2; /* Sit on top */
+    z-index: 100; /* Sit on top */
     padding-top: 5vh; /* Location of the box */
     left: 0;
     top: 0;

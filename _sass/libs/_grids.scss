@@ -31,6 +31,7 @@
     align-items: top;
 }
 
+// TODO: homepage refactor
 .grid__columns-2-1{
     position: relative;
     display: grid;
@@ -39,31 +40,13 @@
     grid-template-columns: 2fr 1fr;
 }
 
-.grid__columns-2-1--exact{
-    position: relative;
-    display: grid;
-    width: 100%;
-    gap: 1rem;
-    grid-template-columns: 2fr 1fr;
-}
-
-.grid__columns-1-2--exact{
-    position: relative;
-    display: grid;
-    width: 100%;
-    gap: 1rem;
-    grid-template-columns: 1fr 2fr;
-}
-
-@media only screen and (max-width: $mediumdevice-width) {
-    .grid__maxcolumns--2{
-        grid-template-columns: 1fr;
-    }
+@media only screen and (max-width: $mediumdevice-width-2-1) {
     .grid__columns-2-1{
         grid-template-columns: 1fr;
     }
 }
 
+// TODO: Name looks sus
 .grid-w480px{
     position: relative;
     display: grid;
@@ -88,7 +71,7 @@
     }
 }
 
-.grid-full{
+.grid-fullwidth{
     position: relative;
     display: grid;
     align-items: center;

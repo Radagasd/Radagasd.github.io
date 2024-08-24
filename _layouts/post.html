@@ -11,19 +11,8 @@
     <div class="main-grid">
       
 
-      <div class="main-whitespace shadow-left"></div>
+      <div></div>
       <div class="main-content">
-
-        <div class="title-box">
-          <div></div>
-          <div>
-            <h1>{{page.title}}</h1>
-          </div>
-          <div></div>
-        </div>
-
-        
-        
         
         {{ content }}
 
@@ -31,8 +20,6 @@
         {% assign postlist = site.posts | where:"category", page.category | sort %}
         {% if postlist.size > 1 %}
           <div class="post__navigation">
-            
-
             {% for item in postlist %}
               {% if item.title == page.title %}
                 {% unless forloop.last %}
@@ -58,7 +45,7 @@
         {% include comments.html %}
         
       </div>
-      <div class="main-whitespace shadow-right"></div>
+      <div></div>
       
 
     </div>
