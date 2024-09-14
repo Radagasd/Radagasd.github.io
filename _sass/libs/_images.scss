@@ -44,10 +44,9 @@ a .image__container:hover::after{
 
 // TODO: homepage refactor
 @media only screen and (max-width: $mediumdevice-width-2-1){
-    .portrait{
-        // $mediumdevice-width / 3
-        max-width: 256px;
-        max-height: 100vw;
+    #portrait-container{
+        visibility: hidden;
+        position: absolute;
     }
 }
 
