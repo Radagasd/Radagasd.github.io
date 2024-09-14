@@ -65,10 +65,9 @@
         margin-bottom: 2em;
     }
     
-    @media screen and (max-width: $sticky-header-width){
+    @media screen and (max-width: $header-width){
         .header-grid{
             grid-template-columns: 0fr 1fr 0fr;
-            position: fixed;
 
             top:0;
             left:0;

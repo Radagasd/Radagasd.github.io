@@ -35,7 +35,7 @@ $mediumdevice-width-2-1: 720px; // TODO: home page refactor
 
 // Starting width for sticky header, taking into account hamburger button
 // medium-width + button and padding
-$sticky-header-width: calc(1080px + 7rem);
+$header-width: calc(1080px + 7rem);
 
 
 // Z-indices
