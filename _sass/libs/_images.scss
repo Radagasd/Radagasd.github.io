@@ -35,21 +35,6 @@ a .image__container:hover::after{
     pointer-events: auto;
 }
 
-// TODO: homepage refactor
-.portrait{
-    object-fit: contain;
-    width: 100%;
-    max-height: 100%;
-}
-
-// TODO: homepage refactor
-@media only screen and (max-width: $mediumdevice-width-2-1){
-    #portrait-container{
-        visibility: hidden;
-        position: absolute;
-    }
-}
-
 // TODO: Improve modals, animation and clicking to close
 // Modal Image
 .image__modal{

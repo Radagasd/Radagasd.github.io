@@ -31,21 +31,6 @@
     align-items: top;
 }
 
-// TODO: homepage refactor
-.grid__columns-2-1{
-    position: relative;
-    display: grid;
-    width: 100%;
-    gap: 1rem;
-    grid-template-columns: 2fr 1fr;
-}
-
-@media only screen and (max-width: $mediumdevice-width-2-1) {
-    .grid__columns-2-1{
-        grid-template-columns: 1fr;
-    }
-}
-
 // TODO: Name looks sus
 .grid-w480px{
     position: relative;
