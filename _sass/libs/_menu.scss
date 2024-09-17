@@ -25,6 +25,10 @@
     z-index: 10;    
 }
 
+#menu__toggle:checked + .menu__btn {
+    position: fixed;
+}
+
 .menu__icon{
     display: block;
     width: 100%;
