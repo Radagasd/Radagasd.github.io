@@ -26,6 +26,8 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	pointer-events: all; // explicitely allow pointer events
+	overflow: hidden;
 }
 
 .reveal:not(.reveal-loaded) * {
@@ -57,12 +59,12 @@
 .reveal-bar {
 	position: absolute;
 	top: 0;
-	width: 5px;
+	width: 0.2rem;
 	height: 100%;
-	background: var(--bg-note);
+	background: var(--accent3);
 	-webkit-transform: translate3d(-50%, 0, 0);
 	transform: translate3d(-50%, 0, 0);
-	opacity: 0.7;
+	// opacity: 0.7;
 	cursor: ew-resize;
 	touch-action: none;
 }
@@ -70,20 +72,21 @@
 .reveal-grabber {
 	position: absolute;
 	top: 50%;
-	width: 3rem;//50px;
-	height: 30px;
-	border-radius: var(--round-radius);
+	width: 3rem;
+	height: 3rem;
+	border-radius: 3rem;
 	background: var(--bg-note);
-	left: calc(2px - 1.5rem);//-23px;
-	border: 1px solid var(--accent3);
-	-webkit-transform: translateY(-15px);
-	transform: translateY(-15px);
+	left: -1.4rem; // -0.5*(grabber - bar)
+	border: 0.2rem solid var(--accent3);
 }
 
 .reveal-arrows {
-	position: relative;
-	top: 1px;
-	font-size: 22px;
+	font-size: 1.5rem;
 	color: var(--accent3);
-	text-align: center;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	width: 100%;
 }
