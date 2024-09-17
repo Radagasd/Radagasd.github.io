@@ -4,19 +4,26 @@
 
     display: block;
     position: fixed;
-    bottom: 1em;
-    right: 2em;
-    z-index: 1;
-    font-size: medium;
-    outline: none;
-    border: 0.2em solid var(--accent1);
-    background-color: var(--accent1);
-    color: var(--text-white);
-    cursor: pointer;
-    padding: 0.5em;
-    border-radius: 0.5em;
 
-    transition: 0.3s, visibility 0s, opacity 0.5s;
+    bottom: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    z-index: 1;
+    
+    outline: none;
+    border: 0;
+    border-radius: 0.25rem;
+
+    box-shadow: 0 0 var(--shadow-width-outer) 0 var(--container-shadow);
+
+    background-color: var(--accent1);
+
+    font-size: medium;
+    color: var(--text-white);
+
+    cursor: pointer;
+    transition: 0.3s, visibility 0.5s, opacity 0.5s;
 }
 
 #loadMorePostsBtn {
