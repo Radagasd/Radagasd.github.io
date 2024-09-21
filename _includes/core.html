@@ -150,9 +150,9 @@
 <!-- Modal images -->
 <!-- The Modal -->
 <div id="myModal" class="modal">
-    <span class="close">&times;</span>
+    <button onclick="hideModal()" id="modal-close" title="Close modal"><i class="fas fa-xmark"></i></button>
     <img class="modal-content" id="img01">
-    <div id="caption"></div>
+    <div id="modal-caption"></div>
 </div>
 <!-- The script -->
 <script>
@@ -160,30 +160,33 @@
     var modal = document.getElementById('myModal');
 
     // Get the image and insert it inside the modal - use its "alt" text as a caption
-    var img = document.getElementsByClassName('image__modal');
+    var imgages = document.getElementsByClassName('image__modal');
     var modalImg = document.getElementById("img01");
-    var captionText = document.getElementById("caption");
+    var captionText = document.getElementById("modal-caption");
 
     var showModal = function(){
         modal.style.display = "block";
+        modal.style.opacity = 1.0;
         modalImg.src = this.src;
         captionText.innerHTML = this.alt;
     }
 
-    for (var i = 0; i < img.length; i++) {
-        img[i].addEventListener('click', showModal);
+    for (var i = 0; i < imgages.length; i++) {
+        imgages[i].addEventListener('click', showModal);
     }
 
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
-
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function() { 
+    var hideModal = function(){
         modal.style.display = "none";
+        modal.style.opacity = 0.0;
     }
+
+    var closeBg = document.getElementsByClassName("modal-content")[0];
+    closeBg.onclick = hideModal;
+
+    // Close when escaping
     $('body').keydown(function(e){
         if (e.which==27){
-            modal.style.display = "none";
+            hideModal();
         }
     });
 </script>
