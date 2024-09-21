@@ -149,9 +149,10 @@
 
 <!-- Modal images -->
 <!-- The Modal -->
-<div id="myModal" class="modal">
+<div id="myModal">
+    <div onclick="hideModal()" class="modal-background"></div>
     <button onclick="hideModal()" id="modal-close" title="Close modal"><i class="fas fa-xmark"></i></button>
-    <img class="modal-content" id="img01">
+    <img id="modal-content">
     <div id="modal-caption"></div>
 </div>
 <!-- The script -->
@@ -161,7 +162,7 @@
 
     // Get the image and insert it inside the modal - use its "alt" text as a caption
     var imgages = document.getElementsByClassName('image__modal');
-    var modalImg = document.getElementById("img01");
+    var modalImg = document.getElementById("modal-content");
     var captionText = document.getElementById("modal-caption");
 
     var showModal = function(){
@@ -180,10 +181,7 @@
         modal.style.opacity = 0.0;
     }
 
-    var closeBg = document.getElementsByClassName("modal-content")[0];
-    closeBg.onclick = hideModal;
-
-    // Close when escaping
+    // Close when pressing esc
     $('body').keydown(function(e){
         if (e.which==27){
             hideModal();
