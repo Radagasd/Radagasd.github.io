@@ -41,6 +41,13 @@ a .image__container:hover::after{
     cursor: pointer;
 }
 
+#myModal{
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    transition-duration: 0.25s;
+}
+
 /* The Modal (background) */
 .modal {
     display: none; /* Hidden by default */

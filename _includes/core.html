@@ -165,7 +165,7 @@
     var captionText = document.getElementById("modal-caption");
 
     var showModal = function(){
-        modal.style.display = "block";
+        modal.style.visibility = "visible";
         modal.style.opacity = 1.0;
         modalImg.src = this.src;
         captionText.innerHTML = this.alt;
@@ -176,7 +176,7 @@
     }
 
     var hideModal = function(){
-        modal.style.display = "none";
+        modal.style.visibility = "hidden";
         modal.style.opacity = 0.0;
     }
 
