@@ -150,6 +150,7 @@
 <!-- Modal images -->
 <!-- The Modal -->
 <div id="myModal" class="modal">
+    <div onclick="hideModal()" class="modal-background"></div>
     <button onclick="hideModal()" id="modal-close" title="Close modal"><i class="fas fa-xmark"></i></button>
     <img class="modal-content" id="img01">
     <div id="modal-caption"></div>
@@ -180,10 +181,7 @@
         modal.style.opacity = 0.0;
     }
 
-    var closeBg = document.getElementsByClassName("modal-content")[0];
-    closeBg.onclick = hideModal;
-
-    // Close when escaping
+    // Close when pressing esc
     $('body').keydown(function(e){
         if (e.which==27){
             hideModal();

@@ -35,14 +35,12 @@ a .image__container:hover::after{
     pointer-events: auto;
 }
 
-// TODO: Improve modals, animation and clicking to close
 // Modal Image
 .image__modal{
     cursor: pointer;
 }
 
 #myModal{
-    display: block;
     visibility: hidden;
     opacity: 0;
     transition-duration: 0.25s;
@@ -50,28 +48,33 @@ a .image__container:hover::after{
 
 /* The Modal (background) */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 100; /* Sit on top */
-    padding-top: 5vh; /* Location of the box */
+    position: fixed;
+    z-index: 100;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto; /* Enable scroll if needed */
+    overflow: auto;
+}
+
+.modal-background{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
     background-color: rgba(0,0,0,0.9);
 }
 
-/* Modal Content (image) */
 .modal-content {
+    padding-top: 1rem;
     margin: auto;
     display: block;
     width: 90%;
     max-height: 90%;
     object-fit: contain;
+    pointer-events: none;
 }
 
-/* Caption of Modal Image */
 #modal-caption {
     margin: auto;
     display: block;
@@ -82,7 +85,6 @@ a .image__container:hover::after{
     padding: 0.5em 0;
 }
 
-/* The Close Button */
 #modal-close {
     position: absolute;
 
