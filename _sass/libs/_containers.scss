@@ -22,6 +22,12 @@
     background-color: var(--accent4);
     color: var(--text-white);
     padding: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+// Reduce bullet point padding, better for narrow screens
+.container__list ul{
+    padding-inline-start: 1em;
 }
 
 .container__code{

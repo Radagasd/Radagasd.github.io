@@ -66,6 +66,10 @@ li ol > li:before {
     border-radius: var(--round-radius-inner);
 }
 
+.margin--vertical{
+    margin: 0.5rem 0;
+}
+
 .post__navigation{
     padding: 0.5rem 0.5rem;
     background-color: var(--bg-main);
