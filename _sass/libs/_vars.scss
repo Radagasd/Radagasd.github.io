@@ -1,4 +1,4 @@
-:root {
+html {
     --container-shadow      : hsl(0, 0%, 10%);
 
     --round-radius          : 0.3rem;
@@ -14,19 +14,32 @@
 
     --shadow-width-inner    : 0.6rem;
     --shadow-width-outer    : 0.4rem;
-}
 
-:root.light {
+    // Color scheme specific
     --bg-main               : #ebece7;
     --bg-contrast           : #4d5d6a;
-
     --text                  : hsl(0, 0%, 10%);
 }
 
-:root.dark {
+@media (prefers-color-scheme: dark) {
+	html {
+		--bg-main               : #4d5d6a;
+        --bg-contrast           : #2d2d2d;
+        --text                  : #ebece7;
+	}
+}
+
+// Light override
+html.light{
+    --bg-main               : #ebece7;
+    --bg-contrast           : #4d5d6a;
+    --text                  : hsl(0, 0%, 10%);
+}
+
+// Dark override
+html.dark{
     --bg-main               : #4d5d6a;
     --bg-contrast           : #2d2d2d;
-
     --text                  : #ebece7;
 }
 
