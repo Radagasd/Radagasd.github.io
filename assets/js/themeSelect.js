@@ -1,10 +1,10 @@
 const setTheme = (theme) => {
     document.documentElement.className = theme;
-    localStorage.setItem('theme', theme);
+    sessionStorage.setItem('theme', theme);
 }
 
 const getTheme = () => {
-    const theme = localStorage.getItem('theme');
+    const theme = sessionStorage.getItem('theme');
     theme && setTheme(theme);
 }
 
@@ -12,7 +12,9 @@ getTheme();
 
 const mySwitchTheme = _ =>
 {
-  if(document.documentElement.className == "light" || document.documentElement.className == "")
+  let systemInitiatedDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+  if(document.documentElement.className == "light" || (document.documentElement.className == "" && !systemInitiatedDark))
   {
     setTheme('dark');
   }
