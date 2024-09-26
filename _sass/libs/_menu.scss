@@ -3,6 +3,13 @@
     text-align: left;
 }
 
+#hamburger-menu {
+    .theme-btn{
+        color: var(--accent1);
+        font-size: xx-large;
+    }
+}
+
 @media screen and (max-width: $navbar-width){
     #hamburger-menu{
         display: block;

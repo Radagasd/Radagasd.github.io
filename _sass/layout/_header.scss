@@ -87,6 +87,11 @@
         display: inline-block;
         
     }
+
+    .header-menu .theme-btn{
+        color: var(--bg-note);
+        font-size: larger;
+    }
     
     @media screen and (max-width: $header-width){
         .header-grid{

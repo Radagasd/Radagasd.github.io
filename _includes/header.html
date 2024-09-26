@@ -35,6 +35,7 @@
                 {% for page in navlist %}
                 <li><a class="header-menu__item" href="{{ page.url | absolute_url }}">{{ page.title }}</a></li>
                 {% endfor %}
+                <li class="header-menu__item" style="cursor: pointer;" onclick="mySwitchTheme()"><button class="theme-btn"><i class="fa-regular fa-lightbulb"></i></button></li>
             </ul>
         </div>
 
