@@ -1,6 +1,12 @@
 #hamburger-menu {
-    // display: none;
+    display: none;
     text-align: left;
+}
+
+@media screen and (max-width: $navbar-width){
+    #hamburger-menu{
+        display: block;
+    }
 }
 
 #menu__toggle {

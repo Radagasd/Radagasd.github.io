@@ -80,10 +80,12 @@
         font-weight: 700;
         font-family: 'Palatino', serif;
         color: var(--bg-note);
+        transition: 0.3s, visibility 0.5s, height 0.5s;
     }
 
     .header-menu li{
         display: inline-block;
+        
     }
     
     @media screen and (max-width: $header-width){
@@ -97,6 +99,12 @@
         }
         .header-menu{
             margin: 0 0.5rem;
+        }
+    }
+
+    @media screen and (max-width: $navbar-width){
+        .header-menu li{
+            display: none;
         }
     }
 }
