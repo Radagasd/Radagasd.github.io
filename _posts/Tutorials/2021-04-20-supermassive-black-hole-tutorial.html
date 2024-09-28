@@ -8,7 +8,7 @@ image: /assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_FeatureStil
 ---
 
 <div class="container video__container round gif">
-    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.mp4" autoplay muted loop></video>
+    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.mp4" class="video-autoplay" muted loop></video>
 </div>
 
 <p>Due to the interest in my supermassive black hole (SMBH) shader I’ve decided to write a tutorial on it. Note that it is my first tutorial, and thus the format will be a bit janky as I try to figure out a good way of communicating my process. Also, I’m not a professional when it comes to writing shaders and thus do not take any of this as best practices or the “correct” way of making them.</p>
@@ -499,7 +499,7 @@ if(samplePos.x < maxFloat)
 }</code></pre>
 </div>
 <div class="container video__container round gif">
-    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_07.mp4" autoplay muted loop></video>
+    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_07.mp4" class="video-autoplay" muted loop></video>
     <div class="caption__text round">
         Animation of our texture rotating, disc speed set to 2
     </div>
@@ -638,7 +638,7 @@ float3 col = lerp(backgroundCol, discCol, transmittance);
 return float4(col,1);</code></pre>
 </div>
 <div class="container video__container round gif margin--vertical">
-    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_08.mp4" autoplay muted loop></video>
+    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_08.mp4" class="video-autoplay" muted loop></video>
     <div class="caption__text round">
         Rotating accretion disc with hue and intensity shifts.
     </div>
@@ -792,7 +792,7 @@ if(outerSphereIntersection.x < maxFloat)
 </div>
 <p>If you look closely at the resulting image below, you’ll notice that there is also an inner ring just outside the black hole. This ring actually consists of rays that have orbited the black hole and collided with the disc from the other side, notice how the inner ring is brighter on the right instead of the left.</p>
 <div class="container video__container round gif">
-    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_10.mp4" autoplay muted loop></video>
+    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_10.mp4" class="video-autoplay" muted loop></video>
     <div class="caption__text round">
         Gravity is bending our rays around the black hole, even creating secondary rings similar to the photon ring. Inner radius set to 0.15, _SSRadius set to 0.02.
     </div>
@@ -825,7 +825,7 @@ distortedScreenUV = lerp(screenUV, distortedScreenUV, t);
 float3 backgroundCol = SampleSceneColor(distortedScreenUV) * (1 - blackHoleMask);</code></pre>
 </div>
 <div class="container video__container round gif">
-    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.mp4" autoplay muted loop></video>
+    <video src="/assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_11.mp4" class="video-autoplay" muted loop></video>
     <div class="caption__text round">
         The complete image of our black hole with warping the space around it
     </div>
