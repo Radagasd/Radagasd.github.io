@@ -36,6 +36,7 @@
                     {% for page in navlist %}
                     <li><a href="{{ page.url | absolute_url }}">{{ page.title }}</a></li>
                     {% endfor %}
+                    <div style="display: inline; flex-grow: 1;"></div>
                     <li style="cursor: pointer;" onclick="mySwitchTheme()"><button class="theme-btn"><i class="fa-regular fa-lightbulb"></i></button></li>
                 </ul>
             </div>
