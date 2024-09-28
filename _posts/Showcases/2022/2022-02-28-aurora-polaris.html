@@ -13,7 +13,7 @@ image: /assets/posts/2022/aurora-polaris/Still_02.jpg
 
 <div class="grid__showcase-elements grid__align--bottom">
     <div class="container__list round">
-        <h2>Components</h2>
+        <h3>Components</h3>
         <ul>
             <li>Aurora raymarching shader</li>
             <li>Skybox (<a href="{{ site.baseurl }}/2022/02/14/astronomical-skybox">previous showcase</a>)</li>
@@ -21,7 +21,7 @@ image: /assets/posts/2022/aurora-polaris/Still_02.jpg
         </ul>
     </div>
     <div class="container__list round">
-        <h2>Tools</h2>
+        <h3>Tools</h3>
         <ul>
             <li><i class="fas fa-chess-board"></i> <a href="https://github.com/alelievr/Mixture" target="_blank"><em>Mixture</em></a> (noise texutres)</li>
             <li><i class="fab fa-unity"></i> <em>Unity</em> URP</li>
@@ -30,7 +30,7 @@ image: /assets/posts/2022/aurora-polaris/Still_02.jpg
 </div>
 
 
-<h1>📝Description</h1>
+<h2>📝Description</h2>
 
 <p>The latest challenge on the Technically Speaking Discord had the theme of "aurora", and as such I had add one to my sky. It is a raymarching shader, which means it is quite performance heavy and somewhat complex, but I think it captures the look and feeling of an aurora rather well.</p>
 <p>From a very basic point of view the shader can be summarised as follows. I calculate the intersection points between the view direction and two spheres that represent the atmosphere layer in which auroras take place. These intersections are the start and end point of the raymarch. For each step I calculate the distance and direction from the current ray position towards the planet's centre, which I define as below the camera at \(y = -6.371\)km (the earth's radius). From this direction I calculate spherical UVs using \(u = \frac{atan2(z, x)}{2\pi}\) and \(v = \frac{acos(y)}{\pi}\).</p>   
@@ -52,6 +52,6 @@ image: /assets/posts/2022/aurora-polaris/Still_02.jpg
     </div>
 </div>
 
-<h1>📘Acknowledgements</h1>
+<h2>📘Acknowledgements</h2>
 
 <p>There are no notable Acknowledgements for this post, as it is mostly a culmination of previous knowledge. Mainly the previous post on my <a href="{{ site.baseurl}}/2022/02/14/astronomical-skybox">new skybox</a> and my experience with raymarching shaders for <a href="{{site.baseurl}}/2020/08/07/volumetric-clouds-showcase">clouds</a> and <a href="{{site.baseurl}}/2021/04/07/raymarching-blackhole">black holes</a>.</p>
