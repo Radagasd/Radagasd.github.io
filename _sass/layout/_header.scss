@@ -1,47 +1,4 @@
 #header{
-    // TODO: remake navbar for widescreen
-    // .navbar{
-    //     position: relative;
-    //     padding: 0.5rem;
-    //     width: 100%;
-
-    //     display: grid;
-    //     grid-template-columns: auto 1fr auto;
-
-    //     align-items: center;
-    // }
-
-    // .navbar a{
-    //     color: var(--text);
-        
-    //     text-decoration: none;
-    //     text-align: center;
-    //     font-size: large;
-    //     font-weight: bold;
-    //     display: inline-block;
-
-    //     padding: 0.3em;
-    //     margin: 0.2em;
-
-    //     background-color: var(--bg-main);
-    //     border: 0.2em solid var(--accent1);
-    //     border-radius: var(--round-radius);
-
-    //     transition: all 0.3s ease-in-out;
-    // }     
-
-    // .navbar a:hover{
-    //     background-color: var(--accent1);
-    //     color: var(--text-white);
-    // }
-
-    // .navbar .logo
-    // {
-    //     font-weight: bold;
-    //     font-size: xx-large;
-    //     line-height: normal;
-    // }
-
     .header-grid{
         display: grid;
         align-items: center;
@@ -52,17 +9,53 @@
         display: block;
         align-items: center;
 
-        padding-left: 3.5rem;
-        padding-right: 3.5rem;
+        padding: 0 3.5rem;
         
         text-align: center;
         width: 100%;
     
         background-color: var(--bg-main);
-    
-        border-bottom: .2em solid var(--accent1);
-    
-        margin-bottom: 2em;
+    }
+
+    #navbar{
+        background-color: var(--accent1);
+        border-radius: var(--round-radius);
+        margin: 0;
+
+        ul{
+            display: flex;
+            list-style: none;
+            word-break: keep-all;
+            overflow-x: auto;
+            white-space: nowrap;
+            text-align: center;
+            padding: 0.25rem 0.25rem;
+            margin: 0;
+        }
+
+        a{
+            font-size: larger;
+            font-weight: 700;
+            font-family: 'Palatino', serif;
+            color: var(--bg-note);
+            transition: 0.3s, visibility 0.5s, height 0.5s;
+        }
+
+        li{
+            display: inline-block;
+            padding: 0 0.25rem;
+        }
+
+        .theme-btn{
+            color: var(--bg-note);
+            font-size: larger;
+        }
+
+        @media screen and (max-width: $navbar-width){
+            li{
+                display: none;
+            }
+        }
     }
     
     @media screen and (max-width: $header-width){
@@ -74,5 +67,10 @@
             width: 100%;
             z-index: 5;
         }
+        #navbar{
+            margin: 0 0.5rem;
+        }
     }
+
+    
 }

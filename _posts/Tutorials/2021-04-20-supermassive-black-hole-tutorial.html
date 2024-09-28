@@ -16,7 +16,7 @@ image: /assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_FeatureStil
 <p>This tutorial was made with <b>Unity 2020.3.1f1</b> and the <b>Universal Render Pipeline</b> (URP). The shaders are written in <b>HLSL</b>, but note that the general concept can be applied to any shader environment. You can get the project files <a href="https://github.com/Radagasd/Supermassive-black-hole-shader-tutorial" target="_blank"><b>here</b></a>, including the initial and finished shader.</p>
 
 
-<h1>Acknowledgements</h1>
+<h2>Acknowledgements</h2>
 
 <p>Before I get into the meat of things I would like to acknowledge some of my inspirations for this specific tutorial and add some general acknowledgements for tutorials that helped me get here.</p>
 <ul>
@@ -31,7 +31,7 @@ image: /assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_FeatureStil
 </ul>
 
 
-<h1>Contents</h1>
+<h2>Contents</h2>
 
 <div style="padding-left: 1.2em;">
 <ol>
@@ -64,7 +64,7 @@ image: /assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_FeatureStil
 </div>
 
 
-<h1 id="shader-setup">1 Shader setup</h1>
+<h2 id="shader-setup">1 Shader setup</h2>
 
 <p><em>If you’re using the project files you can skip this section and start at <a href="#ray-information">1.1</a> Ray information by opening SMBH_Initial.</em></p>
 <p>This shader will be written as a HLSL program and applied to the basic <em>Unity</em> sphere. In our scene we will only have a camera, a post-processing volume (for some bloom) and a <em>Unity</em> sphere with the scale set to (5, 5, 5) to which we will apply our shader. Don’t forget to set post processing to true on our camera, like I always do.</p>
@@ -140,7 +140,7 @@ image: /assets/posts/tutorials/supermassive-black-hole-tutorial/SMBH_FeatureStil
 </div>
 
 
-<h2 id="ray-information">1.1 Ray information</h2>
+<h3 id="ray-information">1.1 Ray information</h3>
 
 <p>In order to start raytracing we need to know where our ray starts (to calculate distances) and what direction it has. We determine this using the camera’s position, as our rays travel from there, by adding the highlighted code to the <b>frag</b> function.</p>
 <div class="container__code">
@@ -214,7 +214,7 @@ return float4(col,1);</code></pre>
 </div>
 
 
-<h1 id="raytracing-a-disc">2 Raytracing a disc</h1>
+<h2 id="raytracing-a-disc">2 Raytracing a disc</h2>
 
 <p>Raytracing a disc? I thought we were going to make a black hole? Well, you can’t actually see a black hole, you can only see how it affects its environment. To do that we’ll be making an accretion disc (a disc of hot matter that spins around the black hole).</p>
 <p>To raytrace our disc we need three more intersection functions, one for an infinite cylinder, one for an infinite plane and one for the disc (which depends on the first two). Add the following three functions below the <b>intersectSphere</b> function. Again I wont go over the details of these functions here, but you can read up on it following the commented links, or look at my <a href="{{ site.baseurl }}/2021/05/11/math-line-intersections">other tutorial</a> that is all about finding intersections.</p>
@@ -360,7 +360,7 @@ if(outerSphereIntersection.x < maxFloat)
 </div>
 
 
-<h2 id="uv-mapping">2.1 UV mapping</h2>
+<h3 id="uv-mapping">2.1 UV mapping</h3>
 
 <p>So we have a disc, but a simple red disc is a bit boring. In order to apply some texture to it we will have to define our UV space. Because we’re working with a disc that will be thin I’ve chosen to make a polar coordinate mapping of the disc. This is a 2D mapping where the U will be our radial distance from the centre, and the V will be the angular distance with respect to some vector tangent to the disc. Note that our texture will thus be stretched along the width, but this is no problem as it will be a very thin disc.</p>
 <p>Before we do any mapping we need to get some more information from our raytraced disc. We need to know where our ray intersects the disc, let’s call it the sample position. Add the <b>samplePos</b> variable to our Ray information and change it where we change the <b>transmittance</b>.</p>
@@ -433,7 +433,7 @@ return float4(col,1);</code></pre>
 </div>
 
 
-<h2 id="applying-a-texture">2.2 Applying a texture</h2>
+<h3 id="applying-a-texture">2.2 Applying a texture</h3>
 
 <p><em>If your using the project files you can find the texture in the textures folder with the name noiseTexture.</em></p>
 <p>For the texture I’ll use some tileable <em>Perlin noise</em> but it can be anything we want. We can generate such a texture on <a href="http://kitfox.com/projects/perlinNoiseMaker/" tabindex="_blank">this website</a>, made by <em>Mark McKay</em>. I’ve changed my cell size to 32, the levels to 3 and attenuation to 2. Be sure to turn off Generate Mip Maps once we’ve imported the texture to <em>Unity</em>.</p>
@@ -475,7 +475,7 @@ return float4(col,1);</code></pre>
 </div>
 
 
-<h2 id="texture-animation">2.3 Texture animation</h2>
+<h3 id="texture-animation">2.3 Texture animation</h3>
 
 <p>Our accretion disc should be spinning, so let’s add that. Due to our polar coordinate UV this is actually really simple, we just increase our V over time. To control this let’s add a speed property and add it to our V coordinate in the <b>frag</b> function.</p>
 <button class="collapsible round">Code block</button>
@@ -506,7 +506,7 @@ if(samplePos.x < maxFloat)
 </div>
 
 
-<h2 id="adding-color-and-physics">2.4 Adding color and physics</h2>
+<h3 id="adding-color-and-physics">2.4 Adding color and physics</h3>
 
 <p>Our red disc is looking a lot better, but it’s a bit hard to see and a bit red. Let’s do some interesting things with the color, like change it’s hue and intensity depending on the distance to the centre and alter its intensity further based on to the <em>Doppler beaming</em> shown in the NASA visualisation.</p>
 <p>Let’s start as usual by adding some new properties to control our effects and declare them as well.</p>
@@ -653,7 +653,7 @@ return float4(col,1);</code></pre>
 </div>
 
 
-<h1 id="raymarching-a-black-hole">3 Raymarching a black hole</h1>
+<h2 id="raymarching-a-black-hole">3 Raymarching a black hole</h2>
 
 <p>Why is this section called raymarching instead of raytracing? The names are often used interchangeably, but usually the difference is that in raymarching we’ll be evaluating the ray at distinct steps, instead of only evaluating it at intersections/surfaces.</p>
 <p>We only need a few things in order to change our raytracing shader to a raymarching shader, without changing the outcome yet. We need some variables to hold our current ray position and direction, a loop in which we move our ray forward and some properties to control this loop. Add two new properties to the shader, one for the amount of steps and one for the step size we’ll be using in the march.</p>
@@ -705,7 +705,7 @@ if(outerSphereIntersection.x < maxFloat)
 </div>
 
 
-<h2 id="black-hole">3.1 Black hole</h2>
+<h3 id="black-hole">3.1 Black hole</h3>
 
 <p>With what we already have adding the black hole in the middle is surprisingly easy. All we need to do is check if our ray enters a sphere and then use that as a mask for our background color. Of course we need to know how big this black hole is, so let’s start by adding a new property for it called <b>_SSRadius</b>.</p>
 <div class="container__code">
@@ -756,7 +756,7 @@ float3 backgroundCol = SampleSceneColor(screenUV) * (1 - blackHoleMask);</code><
 </div>
 
 
-<h2 id="gravity">3.2 Gravity</h2>
+<h3 id="gravity">3.2 Gravity</h3>
 
 <p>Onto the interesting part, gravity. We’ll be using gravity solely to redirect our ray as we step through it, such that it can bend around the black hole and show what’s behind it. To do this we simplify the law of gravity to a gravitational constant, that we set, divided by the distance to the centre squared. Add the gravitational constant as a property.</p>
 <div class="container__code">
@@ -802,7 +802,7 @@ if(outerSphereIntersection.x < maxFloat)
 </div>
 
 
-<h2 id="space-warping">3.3 Space warping</h2>
+<h3 id="space-warping">3.3 Space warping</h3>
 
 <p>We finally get to the part why we’ve been using this checkered skybox all this time, warping. In order to get some spatial warping we’ll be distorting the <b>screenUV</b> using the last ray position and use that to sample the opaque texture. We do this using a camera projection of a distorted ray direction, which we can use as UV coordinates. Ideally we would use <b>currentRayDir</b>, but those UVs could point to places that are outside our camera view. So instead we point to the last ray position where the loop terminated.</p>
 <p>Replacing our <b>screenUV</b> with the distorted UVs would create very sharp transitions at the edge of our sphere <em>gameObject</em> and screen. In order to smooth these out a bit we’ll lerp between the normal <b>screenUV</b> and the <b>distortedScreenUV</b>, based on our distance to these edges. Add the highlighted code to the <b>frag</b> function and change the <b>backgroundCol</b> to use the <b>distortedScreenUV</b>.</p>
@@ -840,14 +840,14 @@ float3 backgroundCol = SampleSceneColor(distortedScreenUV) * (1 - blackHoleMask)
 </div>
 
 
-<h1 id="conclusion">4 Conclusion</h1>
+<h2 id="conclusion">4 Conclusion</h2>
 
 <p>This is it, we’ve made a raymarching supermassive black hole shader! There are of course still lots of things that can be tweaked, such as the disc’s texture, or optimised, like the amount of steps taken. If you recreate this shader be sure to show me here, on twitter (<a href="https://twitter.com/KelvinvanHoorn" target="_blank">@kelvinvanhoorn</a>), or on reddit (<a href="https://www.reddit.com/user/Radagasd" target="_blank">u/Radagasd</a>). Also, while not necessary I’ll very much appreciate it if you credit me when using this shader in your projects.</p>
 <p>Thank you very much for reading and I hope you learned something new. If you want to support me financially you can do so using my <a href="https://ko-fi.com/kelvinvanhoorn" target="_blank">ko-fi</a> page.</p>
 <p>Please let me know if you want me to create more tutorials and I would also greatly appreciate it if you could fill in this poll about the format of this tutorial.</p>
 
 
-<h2 id="limitations">4.1 Limitations</h2>
+<h3 id="limitations">4.1 Limitations</h3>
 
 <p>In this final section I’ll tell you briefly about some limitations and ideas that might solve them. The first being that we use the opaque texture to draw everything behind the black hole. This means that we won’t render any transparent objects (including other black holes) behind them. Unfortunately I do not have any easy solutions for this.</p>
 <div class="container image__container round margin--vertical">

@@ -15,11 +15,11 @@ image: /assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Constell
 <p>Recently I've shown my <a href="{{site.baseurl}}/2022/02/14/astronomical-skybox/">skybox</a>, which has a new shader and code to calculate the positions of the sun and moon. People quite liked the result, and as such I thought it was time to also write a tutorial on this. It will be split in a series of at least 2 parts, where this part focuses on the shader for the sky colours, as well as the sun, moon, and stars. In part 2 we'll do the calculations for the sun and moon position as function of date and geographical location.</p>
 <p>This tutorial was made with Unity <b>2020.3.26f1</b> and the <b>Universal Render Pipeline</b> (URP), and the shader is written in <b>HLSL</b>. Note that the general concept can be applied to any shader environment.</p>
 
-<h1>Acknowledgements</h1>
+<h2>Acknowledgements</h2>
 
 For this part the main acknowledgement would be <em>NASA's</em> <a href="https://svs.gsfc.nasa.gov/index.html" target="_blank"><em>Scientific Visualization Studio</em></a>, for their publicly available texture maps of the moon and stars.
 
-<h1>Contents</h1>
+<h2>Contents</h2>
 
 <div style="padding-left: 1.2em;">
     <ol>
@@ -61,7 +61,7 @@ For this part the main acknowledgement would be <em>NASA's</em> <a href="https:/
 </div>
 
 
-<h1 id="introduction">1. Introduction</h1>
+<h2 id="introduction">1. Introduction</h2>
 
 <p>Before we start doing anything in Unity I'd first like to talk about the general approach of this skybox, as it is <em>not</em> a physically based model. Instead we'll be trying to approach the look of the sky using basic inputs, such as the sun's position.</p>
 <p>In this shader we're going to colour the sky by sampling 3 different colour gradients depending on the position and strength of the sun. In addition we'll draw the sun, moon and stars, and also take solar and lunar eclipses into account. In order to this we need 4 main directions as input. The sun direction, the moon direction, the view direction from the camera and the <a href="https://en.wikipedia.org/wiki/Zenith" target="_blank">zenith</a> direction, defined as directly above the observer which corresponds to the y-direction in Unity.</p>
@@ -84,12 +84,12 @@ For this part the main acknowledgement would be <em>NASA's</em> <a href="https:/
 <p>The <b>sunView</b> angle can be used to change the colour directly around the sun, e.g. when the sun sets there should be an orange glow around the sun. The <b>sunZenith</b> can be used to measure how far the sun is above (or below) the horizon. The <b>viewZenith</b> similarly measures how far we're looking above (or below) the horizon. Finally, the <b>sunMoon</b> angle is useful to determine when a solar (or lunar) eclipse occurs.</p>
 
 
-<h1 id="basic-setup">2. Basic setup</h1>
+<h2 id="basic-setup">2. Basic setup</h2>
 
 <p>Start by creating a new scene, it should only have a main camera and a directional light. Rename the directional light to <em>Sun</em> and create a new empty gameObject called <em>Moon</em>. These objects will be used to set the direction of the sun and moon respectively. Also add a plane or some other objects so that you have a reference of where the horizon is.</p>
 
 
-<h2 id="skybox-controller">2.1 Skybox controller</h2>
+<h3 id="skybox-controller">2.1 Skybox controller</h3>
 
 <p>Despite the fact that this tutorial is all about the skybox shader, we do still need a small script to pass the sun and moon direction to the shader. Create a new empty gameObject, call it <em>SkyboxController</em>, and also create a new C# script <em>SkyboxController.cs</em> and add it to the gameObject. The script is very simple and shown below in the code block.</p>
 
@@ -126,7 +126,7 @@ public class SkyboxController : MonoBehaviour
 </div>
 
 
-<h2 id="hlsl-shader">2.2 HLSL shader</h2>
+<h3 id="hlsl-shader">2.2 HLSL shader</h3>
 
 <p> In this tutorial we'll be writing an HLSL shader consisting of a single pass, with a small vertex stage and large fragment stage. Start by creating a new unlit shader <em>Skybox.shader</em>, and replace Unity's standard code by the code block below.</p>
 
@@ -202,12 +202,12 @@ public class SkyboxController : MonoBehaviour
 </div>
 
 
-<h1 id="the-sun-and-sky">3. The sun and sky</h1>
+<h2 id="the-sun-and-sky">3. The sun and sky</h2>
 
 <p>In this section we'll go over calculating our 4 main angles, using the main angles to both sample and adjust the colour gradients for the sky, and drawing the sun.</p>
 
 
-<h2 id="main-angles">3.1 Main angles</h2>
+<h3 id="main-angles">3.1 Main angles</h3>
 
 <p>As a quick reminder the 4 main angles are: the sunView, sunZentih, viewZentih and sunMoon angle.</p>
 <p>While I've been talking about angles all this time we're actually only going to calculate the dot product between the different directions. Mathematically this corresponds to the cosine of the angle between the directions (if both vectors are normalized). For our use case this is fine, though you should note that the cosine of an angle isn't linear (it flattens near 0° and 180°).</p>
@@ -232,7 +232,7 @@ float sunZenithDot01 = (sunZenithDot + 1.0) * 0.5;
 <p>These calculations haven't changed the look of the skybox yet, but form the foundation for most subsequent calculations.</p>
 
 
-<h2 id="colours-of-the-sky">3.2 Colours of the sky</h2>
+<h3 id="colours-of-the-sky">3.2 Colours of the sky</h3>
 
 <p>The colours of the sky will be determined by sampling 3 gradient textures, adjusting them depending on our main angles, and adding them together.</p>
 
@@ -262,7 +262,7 @@ float3 _SunDir, _MoonDir;</code></pre>
 </div>
 
 
-<h3>3.2.1 Main sky colour</h3>
+<h4>3.2.1 Main sky colour</h4>
 
 <p>Now let us sample the first gradient and output its colour. The sunZenith gradient is the simplest and represents the general sky colour depending on how high the sun is in the sky. This is represented within our shader by the float <cn>sunZenithDot01</cn>. Add the following lines to the <cn>Fragment</cn> function and change the output value of <cn>col</cn> as seen below.</p>
 
@@ -290,7 +290,7 @@ float3 col = skyColor;
 
 
 
-<h3>3.2.2 Horizon haze</h3>
+<h4>3.2.2 Horizon haze</h4>
 
 <p>The next gradient is the viewZenith gradient, which represents the difference in colour near the horizon (usually a slight haze). First thing to note is that the sample coordinate for the texture is still <cn>sunZenithDot01</cn>, because the colour of the haze depends on the height of the sun. However, we need to mask the haze depending on <cn>viewZenithDot</cn>.</p>
 <p>Add the following two lines and change <cn>skyColor</cn> to reflect our newly added haze. The <cn>viewZenithColor</cn> is once again a texture sample using <cn>sunZenithDot01</cn> as uv coordinate. The <cn>vzMask</cn> does, as the name suggests, mask the <cn>viewZenithColor</cn>. The mask is 1 at or below the horizon, where <cn>viewZenithDot</cn> is 0, and tends to 0 above the horizon. The <cn>pow</cn> is there to control how quickly the haze vanishes with height, I've set it to a power of 4 but you can experiment with this.</p>
@@ -318,7 +318,7 @@ float3 skyColor = sunZenithColor + vzMask * viewZenithColor;
 </div>
 
 
-<h3>3.2.3 Sun bloom</h3>
+<h4>3.2.3 Sun bloom</h4>
 
 <p>The final of the gradient textures is the sunView gradient, which represents the brighter colour you see surrounding the sun. Similarly to the previous texture we use <cn>sunZenithDot01</cn> as the uv coordinate and use <cn>solarViewDot</cn> for masking.</p>
 <p>Add the following lines and once again update <cn>skyColor</cn> to our new value. The mask consists of the <cn>sunViewDot</cn> clamped between 0 and 1 using the <cn>saturate</cn> function. The mask is 1 when looking at the sun and 0 when looking 90° or more away from the sun. The <cn>pow</cn> is used again to control the fall-off, I've again set it to 4.</p>
@@ -341,7 +341,7 @@ float3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewCo
 </div>
 
 
-<h2 id="the-sun">3.3 The sun</h2>
+<h3 id="the-sun">3.3 The sun</h3>
 
 <p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>GetSunMask</cn>. The mask is quite simple, we step <cn>sunViewDot</cn> depending on a set radius. Add the following lines before the <cn>Fragment</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
 
@@ -383,12 +383,12 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 
-<h1 id="the-moon">4. The Moon</h1>
+<h2 id="the-moon">4. The Moon</h2>
 
 <p>The sun seems a bit lonely in the sky, so lets add the moon as well. The method for the moon will be quite different, as we need more information for texture sampling and lighting. In order to do this we'll do some basic ray-tracing of a sphere in the sky and use that for our moon.</p>
 
 
-<h2 id="ray-tracing-mask">4.1 Ray-tracing mask</h2>
+<h3 id="ray-tracing-mask">4.1 Ray-tracing mask</h3>
 
 <p>The first step is just getting the ray-traced sphere information and creating a mask from it. I'll not go into the specifics of ray-tracing and instead use this function from <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a> (with small modifications). You can also check my other tutorial on <a href="{{site.baseurl}}/2021/05/11/math-line-intersections/">line intersections</a> to learn more about ray-tracing. Add the following lines before the <cn>Fragment</cn> function.</p>
 
@@ -432,7 +432,7 @@ float3 col = skyColor + sunColor + moonColor;</code></pre></div>
 <div class="note__base round"><p>Note that in the picture above the moon and sun have a similar size, while the moon radius is 0.07 and the sun radius is 0.05. Unfortunately their radius variables do not scale the same.</p></div>
 
 
-<h2 id="moon-lighting">4.2 Moon lighting</h2>
+<h3 id="moon-lighting">4.2 Moon lighting</h3>
 
 <p>For the lighting we're going to do some simple NdotL lighting, except that we first need to calculate a normal. Luckily, that isn't that difficult as we have a ray-traced sphere as moon. We can take the difference between the moon direction and the intersection point, and normalize it. This procedure is illustrated below, where the moon's size is greatly exaggerated.</p>
 
@@ -487,7 +487,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 
-<h2 id="moon-texture">4.3 Moon texture</h2>
+<h3 id="moon-texture">4.3 Moon texture</h3>
 
 <p>For a stylised look a textureless moon might suffice, but more often than not you do want some texture for it. You could create your own, but we're going to use the publicly available color map from NASA's <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank"><em>Scientific Visualization Studio</em></a>. You can download the picture below or download it directly, and in higher resolutions, from NASA's site <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank">here</a>. </p>
 
@@ -573,7 +573,7 @@ float3 GetMoonTexture(float3 normal)
     <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Texture_02.png" alt="The textured moon with rotation correction." class="image__caption image__modal">
 </div>
 
-<h1 id="the-stars">5. The stars</h1>
+<h2 id="the-stars">5. The stars</h2>
 
 <p>For the stars we're also going to sample a cube map, however this time we're using the view direction as UVW coordinates and we need more rotation matrices. One as a tilt, because the stars position depends on your latitude, and a spinning rotation, which rotates the stars around the tilted axis.</p>
 
@@ -649,7 +649,7 @@ starColor *= (1 - sunMask) * (1 - moonMask) * exp2(_StarExposure) * starStrength
 </div>
 
 
-<h2 id="star-rotations">5.1 Star rotations</h2>
+<h3 id="star-rotations">5.1 Star rotations</h3>
 
 <p>As you might know the night sky differs depending on where you are in the world and what time it is. To implement this we'll first tilt the star map depending on a latitude that we provide and then rotate the map around that tilted axis depending on time.</p>
 
@@ -728,7 +728,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 
-<h2 id="constellations">5.2 Constellations</h2>
+<h3 id="constellations">5.2 Constellations</h3>
 
 <p>The star map is technically finished, however, when looking for a star map I found that NASA also has a constellation map and it might be fun to add it to our sky. It is also really easy to add with what we already have. Download the constellation map from the picture below or from NASA <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">directly</a>, it is the "Constellation figures in celestial coordinates." at 4096x2048 resolution. Don't forget to set the import setting's Texture Shape to Cube.</p>
 
@@ -767,12 +767,12 @@ float4 Fragment (v2f IN) : SV_TARGET
 </div>
 
 
-<h1 id="eclipses">6. Eclipses</h1>
+<h2 id="eclipses">6. Eclipses</h2>
 
 <p>We're getting close to the end of this tutorial as there are only 2 phenomena left that we'll implement, the solar and lunar eclipse. A solar eclipse occurs when the moon is in front of the sun, and a lunar eclipse occurs when the earth casts it shadow onto the moon, i.e. the the sun is at the opposite direction of the moon. Of these 2 the solar eclipse is easier to implement so let's start with that.</p>
 
 
-<h2 id="solar-eclipse">6.1 Solar eclipse</h2>
+<h3 id="solar-eclipse">6.1 Solar eclipse</h3>
 
 <p>Currently the sun and moon are both drawn, even if they're on top of each other. To fix this we simply use the inverse (one minus) of the moon's mask to mask out the sun if the moon is in front. Add the following lines to the <cn>Fragment</cn> function below the constellation code.</p>
 
@@ -800,7 +800,7 @@ sunColor *= (1 - moonMask) * lerp(1, 16, solarEclipse01);</code></pre></div>
 </div>
 
 
-<h2 id="lunar-eclipse">6.2 Lunar eclipse</h2>
+<h3 id="lunar-eclipse">6.2 Lunar eclipse</h3>
 
 <p>The lunar eclipse will work similar to the solar eclipse, we'll mask out the moon and calculate a <cn>lunarEclipse01</cn> variable. This time the variable will be used only to change the moon, not the sky.</p>
 
@@ -830,7 +830,7 @@ moonColor *= lerp(lunarEclipseMask, float3(0.3,0.05,0), lunarEclipse01);</code><
 </div>
 
 
-<h1 id="conclusion">7. Conclusion</h1>
+<h2 id="conclusion">7. Conclusion</h2>
 
 <p>This the end of the tutorial, we've made a skybox shader where the colour of the sky is determined by the height of the sun and several colour gradients. The moon is shown, lit depending on the sun's position and has a texture. The stars are drawn, rotate in the sky, and represent the sky at a chosen latitude. A constellation map is drawn over the stars, so that you can find out where Orion is. And finally we've made some simple calculations to simulate a solar and lunar eclipse.</p>
 

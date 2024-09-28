@@ -1,6 +1,19 @@
 #hamburger-menu {
-    // display: none;
+    display: none;
     text-align: left;
+}
+
+#hamburger-menu {
+    .theme-btn{
+        color: var(--accent1);
+        font-size: xx-large;
+    }
+}
+
+@media screen and (max-width: $navbar-width){
+    #hamburger-menu{
+        display: block;
+    }
 }
 
 #menu__toggle {
@@ -15,7 +28,7 @@
 .menu__btn {
     display: block;
     position: absolute;
-    top: 1rem;
+    top: 1.75rem;
     left: 1rem;
     width: 2.5rem;
     height: 2.5rem;
@@ -96,7 +109,7 @@
     color: var(--accent1);
     font-family: 'Palatino', serif;
     font-size: larger;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
     transition-duration: .25s;
 }
