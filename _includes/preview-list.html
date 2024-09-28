@@ -63,7 +63,7 @@
         {
             var video = document.createElement('video');
             video.src = "/" + post.videoUrl;
-            video.autoplay = true;
+            video.classList.add("video-autoplay");
             video.muted = true;
             video.loop = true;
             previewContainer.appendChild(video);
