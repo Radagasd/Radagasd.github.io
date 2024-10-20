@@ -13,7 +13,7 @@ image: /assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Constell
 </div>
 
 <p>Recently I've shown my <a href="{{site.baseurl}}/2022/02/14/astronomical-skybox/">skybox</a>, which has a new shader and code to calculate the positions of the sun and moon. People quite liked the result, and as such I thought it was time to also write a tutorial on this. It will be split in a series of at least 2 parts, where this part focuses on the shader for the sky colours, as well as the sun, moon, and stars. In part 2 we'll do the calculations for the sun and moon position as function of date and geographical location.</p>
-<p>This tutorial was made with Unity <b>2020.3.26f1</b> and the <b>Universal Render Pipeline</b> (URP), and the shader is written in <b>HLSL</b>. Note that the general concept can be applied to any shader environment.</p>
+<p>This tutorial was made with Unity <b>2020.3.48f1</b> and the <b>Universal Render Pipeline</b> (URP), and the shader is written in <b>HLSL</b>. Note that the general concept can be applied to any shader environment.</p>
 
 <h2>Acknowledgements</h2>
 
@@ -64,7 +64,7 @@ For this part the main acknowledgement would be <em>NASA's</em> <a href="https:/
 <h2 id="introduction">1. Introduction</h2>
 
 <p>Before we start doing anything in Unity I'd first like to talk about the general approach of this skybox, as it is <em>not</em> a physically based model. Instead we'll be trying to approach the look of the sky using basic inputs, such as the sun's position.</p>
-<p>In this shader we're going to colour the sky by sampling 3 different colour gradients depending on the position and strength of the sun. In addition we'll draw the sun, moon and stars, and also take solar and lunar eclipses into account. In order to this we need 4 main directions as input. The sun direction, the moon direction, the view direction from the camera and the <a href="https://en.wikipedia.org/wiki/Zenith" target="_blank">zenith</a> direction, defined as directly above the observer which corresponds to the y-direction in Unity.</p>
+<p>In this shader we're going to colour the sky by sampling 3 different colour gradients depending on the position and strength of the sun. In addition we'll draw the sun, moon and stars, and also take solar and lunar eclipses into account. In order to do this we need 4 main directions as input. The sun direction, the moon direction, the view direction from the camera and the <a href="https://en.wikipedia.org/wiki/Zenith" target="_blank">zenith</a> direction, defined as directly above the observer which corresponds to the y-direction in Unity.</p>
 <p>In order to give you a better idea I've drawn these four directions below. This is a 2D slice of the world, where the vertical axis corresponds to the y-axis in Unity, and the horizontal axis corresponds to the x-z plane in Unity. The symbols correspond to the following: H = horizon plane, Z = zenith direction, S = sun direction, M = moon direction, and V = view direction. Note that all directions point from the centre outwards, this is a convention we'll be following, where we define our directions to point from the camera/origin towards the object in question, e.g. the sun direction points towards the sun <em>not</em> from the sun.</p>
 
 <div style="display: grid; align-items: center; justify-items: center;">
@@ -281,7 +281,7 @@ float3 col = skyColor;
 </div>
 
 <div class="note__base round">
-    <p>For the gradient texture import settings I've turned off generate mip maps, set the filter mode to clamp, and set compression quality to high.</p>
+    <p>For the gradient texture import settings I've turned off generate mip maps, set the wrap mode to clamp, and set compression quality to high.</p>
 </div>
 
 <div class="container image__container round" style="width:100%">
@@ -355,7 +355,7 @@ float3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewCo
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
 <div class="collapsible__content round code">
-    <pre class="line-numbers" data-line="2,7,11-13,15" style="margin:0;"><code class="language-hlsl">Properties
+    <pre class="line-numbers" data-line="3,7,11-13,15" style="margin:0;"><code class="language-hlsl">Properties
 {
     _SunRadius ("Sun radius", Range(0,1)) = 0.05
 }
@@ -769,7 +769,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 
 <h2 id="eclipses">6. Eclipses</h2>
 
-<p>We're getting close to the end of this tutorial as there are only 2 phenomena left that we'll implement, the solar and lunar eclipse. A solar eclipse occurs when the moon is in front of the sun, and a lunar eclipse occurs when the earth casts it shadow onto the moon, i.e. the the sun is at the opposite direction of the moon. Of these 2 the solar eclipse is easier to implement so let's start with that.</p>
+<p>We're getting close to the end of this tutorial as there are only 2 phenomena left that we'll implement, the solar and lunar eclipse. A solar eclipse occurs when the moon is in front of the sun, and a lunar eclipse occurs when the earth casts it shadow onto the moon, i.e. the sun is at the opposite direction of the moon. Of these 2 the solar eclipse is easier to implement so let's start with that.</p>
 
 
 <h3 id="solar-eclipse">6.1 Solar eclipse</h3>
