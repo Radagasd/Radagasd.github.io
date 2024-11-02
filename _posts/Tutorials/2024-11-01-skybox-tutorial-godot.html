@@ -31,7 +31,7 @@ image: /assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Constell
         <li><a href="#basic-setup">Basic setup</a>
             <ol>
                 <li><a href="#skybox-controller">Skybox controller</a></li>
-                <li><a href="#hlsl-shader">HLSL shader</a></li>
+                <li><a href="#gdshader">GDShader</a></li>
             </ol>
         </li>
         <li><a href="#the-sun-and-sky">The sun and sky</a>
@@ -114,7 +114,7 @@ func _process(delta: float) -> void:
 <p>It extends from WorldEnvironment so that it can grab the skybox material. We grab the forward directions directly from the Sun and Moon objects in our scene, using their transform basis. We pass the directions to the shader using the <cn>set_shader_parameter</cn> function on the material, where the first parementer is the name of the shader uniform we'll be creating in the next section.</p>
 <p>The <cn>@tool</cn> attribute at the top is used so that the script also runs in editor mode, otherwise we would need to run the game to see the sun and moon directions change.</p>
 
-<h3 id="hlsl-shader">2.2 GDShader shader</h3>
+<h3 id="gdshader">2.2 GDShader</h3>
 
 <p> In this tutorial we'll be writing a GDShader using the Sky template, which only have one processing function, the sky() function. There are some additional options for Sky shaders, which we won't be using but you can read on them <a href="https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/sky_shader.html">here</a>. Start by creating a new resource, select Shader, set the Mode to Sky and name it <em>Skybox.gdshader</em>. Replace the shader's code with the following code block.</p>
 
@@ -217,7 +217,7 @@ vec3 col = skyColor;
 </div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_01.png" alt="Depiction of the skybox main colour, given at different altitudes of the sun." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_01.png" alt="Depiction of the skybox main colour, given at different altitudes of the sun. Note that the altitude is the negative of the x-rotation of the sun object." class="image__caption image__modal">
 </div>
 
 
@@ -227,10 +227,10 @@ vec3 col = skyColor;
 <p>The next gradient is the viewZenith gradient, which represents the difference in colour near the horizon (usually a slight haze). First thing to note is that the sample coordinate for the texture is still <cn>sunZenithDot01</cn>, because the colour of the haze depends on the height of the sun. However, we need to mask the haze depending on <cn>viewZenithDot</cn>.</p>
 <p>Add the following two lines and change <cn>skyColor</cn> to reflect our newly added haze. The <cn>viewZenithColor</cn> is once again a texture sample using <cn>sunZenithDot01</cn> as uv coordinate. The <cn>vzMask</cn> does, as the name suggests, mask the <cn>viewZenithColor</cn>. The mask is 1 at or below the horizon, where <cn>viewZenithDot</cn> is 0, and tends to 0 above the horizon. The <cn>pow</cn> is there to control how quickly the haze vanishes with height, I've set it to a power of 4 but you can experiment with this.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float3 viewZenithColor = SAMPLE_TEXTURE2D(_ViewZenithGrad, sampler_ViewZenithGrad, float2(sunZenithDot01, 0.5)).rgb;
-float vzMask = pow(saturate(1.0 - viewZenithDot), 4);
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 viewZenithColor = texture(_ViewZenithGrad, vec2(sunZenithDot01, 0.5)).rgb;
+float vzMask = pow(clamp(1.0 - viewZenithDot, 0.0, 1.0), 4);
 
-float3 skyColor = sunZenithColor + vzMask * viewZenithColor;
+vec3 skyColor = sunZenithColor + vzMask * viewZenithColor;
 </code></pre></div>
 
 <p>For the gradient texture I've used the following, where you should note that near the middle the texture becomes orange before transitioning towards a pale blue. This represents the colour of the horizon during a sunset or sunrise. You can once again download it and use it as your gradient.</p>
@@ -242,23 +242,23 @@ float3 skyColor = sunZenithColor + vzMask * viewZenithColor;
 <p></p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_02.png" alt="Depiction of the skybox with viewZenith haze, given at different altitudes of the sun." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_02.png" alt="Depiction of the skybox with viewZenith haze, given at different altitudes of the sun." class="image__caption image__modal">
 </div>
 
 <div class="note__base round">
-    <p><b>Note:</b> you might see some extensive banding in the colours of the sky. I won't go into the details of this, but you can greatly reduce it by selecting your camera gameObject and turning on Post Processing and Dithering.</p>
+    <p><b>Note:</b> you might see some extensive banding in the colours of the sky. I won't go into the details of this, but you can greatly reduce it by enalbing the <em>Use Debanding</em> option in the Project Settings. It is under the Anti Aliasing section, with advanced settings turned on.</p>
 </div>
 
 
 <h4>3.2.3 Sun bloom</h4>
 
 <p>The final of the gradient textures is the sunView gradient, which represents the brighter colour you see surrounding the sun. Similarly to the previous texture we use <cn>sunZenithDot01</cn> as the uv coordinate and use <cn>solarViewDot</cn> for masking.</p>
-<p>Add the following lines and once again update <cn>skyColor</cn> to our new value. The mask consists of the <cn>sunViewDot</cn> clamped between 0 and 1 using the <cn>saturate</cn> function. The mask is 1 when looking at the sun and 0 when looking 90° or more away from the sun. The <cn>pow</cn> is used again to control the fall-off, I've again set it to 4.</p>
+<p>Add the following lines and once again update <cn>skyColor</cn> to our new value. The mask consists of the <cn>sunViewDot</cn> clamped between 0 and 1. The mask is 1 when looking at the sun and 0 when looking 90° or more away from the sun. The <cn>pow</cn> is used again to control the fall-off, I've again set it to 4.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float3 sunViewColor = SAMPLE_TEXTURE2D(_SunViewGrad, sampler_SunViewGrad, float2(sunZenithDot01, 0.5)).rgb;
-float svMask = pow(saturate(sunViewDot), 4);
-
-float3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewColor;</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 sunViewColor = texture(_SunViewGrad, vec2(sunZenithDot01, 0.5)).rgb;
+float svMask = pow(clamp(sunViewDot, 0.0, 1.0), 4);
+	
+vec3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewColor;</code></pre></div>
 
 <p>For the gradient texture I've used the following, where most of the action occurs at the centre during sunrise/sunset. You can once again either download this texture or create one that suits your needs.</p>
 
@@ -269,49 +269,44 @@ float3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewCo
 <p></p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_SkyColours_03.png" alt="Depiction of the skybox with sun bloom, given at different altitudes of the sun. This is by far most noticeable at 0°, though you could alter the gradient to also be more vibrant at other values." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_03.png" alt="Depiction of the skybox with sun bloom, given at different altitudes of the sun. This is by far most noticeable at 0°, though you could alter the gradient to also be more vibrant at other values." class="image__caption image__modal">
 </div>
 
 
 <h3 id="the-sun">3.3 The sun</h3>
 
-<p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>GetSunMask</cn>. The mask is quite simple, we step <cn>sunViewDot</cn> depending on a set radius. Add the following lines before the <cn>Fragment</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
+<p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>GetSunMask</cn>. The mask is quite simple, we step <cn>sunViewDot</cn> depending on a set radius. Add the following lines before the <cn>sky</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float GetSunMask(float sunViewDot, float sunRadius)
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float GetSunMask(float sunViewDot, float sunRadius)
 {
-    float stepRadius = 1 - sunRadius * sunRadius;
+    float stepRadius = 1.0 - sunRadius * sunRadius;
     return step(stepRadius, sunViewDot);
 }</code></pre></div>
 
-<p>We'll control the sun's radius with a float property set between 0 and 1, and we'll set the colour to the main light's colour (<cn>_MainLightColor</cn>). Add the property, declare it below <cn>_SunDir</cn>, and add the additional lines to the <cn>Fragment</cn> function.</p>
+<p>We'll control the sun's radius with a float uniform set between 0 and 1, and we'll add color uniform to set the sun's color (you could update the SkyboxController to pass the directional light's color). Add or replace the following lines.</p>
 
-<button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
+<button class="collapsible round">Code block (<em>Skybox.gdshader</em>)</button>
 <div class="collapsible__content round code">
-    <pre class="line-numbers" data-line="3,7,11-13,15" style="margin:0;"><code class="language-hlsl">Properties
-{
-    _SunRadius ("Sun radius", Range(0,1)) = 0.05
-}
+    <pre class="line-numbers" data-line="1-3, 8-10, 12" style="margin:0;"><code class="language-glsl">group_uniforms Sun;
+uniform float _SunRadius : hint_range(0, 1) = 0.05;
+uniform vec3 _SunColor : source_color = vec3(1.0, 1.0, 1.0);
 
-float3 _SunDir, _MoonDir;
-float _SunRadius;
+void sky(){
+    ...
 
-float4 Fragment (v2f IN) : SV_TARGET
-{
     // The sun
-    float sunMask = GetSunMask(sunViewDot, _SunRadius);
-    float3 sunColor = _MainLightColor.rgb * sunMask;
-
-    float3 col = skyColor + sunColor;
-    return float4(col, 1);
+	float sunMask = GetSunMask(sunViewDot, _SunRadius);
+	vec3 sunColor = _SunColor * sunMask;
+	
+	vec3 col = skyColor + sunColor;
+    COLOR = col;
 }</code></pre>
 </div>
 
-<p>In order to give the sun a more blurred and sun-like edge we're going to add some post-processing to the scene, a bloom effect. Add a new gameObject to the scene and call it something like PostProcessing. Add a Volume component and make a new profile by clicking New. Now add the Bloom override. Enable the threshold and intensity and set them to 0.9 and 0.5 respectively. Make sure that your camera has post-processing enabled and you should now see the effect of bloom around the sun.</p>
-
-<p>You can now control the colour and intensity of the sun through the light options on the Sun gameObject. If you don't want it linked to that you can instead create some properties for the shader to control the colour and intensity. I've kept the default values, but you can of course tweak them to your hearts desire.</p>
+<p>In order to give the sun a more blurred and sun-like edge we're going to add a bloom. Go to the <cn>WorldEnvironment</cn> node and enable the glow. I recommend you play around a bit with the levels and the threshold to get the look you want. You can check out the project files to see exactly which settings I'm using here.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheSun.png" alt="The sun with bloom post-processing, with a sun radius of 0.05." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheSun.png" alt="The sun with glow post-processing, with a sun radius of 0.05." class="image__caption image__modal">
 </div>
 
 
@@ -324,7 +319,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 
 <p>The first step is just getting the ray-traced sphere information and creating a mask from it. I'll not go into the specifics of ray-tracing and instead use this function from <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a> (with small modifications). You can also check my other tutorial on <a href="{{site.baseurl}}/2021/05/11/math-line-intersections/">line intersections</a> to learn more about ray-tracing. Add the following lines before the <cn>Fragment</cn> function.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">// From Inigo Quilez, https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// From Inigo Quilez, https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 float sphIntersect(float3 rayDir, float3 spherePos, float radius)
 {
     float3 oc = -spherePos;
@@ -339,7 +334,7 @@ float sphIntersect(float3 rayDir, float3 spherePos, float radius)
 <p>The function has 3 arguments, the ray direction (the view direction), the sphere's position (the moon direction) and the radius (the moon radius). In return it outputs the distance from the ray origin (our camera) to the intersection with the sphere, and if there is no intersection it returns -1. We can then create a mask by checking if the intersection is greater than -1 or not.</p>
 <p>Now for the implementation we need a new property, the moon's radius. Add the following property and declare it by adding/changing the highlighted lines.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="4,8"><code class="language-hlsl">Properties
+<div class="container__code"><pre class="line-numbers round" data-line="4,8"><code class="language-glsl">Properties
 {
     _SunRadius ("Sun radius", Range(0,1)) = 0.05
     _MoonRadius ("Moon radius", Range(0,1)) = 0.05
@@ -350,7 +345,7 @@ float _SunRadius, _MoonRadius;</code></pre></div>
 
 <p>To show the moon on the screen we need to call <cn>sphIntersect</cn> in the <cn>Fragment</cn> function, define the mask and add it to <cn>col</cn>.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">// The moon
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// The moon
 float moonIntersect = sphIntersect(viewDir, _MoonDir, _MoonRadius);
 float moonMask = moonIntersect > -1 ? 1 : 0;
 float3 moonColor = moonMask;
@@ -376,7 +371,7 @@ float3 col = skyColor + sunColor + moonColor;</code></pre></div>
 
 <p>Let's add this normal calculation in the <cn>Fragment</cn> function by taking the difference between the <cn>viewDir</cn> scaled by <cn>moonIntersect</cn> and the <cn>_MoonDir</cn>. Add the highlighted line to our moon code.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="4"><code class="language-hlsl">// The moon
+<div class="container__code"><pre class="line-numbers round" data-line="4"><code class="language-glsl">// The moon
 float moonIntersect = sphIntersect(viewDir, _MoonDir, _MoonRadius);
 float moonMask = moonIntersect > -1 ? 1 : 0;
 float3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre></div>
@@ -392,7 +387,7 @@ float3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre><
 <p>In mathematical terms it can be expressed as \( d_l = norm(d_s r_s - d_m r_m) \). Here \(d_l\) is the light direction, \(d_s\) the sun direction, \(r_s\) the sun's distance to us, \(d_m\) the moon direction, \(r_m\) the moon's distance to us, and \(norm()\) a normalization function. This might look complicated, however, we can use the fact that the sun is much further away from us than the moon (about 400 times further). Using this fact we can roughly approximate the light direction by saying the sun's distance is so big that the moon's distance is neglectable, i.e. \(d_l = norm(d_s r_s - d_m r_m) ≈ norm(d_s r_s) = d_s\).</p>
 <p>We can now calculate our NdotL using the <cn>moonNormal</cn> and <cn>_SunDir</cn>. Add the highlighted line and adjust our moon variable to show the new lighting. Note that we use <cn>saturate</cn> to clamp the <cn>dot</cn> between 0 and 1, because there is no such thing as negative lighting.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2-3"><code class="language-hlsl">float3 moonNormal = normalize(_MoonDir - viewDir * moonIntersect);
+<div class="container__code"><pre class="line-numbers round" data-line="2-3"><code class="language-glsl">float3 moonNormal = normalize(_MoonDir - viewDir * moonIntersect);
 float moonNdotL = saturate(dot(moonNormal, _SunDir));
 float3 moonColor = moonMask * moonNdotL;</code></pre></div>
 
@@ -400,7 +395,7 @@ float3 moonColor = moonMask * moonNdotL;</code></pre></div>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
 <div class="collapsible__content round code">
-    <pre class="line-numbers" data-line="3,7,11" style="margin:0;"><code class="language-hlsl">Properties
+    <pre class="line-numbers" data-line="3,7,11" style="margin:0;"><code class="language-glsl">Properties
 {
     _MoonExposure ("Moon exposure", Range(-16, 16)) = 0
 }
@@ -431,7 +426,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 
 <p>Adding the property and declaration of a cube map is very similar to that of textures, only a slight change in macros. Add the following highlighted lines.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="3,7"><code class="language-hlsl">Properties
+<div class="container__code"><pre class="line-numbers round" data-line="3,7"><code class="language-glsl">Properties
 {
     [NoScaleOffset] _MoonCubeMap ("Moon cube map", Cube) = "black" {}
 }
@@ -442,7 +437,7 @@ TEXTURECUBE(_MoonCubeMap);      SAMPLER(sampler_MoonCubeMap);
 
 <p>Let's make a new function to read our color map, with as input the moon's normal. Add the following <cn>GetMoonTexture</cn> function above the <cn>Fragment</cn> function. Sampling the cube map texture is similar to a regular 2D texture, except that we pass a float3 as UVW. </p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float3 GetMoonTexture(float3 normal)
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float3 GetMoonTexture(float3 normal)
 {
     float3 uvw = normal;
     return SAMPLE_TEXTURECUBE(_MoonCubeMap, sampler_MoonCubeMap, uvw).rgb;
@@ -450,7 +445,7 @@ TEXTURECUBE(_MoonCubeMap);      SAMPLER(sampler_MoonCubeMap);
 
 <p>Now to see the texture add or change the following lines in the Fragment function, and don't forget to set our texture on the material in the inspector.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float3 moonTexture = GetMoonTexture(moonNormal);
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float3 moonTexture = GetMoonTexture(moonNormal);
 float3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -478,7 +473,7 @@ float3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</co
 
 <p>Now we can access this matrix by declaring it in our shader. We then need to multiply this matrix with the moon's normal in world-space to get the normal in moon-space. Add the following highlighted lines to implement this.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2,6"><code class="language-hlsl">float _MoonExposure;
+<div class="container__code"><pre class="line-numbers round" data-line="2,6"><code class="language-glsl">float _MoonExposure;
 float4x4 _MoonSpaceMatrix;
 
 float3 GetMoonTexture(float3 normal)
@@ -489,7 +484,7 @@ float3 GetMoonTexture(float3 normal)
 
 <p>Now the moon's texture should appear stationary when you change the moon's direction. There is one final alteration I'd like to make, because we're not seeing the correct part of the moon texture. In order to correct this I've constructed an additional 3x3 rotation matrix, the values of which I got through some trial and error, and could be improved. All it does is rotate the normal such that the correct part is shown to us, you can think of it as a texture offset. Add the highlighted lines to get our final moon texture.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="5-7"><code class="language-hlsl">float3 GetMoonTexture(float3 normal)
+<div class="container__code"><pre class="line-numbers round" data-line="5-7"><code class="language-glsl">float3 GetMoonTexture(float3 normal)
 {
     float3 uvw = mul(_MoonSpaceMatrix, float4(normal,0)).xyz;
 
@@ -517,7 +512,7 @@ float3 GetMoonTexture(float3 normal)
 <p>Let's start by simply displaying the star map, by using the view direction directly as UVW. Add the cube map to the properties, declare it, and sample it in the <cn>Fragment</cn> function.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="2,6,10-12,14" style="margin:0;"><code class="language-hlsl">Properties{
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="2,6,10-12,14" style="margin:0;"><code class="language-glsl">Properties{
     [NoScaleOffset] _StarCubeMap ("Star cube map", Cube) = "black" {}
 }
 
@@ -541,19 +536,19 @@ float4 Fragment (v2f IN) : SV_TARGET
 
 <p>That was easy, but looking at the result you might see a few problems, one of them being that the stars are drawn on top of the moon (and also sun). To fix this we multiply the starColor by 1 minus the moon and sun masks.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-hlsl">float3 starColor = SAMPLE_TEXTURECUBE(_StarCubeMap, sampler_StarCubeMap, starUVW).rgb;
+<div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-glsl">float3 starColor = SAMPLE_TEXTURECUBE(_StarCubeMap, sampler_StarCubeMap, starUVW).rgb;
 starColor *= (1 - sunMask) * (1 - moonMask);</code></pre></div>
 
 <p>Another thing is that the stars look rather blurry, even though we're using an 8K texture. In order to make the stars sharper we'll be biasing the mip-level. This would make the texture values flicker more with camera movement, which normally would be bad but actually is appropriate for stars. Change the cube map sampling macro to <cn>SAMPLE_TEXTURECUBE_BIAS</cn> and set the mip-mapping bias to -1 (read the texture one mip-level lower than normal).</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float3 starColor = SAMPLE_TEXTURECUBE_BIAS(_StarCubeMap, sampler_StarCubeMap, starUVW, -1).rgb;</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float3 starColor = SAMPLE_TEXTURECUBE_BIAS(_StarCubeMap, sampler_StarCubeMap, starUVW, -1).rgb;</code></pre></div>
 
 <p>Alternatively you could just disable mip-mapping altogether for the texture, however, in some cases you might need it. One example would be when using a second camera that renders at a lower resolution, without mip-mapping it would flicker too much and become distracting.</p>
 
 <p>Let's also add an exposure and power value for the star map, so that we have more control over the absolute and relative brightness of the stars. Add 2 new properties, declare them, take <cn>starColor</cn> to the power and multiply it by the exposure. The power basically makes fainter stars even fainter, as we're multiplying values smaller than 1 with themselves. The <cn>abs</cn> is only there to prevent an error message from Unity, as it can't handle powers of negative numbers.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4,7-8,13-14" style="margin:0;"><code class="language-hlsl">Properties
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4,7-8,13-14" style="margin:0;"><code class="language-glsl">Properties
 {
     _StarExposure ("Star exposure", Range(-16, 16)) = 0
     _StarPower ("Star power", Range(1,5)) = 1
@@ -572,7 +567,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 
 <p>We're almost there but there is still one problem, the stars are still bright and visible during the day. In order to fix this we'll add another factor to <cn>starColor</cn>, which depends on <cn>sunZenithDot</cn> and <cn>sunViewDot01</cn>. The idea is that the stars are too dim compared to the sun or the sky during the day. Add and change the following lines.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float starStrength = (1 - sunViewDot01) * (saturate(-sunZenithDot));
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float starStrength = (1 - sunViewDot01) * (saturate(-sunZenithDot));
 starColor *= (1 - sunMask) * (1 - moonMask) * exp2(_StarExposure) * starStrength;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -587,7 +582,7 @@ starColor *= (1 - sunMask) * (1 - moonMask) * exp2(_StarExposure) * starStrength
 <p>In order to do these rotations we need a new function that can rotate a direction, given a rotation axis and rotation amount. I won't go over the mathetmatical details of this function, instead we'll be using this <cn>AngleAxis3x3</cn> function from <a href="https://www.keijiro.tokyo/" target="_blank">Keijiro Takahashi</a> (which you can find <a href="https://gist.github.com/keijiro/ee439d5e7388f3aafc5296005c8c3f33" target="_blank">here</a>). Add this function above the <cn>Fragment</cn> function.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-hlsl">// Construct a rotation matrix that rotates around a particular axis by angle
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">// Construct a rotation matrix that rotates around a particular axis by angle
 // From: https://gist.github.com/keijiro/ee439d5e7388f3aafc5296005c8c3f33
 float3x3 AngleAxis3x3(float angle, float3 axis)
 {
@@ -610,7 +605,7 @@ float3x3 AngleAxis3x3(float angle, float3 axis)
 <p>Let's encapsulate the rotations we're going to do in a new function called <cn>GetStarUVW</cn>. This function will take the view direction, a latitude and local sidereal time as input. We tilt the star map with respect to the world x-axis and spin it around the y-axis. The rest of this function is simply converting the latitude and time to radians and multiplying the rotation matrices in the correct order. </p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-hlsl">// Rotate the view direction, tilt with latitude, spin with time
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">// Rotate the view direction, tilt with latitude, spin with time
 float3 GetStarUVW(float3 viewDir, float latitude, float localSiderealTime)
 {
     // tilt = 0 at the north pole, where latitude = 90 degrees
@@ -634,7 +629,7 @@ float3 GetStarUVW(float3 viewDir, float latitude, float localSiderealTime)
 <p>Now we just need to set <cn>starUVW</cn> to this instead of <cn>viewDir</cn>. However, we do need some input for the latitude and time. So let's add two new properties, the latitude in degrees between -90° (south pole) and 90° (north pole) and the speed with which the stars rotate (given in days per second). For the time itself we can use <a href="https://docs.unity3d.com/Manual/SL-UnityShaderVariables.html" target="_blank">Unity's built-in variable</a> <cn>_Time.y</cn>. Add or change the highlighted lines.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4,8,13" style="margin:0;"><code class="language-hlsl">Properties
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4,8,13" style="margin:0;"><code class="language-glsl">Properties
 {
     _StarLatitude ("Star latitude", Range(-90, 90)) = 0
     _StarSpeed ("Star speed", Float) = 0.001
@@ -670,7 +665,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 <p>Now add the map as property, as well as a colour for the constellation lines. We can reuse the <cn>starUVW</cn> as UVW, so sample the texture and multiply it by the <cn>_ConstellationColor</cn>. Again we need to mask the sun and moon, as well as multiply it by the <cn>starStrength</cn>. Finally, add the result to the final <cn>col</cn>. Add or change the highlighted lines.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4, 8, 11, 15-17, 19" style="margin:0;"><code class="language-hlsl">Properties
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4, 8, 11, 15-17, 19" style="margin:0;"><code class="language-glsl">Properties
 {
     [NoScaleOffset] _ConstellationCubeMap ("Constellation cube map", Cube) = "blank" {}
     _ConstellationColor ("Constellation color", Color) = (0,0.3,0.6,1)
@@ -707,7 +702,7 @@ float4 Fragment (v2f IN) : SV_TARGET
 
 <p>Currently the sun and moon are both drawn, even if they're on top of each other. To fix this we simply use the inverse (one minus) of the moon's mask to mask out the sun if the moon is in front. Add the following lines to the <cn>Fragment</cn> function below the constellation code.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">// Solar eclipse
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Solar eclipse
 sunColor *= (1 - moonMask);</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -716,7 +711,7 @@ sunColor *= (1 - moonMask);</code></pre></div>
 
 <p>I've never seen a total solar eclipse in person and finding reliable images of the sky during one is quite hard, but it seems that the sky becomes darker and the area around the sun seems brighter as a result. In order to implement this we'll use <cn>sunMoonDot</cn> to determine how much of the sun is eclipsed. As a function of this we'll lower the value of <cn>skyColor</cn> and increase the value of <cn>sunColor</cn> (so that the bloom has a greater effect).</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">// Solar eclipse
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Solar eclipse
 float solarEclipse01 = smoothstep(1 - _SunRadius * _SunRadius, 1.0, sunMoonDot);
 skyColor *= lerp(1, 0.4, solarEclipse01);
 sunColor *= (1 - moonMask) * lerp(1, 16, solarEclipse01);</code></pre></div>
@@ -737,7 +732,7 @@ sunColor *= (1 - moonMask) * lerp(1, 16, solarEclipse01);</code></pre></div>
 
 <p>Unfortunately we can't reuse <cn>sunMask</cn> or <cn>moonMask</cn> and instead have to calculate a new mask. This mask is very similar to <cn>sunMask</cn>, but we take the <cn>step</cn> function of negative <cn>sunViewDot</cn>, which means it is 1 when the sun is opposite of the view direction. Add the following lines to make the mask and mask out the <cn>moonColor</cn>. Add the following lines to the <cn>Fragment</cn> function below the solar eclipse code.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">// Lunar eclipse
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Lunar eclipse
 float lunarEclipseMask = 1 - step(1 - _SunRadius * _SunRadius, -sunViewDot);
 moonColor *= lunarEclipseMask;</code></pre></div>
 
@@ -749,7 +744,7 @@ moonColor *= lunarEclipseMask;</code></pre></div>
 
 <p>If you've seen a lunar eclipses you'll know that it turns slightly red once it gets fully eclipsed. Let's implement that as well. In order to do this we need to know when the moon is nearly fully eclipsed. We do this by using a <cn>smoothstep</cn> function, similarly to calculating <cn>solarEclipse01</cn>. However, this time we want it to be 0 up until the sun and moon are almost oppositely aligned. To do this we multiply the masking radius (the _SunRadius) by a small number (0.05). Finally we <cn>lerp</cn> between the mask and a dark orangish red colour and multiply the moonColor with that. Add or change the highlighted lines.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="3-4"><code class="language-hlsl">// Lunar eclipse
+<div class="container__code"><pre class="line-numbers round" data-line="3-4"><code class="language-glsl">// Lunar eclipse
 float lunarEclipseMask = 1 - step(1 - _SunRadius * _SunRadius, -sunViewDot);
 float lunarEclipse01 = smoothstep(1 - _SunRadius * _SunRadius * 0.05, 1.0, -sunMoonDot);
 moonColor *= lerp(lunarEclipseMask, float3(0.3,0.05,0), lunarEclipse01);</code></pre></div>
