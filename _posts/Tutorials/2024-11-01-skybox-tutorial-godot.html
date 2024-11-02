@@ -20,7 +20,8 @@ image: /assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Constell
 
 <h2>Acknowledgements</h2>
 
-For this tutorial the main acknowledgement would be <em>NASA's</em> <a href="https://svs.gsfc.nasa.gov/index.html" target="_blank"><em>Scientific Visualization Studio</em></a>, for their publicly available texture maps of the moon and stars.
+<p>For this tutorial the main acknowledgement would be <em>NASA's</em> <a href="https://svs.gsfc.nasa.gov/index.html" target="_blank"><em>Scientific Visualization Studio</em></a>, for their publicly available texture maps of the moon and stars.</p>
+<p>Besides that the Godot's documentation has been a great help, with a special shout out to the <a href="https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/index.html">Shading reference</a>.</p>
 
 <h2>Contents</h2>
 
@@ -121,6 +122,7 @@ func _process(delta: float) -> void:
 <div class="collapsible__content round code">
     <pre class="line-numbers" style="margin:0;"><code class="language-glsl">shader_type sky;
 
+group_uniforms Directions;
 uniform vec3 _SunDir;
 uniform vec3 _MoonDir;
 
@@ -132,7 +134,7 @@ void sky() {
 }</code></pre>
 </div>
 
-<p>This is the basic shader we'll build upon in the following sections. I'll briefly go over its contents. In order for it to be used as a skybox we set the <cn>shader_type</cn> to sky. Our two main inputs are the sun and moon direction, which take the form of the <cn>_SunDir</cn> and <cn>_MoonDir</cn>, which are both a uniform vec3. Note that these are the same names as we use in the <em>SkyboxController</em> to pass on the directions.</p>
+<p>This is the basic shader we'll build upon in the following sections. I'll briefly go over its contents. In order for it to be used as a skybox we set the <cn>shader_type</cn> to sky. Our two main inputs are the sun and moon direction, which take the form of the <cn>_SunDir</cn> and <cn>_MoonDir</cn>, which are both a uniform vec3. Note that these are the same names as we use in the <em>SkyboxController</em> to pass on the directions. The <cn>group_uniforms</cn> line is there to group both directions toghether in the inspector.</p>
 
 <p>In the <cn>sky</cn> function we get the view direction from the <cn>EYEDIR</cn>. Finally, we set our <cn>COLOR</cn> output to the stepped dot products between the sun and view direction, and the moon and view direction. Because they're directions they should already be normalized.</p>
 <p>In order to see something set the <em>ShaderMaterial</em> in the <em>WorldEnvironment</em> to use the Skybox shader. The sky should now be black, with a bright red and green spot that correspond to the positions of the sun and moon (it is yellow when they overlap). You can test this by rotating the <em>Sun</em> and <em>Moon</em> nodes from the previous section.</p>
@@ -151,9 +153,9 @@ void sky() {
 
 <p>As a quick reminder the 4 main angles are: the sunView, sunZentih, viewZentih and sunMoon angle.</p>
 <p>While I've been talking about angles all this time we're actually only going to calculate the dot product between the different directions. Mathematically this corresponds to the cosine of the angle between the directions (if both vectors are normalized). For our use case this is fine, though you should note that the cosine of an angle isn't linear (it flattens near 0° and 180°).</p>
-<p>We already have the sun, moon and view direction in our shader and the zenith direction is simply \((0, 1, 0)\), so we can calculate all 4 dot products. Add the following highlighted lines to our shader in the <cn>Fragment</cn> function.</p>
+<p>We already have the sun, moon and view direction in our shader and the zenith direction is simply \((0, 1, 0)\), so we can calculate all 4 dot products. Add the following highlighted lines to our shader in the <cn>sky</cn> function.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="3-7"><code class="language-hlsl">float3 viewDir = normalize(IN.viewDirWS);
+<div class="container__code"><pre class="line-numbers round" data-line="3-7"><code class="language-glsl">vec3 viewDir = EYEDIR;
 
 // Main angles
 float sunViewDot = dot(_SunDir, viewDir);
@@ -165,7 +167,7 @@ float sunMoonDot = dot(_SunDir, _MoonDir);
 <p>Note that we've simplified the calculation of <cn>sunZenithDot</cn> and <cn>viewZenithDot</cn>, the dot product between a vector and \((0, 1, 0)\) corresponds simply to the y-value of that vector.</p>
 <p>The dot products range from -1 to 1, with -1 being parallel but opposed vectors, 0 perpendicular vectors and 1 parallel vectors. While this is a useful range for some calculations, for others it is better to remap it to a 0, 1 range. As such add the following 2 lines just below the previous calculations.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">float sunViewDot01 = (sunViewDot + 1.0) * 0.5;
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float sunViewDot01 = (sunViewDot + 1.0) * 0.5;
 float sunZenithDot01 = (sunZenithDot + 1.0) * 0.5;
 </code></pre></div>
 
@@ -175,53 +177,43 @@ float sunZenithDot01 = (sunZenithDot + 1.0) * 0.5;
 <h3 id="colours-of-the-sky">3.2 Colours of the sky</h3>
 
 <p>The colours of the sky will be determined by sampling 3 gradient textures, adjusting them depending on our main angles, and adding them together.</p>
+<p>Add all 3 gradient textures by adding the following lines just below the <cn>_SunDir</cn> and <cn>_MoonDir</cn> uniforms.</p>
 
-<p>Add all 3 gradient textures by adding the highlighted lines from the code block below. We add them to the properties, where the <cn>NoScaleOffset</cn> attribute simply removes the scale and offset from showing up in the inspector. Next we declare them and their samplers just below the <cn>Vertex</cn> function, using the macros <cn>TEXTURE2D</cn> and <cn>SAMPLER</cn>.</p>
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">group_uniforms SkyGradients;
+/** The gradient texture that is sampled using the Sun-Zenith angle */
+uniform sampler2D _SunZenithGrad : source_color, repeat_disable;
+/** The gradient texture that is sampled using the View-Zenith angle */
+uniform sampler2D _ViewZenithGrad : source_color, repeat_disable;
+/** The gradient texture that is sampled using the Sun-View angle */
+uniform sampler2D _SunViewGrad : source_color, repeat_disable;
+</code></pre></div>
 
-<button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code">
-    <pre class="line-numbers" data-line="3-5, 11-13" style="margin:0;"><code class="language-hlsl">Properties
-{
-    [NoScaleOffset] _SunZenithGrad ("Sun-Zenith gradient", 2D) = "white" {}
-    [NoScaleOffset] _ViewZenithGrad ("View-Zenith gradient", 2D) = "white" {}
-    [NoScaleOffset] _SunViewGrad ("Sun-View gradient", 2D) = "white" {}
-}
-
-...
-v2f Vertex(Attributes IN){}
-
-TEXTURE2D(_SunZenithGrad);      SAMPLER(sampler_SunZenithGrad);
-TEXTURE2D(_ViewZenithGrad);     SAMPLER(sampler_ViewZenithGrad);
-TEXTURE2D(_SunViewGrad);        SAMPLER(sampler_SunViewGrad);
-
-float3 _SunDir, _MoonDir;</code></pre>
-</div>
+<p>We use the <cn>source_color</cn> hint to ensure we're sampling our texture as linear data and the <cn>repeate_disable</cn> hint to ensure our sampling doesn't loop around when our dot product gets close to 0 or 1.</p>
 
 <div class="note__base round">
-    <p>For those curious, the TEXTURE2D and SAMPLER macros form an abstraction layer between the shader and the different rendering APIs, such as D3D11, Metal and Vulkan. You can find these macros through the Project window in the <em>Core RP Library</em> package under Shaderlibrary/API.</p>
+    <p>The <cn>/** */</cn> notation is used to add descriptions that can be read in the inspector if you hover over the entry.</p>
 </div>
-
 
 <h4>3.2.1 Main sky colour</h4>
 
-<p>Now let us sample the first gradient and output its colour. The sunZenith gradient is the simplest and represents the general sky colour depending on how high the sun is in the sky. This is represented within our shader by the float <cn>sunZenithDot01</cn>. Add the following lines to the <cn>Fragment</cn> function and change the output value of <cn>col</cn> as seen below.</p>
+<p>Now let us sample the first gradient and output its colour. The sunZenith gradient is the simplest and represents the general sky colour depending on how high the sun is in the sky. This is represented within our shader by the float <cn>sunZenithDot01</cn>. Add the following lines to the <cn>sky</cn> function and change the output value of <cn>col</cn> as seen below.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-hlsl">// Sky colours
-float3 sunZenithColor = SAMPLE_TEXTURE2D(_SunZenithGrad, sampler_SunZenithGrad, float2(sunZenithDot01, 0.5)).rgb;
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Sky colours
+vec3 sunZenithColor = texture(_SunZenithGrad, vec2(sunZenithDot01, 0.5)).rgb;
 
-float3 skyColor = sunZenithColor;
+vec3 skyColor = sunZenithColor;
 
-float3 col = skyColor;
+vec3 col = skyColor;
 </code></pre></div>
 
-<p>I've used the following small gradient texture as my sunZenith gradient, where if the sun is directly below us it is nearly black and transitions to a brighter blue as the sun rises. You can download it, by right-clicking and save image, and set it as your texture or create one that better suits your needs.</p>
+<p>I've used the following small gradient texture as my sunZenith gradient, where if the sun is directly below us it is nearly black and transitions to a brighter blue as the sun rises. You can download it, by right-clicking and save image, and set it as your texture or create one that better suits your needs. Know that you can easily create these gradient textures <a href="https://docs.godotengine.org/en/stable/classes/class_gradienttexture1d.html">within Godot</a> itself, which makes it much easier to play with them.</p>
 
 <div class="container image__container round" style="width:100%">
     <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SunZenith_Gradient.png" alt="Gradient texture representing the main colour of the sky." class="image__caption image__modal">
 </div>
 
 <div class="note__base round">
-    <p>For the gradient texture import settings I've turned off generate mip maps, set the wrap mode to clamp, and set compression quality to high.</p>
+    <p>For all the gradient textures' import settings I've turned off generate mip maps, and set compression quality to high while using VRAM compressed.</p>
 </div>
 
 <div class="container image__container round" style="width:100%">
