@@ -317,12 +317,12 @@ void sky(){
 
 <h3 id="ray-tracing-mask">4.1 Ray-tracing mask</h3>
 
-<p>The first step is just getting the ray-traced sphere information and creating a mask from it. I'll not go into the specifics of ray-tracing and instead use this function from <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a> (with small modifications). You can also check my other tutorial on <a href="{{site.baseurl}}/2021/05/11/math-line-intersections/">line intersections</a> to learn more about ray-tracing. Add the following lines before the <cn>Fragment</cn> function.</p>
+<p>The first step is just getting the ray-traced sphere information and creating a mask from it. I'll not go into the specifics of ray-tracing and instead use this function from <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a> (with small modifications). You can also check my other tutorial on <a href="{{site.baseurl}}/2021/05/11/math-line-intersections/">line intersections</a> to learn more about ray-tracing. Add the following lines before the <cn>sky</cn> function.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// From Inigo Quilez, https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-float sphIntersect(float3 rayDir, float3 spherePos, float radius)
+float sphIntersect(vec3 rayDir, vec3 spherePos, float radius)
 {
-    float3 oc = -spherePos;
+    vec3 oc = -spherePos;
     float b = dot(oc, rayDir);
     float c = dot(oc, oc) - radius * radius;
     float h = b * b - c;
@@ -332,28 +332,22 @@ float sphIntersect(float3 rayDir, float3 spherePos, float radius)
 }</code></pre></div>
 
 <p>The function has 3 arguments, the ray direction (the view direction), the sphere's position (the moon direction) and the radius (the moon radius). In return it outputs the distance from the ray origin (our camera) to the intersection with the sphere, and if there is no intersection it returns -1. We can then create a mask by checking if the intersection is greater than -1 or not.</p>
-<p>Now for the implementation we need a new property, the moon's radius. Add the following property and declare it by adding/changing the highlighted lines.</p>
+<p>Now for the implementation we need a new property, the moon's radius. Add the following uniform just below the sun group.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="4,8"><code class="language-glsl">Properties
-{
-    _SunRadius ("Sun radius", Range(0,1)) = 0.05
-    _MoonRadius ("Moon radius", Range(0,1)) = 0.05
-}
+<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">group_uniforms Moon;
+uniform float _MoonRadius : hint_range(0, 1) = 0.05;</code></pre></div>
 
-float3 _SunDir, _MoonDir;
-float _SunRadius, _MoonRadius;</code></pre></div>
-
-<p>To show the moon on the screen we need to call <cn>sphIntersect</cn> in the <cn>Fragment</cn> function, define the mask and add it to <cn>col</cn>.</p>
+<p>To show the moon on the screen we need to call <cn>sphIntersect</cn> in the <cn>sky</cn> function, define the mask and add it to <cn>col</cn>.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// The moon
 float moonIntersect = sphIntersect(viewDir, _MoonDir, _MoonRadius);
-float moonMask = moonIntersect > -1 ? 1 : 0;
-float3 moonColor = moonMask;
+float moonMask = moonIntersect > -1.0 ? 1.0 : 0.0;
+vec3 moonColor = vec3(1.0, 1.0, 1.0) * moonMask;
 
-float3 col = skyColor + sunColor + moonColor;</code></pre></div>
+vec3 col = skyColor + sunColor + moonColor;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Raytrace.png" alt="The moon mask, with a radius of 0.07." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Raytrace.png" alt="The moon mask, with a radius of 0.07." class="image__caption image__modal">
 </div>
 
 <div class="note__base round"><p>Note that in the picture above the moon and sun have a similar size, while the moon radius is 0.07 and the sun radius is 0.05. Unfortunately their radius variables do not scale the same.</p></div>
@@ -369,12 +363,12 @@ float3 col = skyColor + sunColor + moonColor;</code></pre></div>
     </div>
 </div>
 
-<p>Let's add this normal calculation in the <cn>Fragment</cn> function by taking the difference between the <cn>viewDir</cn> scaled by <cn>moonIntersect</cn> and the <cn>_MoonDir</cn>. Add the highlighted line to our moon code.</p>
+<p>Let's add this normal calculation in the <cn>sky</cn> function by taking the difference between the <cn>viewDir</cn> scaled by <cn>moonIntersect</cn> and the <cn>_MoonDir</cn>. Add the highlighted line to our moon code.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line="4"><code class="language-glsl">// The moon
 float moonIntersect = sphIntersect(viewDir, _MoonDir, _MoonRadius);
-float moonMask = moonIntersect > -1 ? 1 : 0;
-float3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre></div>
+float moonMask = moonIntersect > -1.0 ? 1.0 : 0.0;
+vec3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre></div>
 
 <p>We now have the normal, but for our NdotL lighting we also need the light direction. The light direction would be the direction of the sun's rays away from the moon. It is <em>away</em> from the sun because we want our surface to be lit if the dot product between the normal and light direction is 1.</p>
 
@@ -385,32 +379,24 @@ float3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre><
 </div>
 
 <p>In mathematical terms it can be expressed as \( d_l = norm(d_s r_s - d_m r_m) \). Here \(d_l\) is the light direction, \(d_s\) the sun direction, \(r_s\) the sun's distance to us, \(d_m\) the moon direction, \(r_m\) the moon's distance to us, and \(norm()\) a normalization function. This might look complicated, however, we can use the fact that the sun is much further away from us than the moon (about 400 times further). Using this fact we can roughly approximate the light direction by saying the sun's distance is so big that the moon's distance is neglectable, i.e. \(d_l = norm(d_s r_s - d_m r_m) ≈ norm(d_s r_s) = d_s\).</p>
-<p>We can now calculate our NdotL using the <cn>moonNormal</cn> and <cn>_SunDir</cn>. Add the highlighted line and adjust our moon variable to show the new lighting. Note that we use <cn>saturate</cn> to clamp the <cn>dot</cn> between 0 and 1, because there is no such thing as negative lighting.</p>
+<p>We can now calculate our NdotL using the <cn>moonNormal</cn> and <cn>_SunDir</cn>. Add the highlighted line and adjust our moon variable to show the new lighting. Note that we clamp the <cn>dot</cn> between 0 and 1, because there is no such thing as negative lighting.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2-3"><code class="language-glsl">float3 moonNormal = normalize(_MoonDir - viewDir * moonIntersect);
-float moonNdotL = saturate(dot(moonNormal, _SunDir));
-float3 moonColor = moonMask * moonNdotL;</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line="2-3"><code class="language-glsl">vec3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);
+float moonNdotL = clamp(dot(moonNormal, _SunDir), 0.0, 1.0);
+vec3 moonColor = moonMask * moonNdotL * vec3(1.0, 1.0, 1.0);</code></pre></div>
 
-<p>Let's also add an exposure property, so that we can control how bright the moon is. Add the following highlighted lines, and add the exposure to <cn>moonColor</cn>.</p>
+<p>Let's also add an exposure property, so that we can control how bright the moon is. Add the following highlighted lines, adding a uniform and modifying <cn>moonColor</cn>.</p>
 
-<button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code">
-    <pre class="line-numbers" data-line="3,7,11" style="margin:0;"><code class="language-glsl">Properties
-{
-    _MoonExposure ("Moon exposure", Range(-16, 16)) = 0
-}
+<div class="container__code"><pre class="line-numbers" data-line="1, 5" style="margin:0;"><code class="language-glsl">uniform float _MoonExposure : hint_range(-16, 16) = 0;
+...
+void sky(){
+    ...
+    vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * vec3(1.0, 1.0, 1.0);
+}</code></pre></div>
 
-float _SunRadius, _MoonRadius;
-float _MoonExposure;
-
-float4 Fragment (v2f IN) : SV_TARGET
-{
-    float3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure);
-}</code></pre>
-</div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Lighting.png" alt="A partially lit moon during the setting sun, with moon exposure set to 1." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Lighting.png" alt="A partially lit moon during the setting sun, with moon exposure set to 1." class="image__caption image__modal">
 </div>
 
 
@@ -422,64 +408,66 @@ float4 Fragment (v2f IN) : SV_TARGET
     <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonColorMap.jpg" alt="Color map of the moon, made by NASA's Scientific Visualization Studio." class="image__caption image__modal">
 </div>
 
-<p>We'll be sampling this texture as a cube map, so be sure to set the Texture Shape to Cube in the import settings. A benefit of sampling it as a cube map is that we can reuse the normals we've calculated as a 3 component UV for the cube map texture, which we'll refer to as UVW.</p>
+<p>Import the image as a regular 2D texture and add the uniform to the shader. Don't forget to set the texture on the sky material as well.</p>
 
-<p>Adding the property and declaration of a cube map is very similar to that of textures, only a slight change in macros. Add the following highlighted lines.</p>
-
-<div class="container__code"><pre class="line-numbers round" data-line="3,7"><code class="language-glsl">Properties
-{
-    [NoScaleOffset] _MoonCubeMap ("Moon cube map", Cube) = "black" {}
-}
-
-TEXTURE2D(_SunViewGrad);        SAMPLER(sampler_SunViewGrad);
-TEXTURECUBE(_MoonCubeMap);      SAMPLER(sampler_MoonCubeMap);
+<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform sampler2D _MoonPanorama : source_color;
 </code></pre></div>
 
-<p>Let's make a new function to read our color map, with as input the moon's normal. Add the following <cn>GetMoonTexture</cn> function above the <cn>Fragment</cn> function. Sampling the cube map texture is similar to a regular 2D texture, except that we pass a float3 as UVW. </p>
+<p>We'll be adding two function to read our moon panorama, one to read the texture and another to get the right UVs for the texture, because the moon map is drawn in <a href="https://en.wikipedia.org/wiki/Equirectangular_projection">equirectangular coordinates</a>. In the Unity version of this tutorial we were able to sample the texture as a cubemap, as one of their importers converts the equirectangular texture to a cubemap. You could convert the texture to a cubemap using other software, but for the purposes of this tutorial we'll be converting our 3D normal vector into equirectangular uv coordinates within the shader.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float3 GetMoonTexture(float3 normal)
+<p>Add the following <cn>GetMoonTexture</cn> and <cn>NormalToEquirectangularCoords</cn> functions above the <cn>sky</cn> function. I won't go over the details of the coordinate calculations, but in short we're converting a 3D point on a sphere to a 2D map. One issue we run into with this is that there is a discontinuity in one of the coordinates, which gives issues with mip-mapping. I recommend reading <a href="https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8">this article</a> from Ben Golus if you're interested in what's going on with the mip-mapping.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Based on Godot's calculation of SKY_COORDS (aka panorama_coords) https://github.com/godotengine/godot/blob/1bffd6c73b44b85e5889f54e14b2193940cf5bb1/drivers/gles3/shaders/sky.glsl#L176
+// And Ben Golus's article for dealing with the mip-map seam https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8
+vec2 NormalToEquirectangularCoords(vec3 normal)
 {
-    float3 uvw = normal;
-    return SAMPLE_TEXTURECUBE(_MoonCubeMap, sampler_MoonCubeMap, uvw).rgb;
+    vec2 uv = vec2(atan(normal.z, normal.x), acos(normal.y));
+    uv /= vec2(PI * 2.0, PI);
+    
+    float x_fract = fract(uv.x);
+    uv.x = fwidthCoarse(uv.x) - 0.0001 < fwidthCoarse(x_fract) ? uv.x : x_fract;
+    return uv;
+}
+    
+vec3 GetMoonTexture(vec3 normal)
+{
+    vec2 uv = NormalToEquirectangularCoords(normal);
+    return texture(_MoonPanorama, uv).rgb;
 }</code></pre></div>
 
-<p>Now to see the texture add or change the following lines in the Fragment function, and don't forget to set our texture on the material in the inspector.</p>
+<p>Now to see the texture add or change the following lines in the <cn>sky</cn> function, and don't forget to set our texture on the material in the inspector.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float3 moonTexture = GetMoonTexture(moonNormal);
-float3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moonTexture = GetMoonTexture(moonNormal);
+vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal">
 </div>
 
-<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see 1 side). The texture changes because our UVW is the normal in world-space, meaning that it changes with the moon's rotation in the sky. What we want as UVW is the normal in the moon's local space, moon-space. In order to get that we need a space transformation matrix. We'll construct it in our C# script, <em>SkyboxController.cs</em>, from section <a href="#skybox-controller">2.1</a>. The transformation matrix consists of the 3 basis vectors that make up the local space, which are the forward, right and up vectors. Add the highlighted line to the <em>SkyboxController.cs</em> script, where we set a global shader matrix called <cn>_MoonSpaceMatrix</cn>. Note that we make the right direction negative as well, in adition to the forward direction. This is to maintain the <a href="https://en.wikipedia.org/wiki/Right-hand_rule">right-handedness</a> of our system, i.e. the cross product of forward and right stays up. </p>
+<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, moon-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>SkyboxController.gd</em>, from section <a href="#skybox-controller">2.1</a>. The transformation matrix consists of the 3 basis vectors that make up the local space, which are the forward, right and up vectors. Add the highlighted line to the <em>SkyboxController.gd</em> script, where we set shader matrix called <cn>_MoonSpaceMatrix</cn>. ?????? Note that we make the right direction negative as well, in adition to the forward direction. This is to maintain the <a href="https://en.wikipedia.org/wiki/Right-hand_rule">right-handedness</a> of our system, i.e. the cross product of forward and right stays up. ??????</p>
 
-<button class="collapsible round">Code block (<em>SkyboxController.cs</em>)</button>
-<div class="collapsible__content round code">
-    <pre class="line-numbers" style="margin:0;" data-line="10"><code class="language-csharp">void LateUpdate()
-{
-    // Directions are defined to point towards the object
-
-    // Sun
-    Shader.SetGlobalVector("_SunDir", -_Sun.transform.forward);
-
-    // Moon
-    Shader.SetGlobalVector("_MoonDir", -_Moon.transform.forward);
-    Shader.SetGlobalMatrix("_MoonSpaceMatrix", new Matrix4x4(-_Moon.transform.forward, _Moon.transform.up, -_Moon.transform.right, Vector4.zero).transpose);
-}</code></pre>
+<button class="collapsible round">Code block (<em>SkyboxController.gd</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" style="margin:0;" data-line="3-4,7"><code class="language-gdscript">func _process(delta: float) -> void:
+    var sun_dir = $"../Sun".get_global_transform().basis.z; # This is our forward direction pointing towards the sun
+    var moonBasis = $"../Moon".get_global_transform().basis;
+    var moon_dir = moonBasis.z; # This is our forward direction pointing towards the moon
+    environment.sky.sky_material.set_shader_parameter('_SunDir', sun_dir); # Update sky material with sun direction
+    environment.sky.sky_material.set_shader_parameter('_MoonDir', moon_dir); # Update sky material with moon direction
+    environment.sky.sky_material.set_shader_parameter('_MoonSpaceMatrix', moonBasis);
+    pass</code></pre>
 </div>
 
 <div class="note__base round"><p>Note that our transformation matrix only has 3 vectors, not 4. We can get away with this because we only need to rotate the moon normal, not translate it.</p></div>
 
 <p>Now we can access this matrix by declaring it in our shader. We then need to multiply this matrix with the moon's normal in world-space to get the normal in moon-space. Add the following highlighted lines to implement this.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2,6"><code class="language-glsl">float _MoonExposure;
-float4x4 _MoonSpaceMatrix;
+<div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 _MoonSpaceMatrix;
 
-float3 GetMoonTexture(float3 normal)
+vec3 GetMoonTexture(vec3 normal)
 {
-    float3 uvw = mul(_MoonSpaceMatrix, float4(normal,0)).xyz;
-    return SAMPLE_TEXTURECUBE(_MoonCubeMap, sampler_MoonCubeMap, uvw).rgb;
+    normal = normal * _MoonSpaceMatrix;
+    vec2 uv = NormalToEquirectangularCoords(normal);
+    return texture(_MoonPanorama, uv).rgb;
 }</code></pre></div>
 
 <p>Now the moon's texture should appear stationary when you change the moon's direction. There is one final alteration I'd like to make, because we're not seeing the correct part of the moon texture. In order to correct this I've constructed an additional 3x3 rotation matrix, the values of which I got through some trial and error, and could be improved. All it does is rotate the normal such that the correct part is shown to us, you can think of it as a texture offset. Add the highlighted lines to get our final moon texture.</p>
