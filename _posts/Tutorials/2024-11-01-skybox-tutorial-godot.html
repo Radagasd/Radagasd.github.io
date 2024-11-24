@@ -275,9 +275,9 @@ vec3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewColo
 
 <h3 id="the-sun">3.3 The sun</h3>
 
-<p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>GetSunMask</cn>. The mask is quite simple, we step <cn>sunViewDot</cn> depending on a set radius. Add the following lines before the <cn>sky</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
+<p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>getSunMask</cn>. The mask is quite simple, we step <cn>sunViewDot</cn> depending on a set radius. Add the following lines before the <cn>sky</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float GetSunMask(float sunViewDot, float sunRadius)
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float getSunMask(float sunViewDot, float sunRadius)
 {
     float stepRadius = 1.0 - sunRadius * sunRadius;
     return step(stepRadius, sunViewDot);
@@ -295,7 +295,7 @@ void sky(){
     ...
 
     // The sun
-	float sunMask = GetSunMask(sunViewDot, _SunRadius);
+	float sunMask = getSunMask(sunViewDot, _SunRadius);
 	vec3 sunColor = _SunColor * sunMask;
 	
 	vec3 col = skyColor + sunColor;
@@ -319,7 +319,7 @@ void sky(){
 
 <p>The first step is just getting the ray-traced sphere information and creating a mask from it. I'll not go into the specifics of ray-tracing and instead use this function from <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a> (with small modifications). You can also check my other tutorial on <a href="{{site.baseurl}}/2021/05/11/math-line-intersections/">line intersections</a> to learn more about ray-tracing. Add the following lines before the <cn>sky</cn> function.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// From Inigo Quilez, https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// From Inigo Quilez, https://iquilezles.org/articles/intersectors/
 float sphIntersect(vec3 rayDir, vec3 spherePos, float radius)
 {
     vec3 oc = -spherePos;
@@ -387,13 +387,14 @@ vec3 moonColor = moonMask * moonNdotL * vec3(1.0, 1.0, 1.0);</code></pre></div>
 
 <p>Let's also add an exposure property, so that we can control how bright the moon is. Add the following highlighted lines, adding a uniform and modifying <cn>moonColor</cn>.</p>
 
-<div class="container__code"><pre class="line-numbers" data-line="1, 5" style="margin:0;"><code class="language-glsl">uniform float _MoonExposure : hint_range(-16, 16) = 0;
+<div class="container__code"><pre class="line-numbers round" data-line="1, 5" style="margin:0;"><code class="language-glsl">uniform float _MoonExposure : hint_range(-16, 16) = 0;
 ...
 void sky(){
     ...
     vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * vec3(1.0, 1.0, 1.0);
 }</code></pre></div>
 
+<p></p>
 
 <div class="container image__container round" style="width:100%">
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Lighting.png" alt="A partially lit moon during the setting sun, with moon exposure set to 1." class="image__caption image__modal">
@@ -415,36 +416,36 @@ void sky(){
 
 <p>We'll be adding two function to read our moon panorama, one to read the texture and another to get the right UVs for the texture, because the moon map is drawn in <a href="https://en.wikipedia.org/wiki/Equirectangular_projection">equirectangular coordinates</a>. In the Unity version of this tutorial we were able to sample the texture as a cubemap, as one of their importers converts the equirectangular texture to a cubemap. You could convert the texture to a cubemap using other software, but for the purposes of this tutorial we'll be converting our 3D normal vector into equirectangular uv coordinates within the shader.</p>
 
-<p>Add the following <cn>GetMoonTexture</cn> and <cn>NormalToEquirectangularCoords</cn> functions above the <cn>sky</cn> function. I won't go over the details of the coordinate calculations, but in short we're converting a 3D point on a sphere to a 2D map. One issue we run into with this is that there is a discontinuity in one of the coordinates, which gives issues with mip-mapping. I recommend reading <a href="https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8">this article</a> from Ben Golus if you're interested in what's going on with the mip-mapping.</p>
+<p>Add the following <cn>getMoonTexture</cn> and <cn>cartesianToEquirectangularCoords</cn> functions above the <cn>sky</cn> function. I won't go over the details of the coordinate calculations, but in short we're converting a 3D point on a sphere to a 2D map. One issue we run into with this is that there is a discontinuity in one of the coordinates, which gives issues with mip-mapping. I recommend reading <a href="https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8">this article</a> from Ben Golus if you're interested in what's going on with the mip-mapping.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Based on Godot's calculation of SKY_COORDS (aka panorama_coords) https://github.com/godotengine/godot/blob/1bffd6c73b44b85e5889f54e14b2193940cf5bb1/drivers/gles3/shaders/sky.glsl#L176
-// And Ben Golus's article for dealing with the mip-map seam https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8
-vec2 NormalToEquirectangularCoords(vec3 normal)
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Based Ben Golus article on sphere imposter: https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c#6622
+// And another for dealing with the mip-map seam https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8
+vec2 cartesianToEquirectangularCoords(vec3 dir)
 {
-    vec2 uv = vec2(atan(normal.z, normal.x), acos(normal.y));
+    vec2 uv = vec2(atan(dir.z, dir.x), acos(-dir.y));
     uv /= vec2(PI * 2.0, PI);
-    
+        
     float x_fract = fract(uv.x);
     uv.x = fwidthCoarse(uv.x) - 0.0001 < fwidthCoarse(x_fract) ? uv.x : x_fract;
     return uv;
 }
     
-vec3 GetMoonTexture(vec3 normal)
+vec3 getMoonTexture(vec3 dir)
 {
-    vec2 uv = NormalToEquirectangularCoords(normal);
+    vec2 uv = cartesianToEquirectangularCoords(dir);
     return texture(_MoonPanorama, uv).rgb;
 }</code></pre></div>
 
 <p>Now to see the texture add or change the following lines in the <cn>sky</cn> function, and don't forget to set our texture on the material in the inspector.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moonTexture = GetMoonTexture(moonNormal);
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moonTexture = getMoonTexture(moonNormal);
 vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal">
 </div>
 
-<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, moon-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>SkyboxController.gd</em>, from section <a href="#skybox-controller">2.1</a>. The transformation matrix consists of the 3 basis vectors that make up the local space, which are the forward, right and up vectors. Add the highlighted line to the <em>SkyboxController.gd</em> script, where we set shader matrix called <cn>_MoonSpaceMatrix</cn>. ?????? Note that we make the right direction negative as well, in adition to the forward direction. This is to maintain the <a href="https://en.wikipedia.org/wiki/Right-hand_rule">right-handedness</a> of our system, i.e. the cross product of forward and right stays up. ??????</p>
+<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, moon-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>SkyboxController.gd</em>, from section <a href="#skybox-controller">2.1</a>. The transformation matrix consists of the 3 basis vectors that make up the local space, which are the forward, right and up vectors. Add the highlighted line to the <em>SkyboxController.gd</em> script, where we set shader matrix called <cn>_MoonSpaceMatrix</cn>.</p>
 
 <button class="collapsible round">Code block (<em>SkyboxController.gd</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" style="margin:0;" data-line="3-4,7"><code class="language-gdscript">func _process(delta: float) -> void:
@@ -463,24 +464,26 @@ vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code
 
 <div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 _MoonSpaceMatrix;
 
-vec3 GetMoonTexture(vec3 normal)
+vec3 getMoonTexture(vec3 dir)
 {
-    normal = normal * _MoonSpaceMatrix;
-    vec2 uv = NormalToEquirectangularCoords(normal);
+    dir = _MoonSpaceMatrix * dir;
+    vec2 uv = cartesianToEquirectangularCoords(dir);
     return texture(_MoonPanorama, uv).rgb;
 }</code></pre></div>
 
-<p>Now the moon's texture should appear stationary when you change the moon's direction. There is one final alteration I'd like to make, because we're not seeing the correct part of the moon texture. In order to correct this I've constructed an additional 3x3 rotation matrix, the values of which I got through some trial and error, and could be improved. All it does is rotate the normal such that the correct part is shown to us, you can think of it as a texture offset. Add the highlighted lines to get our final moon texture.</p>
+<p>Now the moon's texture should appear stationary when you change the moon's direction. There is one final alteration I'd like to make, because we're not seeing the correct part of the moon texture. In order to correct this I've constructed an additional 3x3 rotation matrix, the values of which I got through some trial and error, and could be improved. All it does is rotate the dir vector such that the correct part is shown to us, you can think of it as a texture offset. Add the highlighted lines to get our final moon texture.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="5-7"><code class="language-glsl">float3 GetMoonTexture(float3 normal)
+<div class="container__code"><pre class="line-numbers round" data-line="4-9"><code class="language-glsl">vec3 getMoonTexture(vec3 dir)
 {
-    float3 uvw = mul(_MoonSpaceMatrix, float4(normal,0)).xyz;
-
-    // Found through trial and error resulting in mul(AngleAxis3x3(0.5*PI, float3(0,1,0)), AngleAxis3x3(-0.08*PI, float3(1,0,0)));
-    float3x3 correctionMatrix = float3x3( 0, -0.24869, 0.968583, 0, 0.968583, 0.24869, -1, 0, 0);
-    uvw = mul(correctionMatrix, uvw);
-    
-    return SAMPLE_TEXTURECUBE(_MoonCubeMap, sampler_MoonCubeMap, uvw).rgb;
+    dir = _MoonSpaceMatrix * dir;
+    // Found through trial and error resulting in rotation3d(vec3(1.0, 0.0, 0.0), -0.5 * PI) * rotation3d(vec3(0.0, 1.0, 0.0), 0.35*PI) * rotation3d(vec3(0.0, 0.0, 1.0), 0.68 * PI);
+    mat3 correctionMatrix = (mat3(
+        vec3(-0.2432603,  0.4774252, -0.8443279),
+        vec3(0.3833168, -0.7523017, -0.5358268),
+        vec3(-0.8910065, -0.4539905,  0.0)));
+    dir = correctionMatrix * dir;
+    vec2 uv = cartesianToEquirectangularCoords(dir);
+    return texture(_MoonPanorama, uv).rgb;
 }</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -489,7 +492,7 @@ vec3 GetMoonTexture(vec3 normal)
 
 <h2 id="the-stars">5. The stars</h2>
 
-<p>For the stars we're also going to sample a cube map, however this time we're using the view direction as UVW coordinates and we need more rotation matrices. One as a tilt, because the stars position depends on your latitude, and a spinning rotation, which rotates the stars around the tilted axis.</p>
+<p>For the stars we're also going to sample an equirectangular texture, however this time we're using the view direction as our direction and we need more rotation matrices. One as a tilt, because the stars position depends on your latitude, and a spinning rotation, which rotates the stars around the tilted axis.</p>
 
 <p>The texture we'll be using again comes from NASA's <em>Scientific Visualization Studio</em>, and can be found <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">here</a>. It is the star map at the top of the page, where I'm using the 8192x4096 x-exr version. Don't forget to set the Texture Shape to Cube in the import settings in Unity, and also set the Max Size appropriately (8192 in this case).</p>
 
