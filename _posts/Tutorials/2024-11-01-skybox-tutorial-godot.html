@@ -411,10 +411,10 @@ void sky(){
 
 <p>Import the image as a regular 2D texture and add the uniform to the shader. Don't forget to set the texture on the sky material as well.</p>
 
-<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform sampler2D _MoonPanorama : source_color;
+<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform sampler2D _MoonEquirectangular : source_color;
 </code></pre></div>
 
-<p>We'll be adding two function to read our moon panorama, one to read the texture and another to get the right UVs for the texture, because the moon map is drawn in <a href="https://en.wikipedia.org/wiki/Equirectangular_projection">equirectangular coordinates</a>. In the Unity version of this tutorial we were able to sample the texture as a cubemap, as one of their importers converts the equirectangular texture to a cubemap. You could convert the texture to a cubemap using other software, but for the purposes of this tutorial we'll be converting our 3D normal vector into equirectangular uv coordinates within the shader.</p>
+<p>We'll be adding two functions to read our moon texture, one to read the texture and another to get the right UVs for the texture, because the moon map is drawn in <a href="https://en.wikipedia.org/wiki/Equirectangular_projection">equirectangular coordinates</a>. In the Unity version of this tutorial we were able to sample the texture as a cubemap, as one of their importers converts the equirectangular texture to a cubemap. You could convert the texture to a cubemap using other software, but for the purposes of this tutorial we'll be converting our 3D normal vector into equirectangular uv coordinates within the shader.</p>
 
 <p>Add the following <cn>getMoonTexture</cn> and <cn>cartesianToEquirectangularCoords</cn> functions above the <cn>sky</cn> function. I won't go over the details of the coordinate calculations, but in short we're converting a 3D point on a sphere to a 2D map. One issue we run into with this is that there is a discontinuity in one of the coordinates, which gives issues with mip-mapping. I recommend reading <a href="https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8">this article</a> from Ben Golus if you're interested in what's going on with the mip-mapping.</p>
 
@@ -434,7 +434,7 @@ vec2 cartesianToEquirectangularCoords(vec3 dir)
 vec3 getMoonTexture(vec3 dir)
 {
     vec2 uv = cartesianToEquirectangularCoords(dir);
-    return texture(_MoonPanorama, uv).rgb;
+    return texture(_MoonEquirectangular, uv).rgb;
 }</code></pre></div>
 
 <p>Now to see the texture add or change the following lines in the <cn>sky</cn> function, and don't forget to set our texture on the material in the inspector.</p>
@@ -469,7 +469,7 @@ vec3 getMoonTexture(vec3 dir)
 {
     dir = _MoonWorldToObject * dir;
     vec2 uv = cartesianToEquirectangularCoords(dir);
-    return texture(_MoonPanorama, uv).rgb;
+    return texture(_MoonEquirectangular, uv).rgb;
 }</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -480,13 +480,13 @@ vec3 getMoonTexture(vec3 dir)
 
 <p>For the stars we're also going to sample an equirectangular texture, however this time we're using the view direction as our direction and we need more rotation matrices. One as a tilt, because the stars position depends on your latitude, and a spinning rotation, which rotates the stars around the tilted axis.</p>
 
-<p>The texture we'll be using again comes from NASA's <em>Scientific Visualization Studio</em>, and can be found <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">here</a>. It is the star map at the top of the page, where I'm using the 8192x4096 x-exr version. Don't forget to set the Texture Shape to Cube in the import settings in Unity, and also set the Max Size appropriately (8192 in this case).</p>
+<p>The texture we'll be using again comes from NASA's <em>Scientific Visualization Studio</em>, and can be found <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">here</a>. It is the star map at the top of the page, where I'm using the 8192x4096 x-exr version. In the import settings ??????</p>
 
 <div class="container image__container round" style="width:100%">
     <img src="/assets/posts/tutorials/skybox-tutorial-part-1/starmap_2020.jpg" alt="The star map, though be sure to download a higher resolution from NASA's website." class="image__caption image__modal">
 </div>
 
-<p>Let's start by simply displaying the star map, by using the view direction directly as UVW. Add the cube map to the properties, declare it, and sample it in the <cn>Fragment</cn> function.</p>
+<p>Let's start by simply displaying the star map, by converting the the view direction direction to equirectangular UVs. Add the texture uniform and sample it in the <cn>sky</cn> function.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" data-line="2,6,10-12,14" style="margin:0;"><code class="language-glsl">Properties{
