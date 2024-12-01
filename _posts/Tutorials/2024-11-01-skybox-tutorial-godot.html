@@ -541,69 +541,56 @@ starColor *= (1.0 - sunMask) * (1.0 - moonMask) * exp2(_StarExposure) * starStre
 
 <p>As you might know the night sky differs depending on where you are in the world and what time it is. To implement this we'll first tilt the star map depending on a latitude that we provide and then rotate the map around that tilted axis depending on time.</p>
 
-<p>In order to do these rotations we need a new function that can rotate a direction, given a rotation axis and rotation amount. I won't go over the mathetmatical details of this function, instead we'll be using this <cn>AngleAxis3x3</cn> function from <a href="https://www.keijiro.tokyo/" target="_blank">Keijiro Takahashi</a> (which you can find <a href="https://gist.github.com/keijiro/ee439d5e7388f3aafc5296005c8c3f33" target="_blank">here</a>). Add this function above the <cn>Fragment</cn> function.</p>
+<p>In order to do these rotations we need a new function that can rotate a direction, given a rotation axis and rotation amount. I won't go over the mathetmatical details of this function, instead we'll be using this <cn>rotation3d</cn> function from <a href="https://github.com/dmnsgn/glsl-rotate" target="_blank">here</a>. Add this function above the <cn>sky</cn> function.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">// Construct a rotation matrix that rotates around a particular axis by angle
-// From: https://gist.github.com/keijiro/ee439d5e7388f3aafc5296005c8c3f33
-float3x3 AngleAxis3x3(float angle, float3 axis)
-{
-    float c, s;
-    sincos(angle, s, c);
-
-    float t = 1 - c;
-    float x = axis.x;
-    float y = axis.y;
-    float z = axis.z;
-
-    return float3x3(
-        t * x * x + c, t * x * y - s * z, t * x * z + s * y,
-        t * x * y + s * z, t * y * y + c, t * y * z - s * x,
-        t * x * z - s * y, t * y * z + s * x, t * z * z + c
-        );
+// Adapted from: https://github.com/dmnsgn/glsl-rotate
+mat3 rotation3d(vec3 axis, float angle) {
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return mat3(
+        vec3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s),
+        vec3(oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s),
+        vec3(oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c));
 }</code></pre>
 </div>
 
-<p>Let's encapsulate the rotations we're going to do in a new function called <cn>GetStarUVW</cn>. This function will take the view direction, a latitude and local sidereal time as input. We tilt the star map with respect to the world x-axis and spin it around the y-axis. The rest of this function is simply converting the latitude and time to radians and multiplying the rotation matrices in the correct order. </p>
+<p>Let's encapsulate the rotations we're going to do in a new function called <cn>GetStarUVW</cn>. This function will take the view direction, a latitude and local sidereal time as input. We tilt the star map with respect to the world x-axis and spin it around the y-axis. The rest of this function is simply converting the latitude and time to radians and multiplying the rotation matrices in the correct order. Note that we tilt around the negative x-axis, that's just so that the game's z-axis corresponds to the north for.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">// Rotate the view direction, tilt with latitude, spin with time
-float3 GetStarUVW(float3 viewDir, float latitude, float localSiderealTime)
+vec3 GetStarUVW(vec3 viewDir, float latitude, float localSiderealTime)
 {
     // tilt = 0 at the north pole, where latitude = 90 degrees
-    float tilt = PI * (latitude - 90) / 180;
-    float3x3 tiltRotation = AngleAxis3x3(tilt, float3(1,0,0));
-
-    // 0.75 is a texture offset for lST = 0 equals noon
-    float spin = (0.75-localSiderealTime) * 2 * PI;
-    float3x3 spinRotation = AngleAxis3x3(spin, float3(0, 1, 0));
+    float tilt = PI * (latitude - 90.0) / 180.0;
+    mat3 tiltRotation = rotation3d(vec3(-1.0,0.0,0.0), tilt);
     
+    // 0.75 is a texture offset for lST = 0 equals noon
+    float spin = (0.75-localSiderealTime) * 2.0 * PI;
+    mat3 spinRotation = rotation3d(vec3(0.0, 1.0, 0.0), spin);
+        
     // The order of rotation is important
-    float3x3 fullRotation = mul(spinRotation, tiltRotation);
-
-    return mul(fullRotation,  viewDir);
+    return spinRotation * tiltRotation * viewDir;
 }</code></pre>
 </div>
 
 <div class="note__base round"><p>You might be wondering, what is local sidereal time? Sidereal time is the time of day as measured from distant stars instead of the sun, i.e. 1 sidereal day is 1 full rotation of the stars. This value will be between 0 and 1, where 0 refers to the time when the sun is the highest in the sky (noon). The local part refers to that were using the local time zone, instead of greenwich time. You can read more about sidereal time on the <a href="https://en.wikipedia.org/wiki/Sidereal_time" target="_blank">wiki page</a>.</p>
 <p>Another interesting thing to note is that we subtract time, this is because the time represents the rotation of the earth, but in our scene the earth is stationary and thus the stars should rotate in the opposite direction.</p></div>
 
-<p>Now we just need to set <cn>starUVW</cn> to this instead of <cn>viewDir</cn>. However, we do need some input for the latitude and time. So let's add two new properties, the latitude in degrees between -90° (south pole) and 90° (north pole) and the speed with which the stars rotate (given in days per second). For the time itself we can use <a href="https://docs.unity3d.com/Manual/SL-UnityShaderVariables.html" target="_blank">Unity's built-in variable</a> <cn>_Time.y</cn>. Add or change the highlighted lines.</p>
+<p>Now we just need to use the <cn>starUVW</cn> instead of <cn>viewDir</cn> when sampling the star cubemap. However, we do need some input for the latitude and time. So let's add two new uniforms, the latitude in degrees between -90° (south pole) and 90° (north pole) and the speed with which the stars rotate (given in days per second). For the time itself we can use the built-in variable <cn>TIME</cn>, where we take the modulus to keep the time between 0 and 1. Add or change the highlighted lines.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4,8,13" style="margin:0;"><code class="language-glsl">Properties
-{
-    _StarLatitude ("Star latitude", Range(-90, 90)) = 0
-    _StarSpeed ("Star speed", Float) = 0.001
-}
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="1-2,6-7" style="margin:0;"><code class="language-glsl">uniform float _StarLatitude : hint_range(-90, 90) = 0;
+uniform float _StarSpeed = 0.001;
 
-float _StarPower;
-float _StarLatitude, _StarSpeed;
-
-float4 Fragment (v2f IN) : SV_TARGET
-{
+void sky() {
     // The stars
-    float3 starUVW = GetStarUVW(viewDir, _StarLatitude, _Time.y * _StarSpeed % 1);
+	vec3 starUVW = GetStarUVW(viewDir, _StarLatitude, mod(TIME *  _StarSpeed, 1.0));
+	vec3 starColor = texture(_StarCubemap, starUVW).rgb;
 }
 </code></pre>
 </div>
