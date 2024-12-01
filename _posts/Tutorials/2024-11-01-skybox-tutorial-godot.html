@@ -420,9 +420,10 @@ void sky(){
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Based Ben Golus article on sphere imposter: https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c#6622
 // And another for dealing with the mip-map seam https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8
+// Adapted to right-handedness for Godot
 vec2 cartesianToEquirectangularCoords(vec3 dir)
 {
-    vec2 uv = vec2(atan(dir.z, dir.x), acos(-dir.y));
+    vec2 uv = vec2(atan(dir.x, dir.z), acos(dir.y));
     uv /= vec2(PI * 2.0, PI);
         
     float x_fract = fract(uv.x);
@@ -445,7 +446,7 @@ vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal">
 </div>
 
-<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, moon-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>SkyboxController.gd</em>, from section <a href="#skybox-controller">2.1</a>. The transformation matrix consists of the 3 basis vectors that make up the local space, which are the forward, right and up vectors. Add the highlighted line to the <em>SkyboxController.gd</em> script, where we set shader matrix called <cn>_MoonSpaceMatrix</cn>.</p>
+<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, object-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>SkyboxController.gd</em>, from section <a href="#skybox-controller">2.1</a>. The 3 basis vectors, forward, right, and up, form the object-to-world matrix. In order to get the world-to-object matrix we simply invert it. Add the highlighted line to the <em>SkyboxController.gd</em> script, where we set shader matrix called <cn>_MoonWorldToObject</cn>.</p>
 
 <button class="collapsible round">Code block (<em>SkyboxController.gd</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" style="margin:0;" data-line="3-4,7"><code class="language-gdscript">func _process(delta: float) -> void:
@@ -454,40 +455,25 @@ vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code
     var moon_dir = moonBasis.z; # This is our forward direction pointing towards the moon
     environment.sky.sky_material.set_shader_parameter('_SunDir', sun_dir); # Update sky material with sun direction
     environment.sky.sky_material.set_shader_parameter('_MoonDir', moon_dir); # Update sky material with moon direction
-    environment.sky.sky_material.set_shader_parameter('_MoonSpaceMatrix', moonBasis);
+    environment.sky.sky_material.set_shader_parameter('_MoonWorldToObject', moonBasis.inverse()); # The world to object matrix is the inverse of the basis (which is object to world)
     pass</code></pre>
 </div>
 
-<div class="note__base round"><p>Note that our transformation matrix only has 3 vectors, not 4. We can get away with this because we only need to rotate the moon normal, not translate it.</p></div>
+<div class="note__base round"><p>Note that our transformation matrix only has 3 vectors, not 4. We can get away with this because we only need to rotate the moon normal, not translate it which is what the 4th component is normally used for.</p></div>
 
 <p>Now we can access this matrix by declaring it in our shader. We then need to multiply this matrix with the moon's normal in world-space to get the normal in moon-space. Add the following highlighted lines to implement this.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 _MoonSpaceMatrix;
+<div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 _MoonWorldToObject;
 
 vec3 getMoonTexture(vec3 dir)
 {
-    dir = _MoonSpaceMatrix * dir;
-    vec2 uv = cartesianToEquirectangularCoords(dir);
-    return texture(_MoonPanorama, uv).rgb;
-}</code></pre></div>
-
-<p>Now the moon's texture should appear stationary when you change the moon's direction. There is one final alteration I'd like to make, because we're not seeing the correct part of the moon texture. In order to correct this I've constructed an additional 3x3 rotation matrix, the values of which I got through some trial and error, and could be improved. All it does is rotate the dir vector such that the correct part is shown to us, you can think of it as a texture offset. Add the highlighted lines to get our final moon texture.</p>
-
-<div class="container__code"><pre class="line-numbers round" data-line="4-9"><code class="language-glsl">vec3 getMoonTexture(vec3 dir)
-{
-    dir = _MoonSpaceMatrix * dir;
-    // Found through trial and error resulting in rotation3d(vec3(1.0, 0.0, 0.0), -0.5 * PI) * rotation3d(vec3(0.0, 1.0, 0.0), 0.35*PI) * rotation3d(vec3(0.0, 0.0, 1.0), 0.68 * PI);
-    mat3 correctionMatrix = (mat3(
-        vec3(-0.2432603,  0.4774252, -0.8443279),
-        vec3(0.3833168, -0.7523017, -0.5358268),
-        vec3(-0.8910065, -0.4539905,  0.0)));
-    dir = correctionMatrix * dir;
+    dir = _MoonWorldToObject * dir;
     vec2 uv = cartesianToEquirectangularCoords(dir);
     return texture(_MoonPanorama, uv).rgb;
 }</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheMoon_Texture_02.png" alt="The textured moon with rotation correction." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Texture_02.png" alt="The textured moon, sampled in object space." class="image__caption image__modal">
 </div>
 
 <h2 id="the-stars">5. The stars</h2>
