@@ -490,7 +490,7 @@ uniform samplerCube _StarCubemap : source_color;
 
 void sky() {
 	// The stars
-	vec3 starColor = texture(_StarCubemap, viewDir, -1.0).rgb;
+	vec3 starColor = texture(_StarCubemap, viewDir).rgb;
 
 	vec3 col = skyColor + sunColor + moonColor + starColor;
 }</code></pre>
@@ -502,42 +502,38 @@ void sky() {
 
 <p>That was easy, but looking at the result you might see a few problems, one of them being that the stars are drawn on top of the moon (and also sun). To fix this we multiply the starColor by 1 minus the moon and sun masks.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-glsl">float3 starColor = SAMPLE_TEXTURECUBE(_StarCubeMap, sampler_StarCubeMap, starUVW).rgb;
-starColor *= (1 - sunMask) * (1 - moonMask);</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-glsl">vec3 starColor = texture(_StarCubemap, viewDir).rgb;
+starColor *= (1.0 - sunMask) * (1.0 - moonMask);</code></pre></div>
 
-<p>Another thing is that the stars look rather blurry, even though we're using an 8K texture. In order to make the stars sharper we'll be biasing the mip-level. This would make the texture values flicker more with camera movement, which normally would be bad but actually is appropriate for stars. Change the cube map sampling macro to <cn>SAMPLE_TEXTURECUBE_BIAS</cn> and set the mip-mapping bias to -1 (read the texture one mip-level lower than normal).</p>
+<p>Another thing is that the stars look rather blurry. In order to make the stars sharper we'll be biasing the mip-level. This would make the texture values flicker more with camera movement, which normally would be bad but actually is appropriate for stars. Add the extra parameter to the texture sample to bias the mipmap by -1 (read the texture one mip-level lower than normal).</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float3 starColor = SAMPLE_TEXTURECUBE_BIAS(_StarCubeMap, sampler_StarCubeMap, starUVW, -1).rgb;</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 starColor = texture(_StarCubemap, viewDir, -1.0).rgb;</code></pre></div>
 
 <p>Alternatively you could just disable mip-mapping altogether for the texture, however, in some cases you might need it. One example would be when using a second camera that renders at a lower resolution, without mip-mapping it would flicker too much and become distracting.</p>
 
-<p>Let's also add an exposure and power value for the star map, so that we have more control over the absolute and relative brightness of the stars. Add 2 new properties, declare them, take <cn>starColor</cn> to the power and multiply it by the exposure. The power basically makes fainter stars even fainter, as we're multiplying values smaller than 1 with themselves. The <cn>abs</cn> is only there to prevent an error message from Unity, as it can't handle powers of negative numbers.</p>
+<p>Let's also add an exposure and power value for the star map, so that we have more control over the absolute and relative brightness of the stars. Add 2 new uniforms, and take <cn>starColor</cn> to the power and multiply it by the exposure. The power basically makes fainter stars even fainter, as we're multiplying values smaller than 1 with themselves. The <cn>abs</cn> is only there to prevent an error message from Unity, as it can't handle powers of negative numbers.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4,7-8,13-14" style="margin:0;"><code class="language-glsl">Properties
-{
-    _StarExposure ("Star exposure", Range(-16, 16)) = 0
-    _StarPower ("Star power", Range(1,5)) = 1
-}
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4, 9-10" style="margin:0;"><code class="language-glsl">group_uniforms Stars;
+uniform samplerCube _StarCubemap : source_color;
+uniform float _StarExposure : hint_range(-16, 16) = 0;
+uniform float _StarPower : hint_range(1, 5) = 1;
 
-float _MoonExposure, _StarExposure;
-float _StarPower;
-
-float4 Fragment (v2f IN) : SV_TARGET
-{
-    float3 starColor = SAMPLE_TEXTURECUBE_BIAS(_StarCubeMap, sampler_StarCubeMap, starUVW, -1).rgb;
-    starColor = pow(abs(starColor), _StarPower);
-    starColor *= (1 - sunMask) * (1 - moonMask) * exp2(_StarExposure);
+void sky() {
+	// The stars
+	vec3 starColor = texture(_StarCubemap, viewDir).rgb;
+	starColor = pow(starColor, vec3(_StarPower));
+	starColor *= (1.0 - sunMask) * (1.0 - moonMask) * exp2(_StarExposure);
 }</code></pre>
 </div>
 
 <p>We're almost there but there is still one problem, the stars are still bright and visible during the day. In order to fix this we'll add another factor to <cn>starColor</cn>, which depends on <cn>sunZenithDot</cn> and <cn>sunViewDot01</cn>. The idea is that the stars are too dim compared to the sun or the sky during the day. Add and change the following lines.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float starStrength = (1 - sunViewDot01) * (saturate(-sunZenithDot));
-starColor *= (1 - sunMask) * (1 - moonMask) * exp2(_StarExposure) * starStrength;</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float starStrength = (1.0 - sunViewDot01) * (clamp(-sunZenithDot, 0.0, 1.0));
+starColor *= (1.0 - sunMask) * (1.0 - moonMask) * exp2(_StarExposure) * starStrength;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_02.png" alt="The night sky, with star exposure and power set to 3 and 1.5 respectively. These values are pure personal preference to have the brightest stars affected by the bloom post-processing, without too much background noise." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_02.png" alt="The night sky, with star exposure and power set to 2 and 1.3 respectively. These values are pure personal preference to have the brightest stars affected by the bloom post-processing, without too much background noise." class="image__caption image__modal">
 </div>
 
 
