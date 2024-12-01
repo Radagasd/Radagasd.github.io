@@ -403,41 +403,25 @@ void sky(){
 
 <h3 id="moon-texture">4.3 Moon texture</h3>
 
-<p>For a stylised look a textureless moon might suffice, but more often than not you do want some texture for it. You could create your own, but we're going to use the publicly available color map from NASA's <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank"><em>Scientific Visualization Studio</em></a>. You can download the picture below or download it directly, and in higher resolutions, from NASA's site <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank">here</a>. </p>
+<p>For a stylised look a textureless moon might suffice, but more often than not you do want some texture for it. You could create your own, but we're going to use the publicly available color map from NASA's <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank"><em>Scientific Visualization Studio</em></a>. NASA provides it as an equirectangular texture, which is great for compression but really annoying to deal with when deciding mipmap level. Instead I've generated a cubemap from it, which you can download below. </p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonColorMap.jpg" alt="Color map of the moon, made by NASA's Scientific Visualization Studio." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/MoonColorCubemap.jpg" alt="Color cubemap of the moon, created from NASA's Scientific Visualization Studio data." class="image__caption image__modal">
 </div>
 
-<p>Import the image as a regular 2D texture and add the uniform to the shader. Don't forget to set the texture on the sky material as well.</p>
+<p>When importing the texture in Godot you will have to set the import settings to Cubemap, enable mipmaps and set the arrangement to 6x1. Then add the following uniform to the shader, and don't forget to set the texture on the sky material.</p>
 
-<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform sampler2D _MoonEquirectangular : source_color;
+<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform samplerCube _MoonCubemap : source_color;
 </code></pre></div>
 
-<p>We'll be adding two functions to read our moon texture, one to read the texture and another to get the right UVs for the texture, because the moon map is drawn in <a href="https://en.wikipedia.org/wiki/Equirectangular_projection">equirectangular coordinates</a>. In the Unity version of this tutorial we were able to sample the texture as a cubemap, as one of their importers converts the equirectangular texture to a cubemap. You could convert the texture to a cubemap using other software, but for the purposes of this tutorial we'll be converting our 3D normal vector into equirectangular uv coordinates within the shader.</p>
+<p>We'll add a separate function for sampling the moon texture, called <cn>getMoonTexture</cn>, above the <cn>sky</cn> function. For now it just samples the texture using a 3D vector as input.</p>
 
-<p>Add the following <cn>getMoonTexture</cn> and <cn>cartesianToEquirectangularCoords</cn> functions above the <cn>sky</cn> function. I won't go over the details of the coordinate calculations, but in short we're converting a 3D point on a sphere to a 2D map. One issue we run into with this is that there is a discontinuity in one of the coordinates, which gives issues with mip-mapping. I recommend reading <a href="https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8">this article</a> from Ben Golus if you're interested in what's going on with the mip-mapping.</p>
-
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Based Ben Golus article on sphere imposter: https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c#6622
-// And another for dealing with the mip-map seam https://bgolus.medium.com/distinctive-derivative-differences-cce38d36797b#24b8
-// Adapted to right-handedness for Godot
-vec2 cartesianToEquirectangularCoords(vec3 dir)
-{
-    vec2 uv = vec2(atan(dir.x, dir.z), acos(dir.y));
-    uv /= vec2(PI * 2.0, PI);
-        
-    float x_fract = fract(uv.x);
-    uv.x = fwidthCoarse(uv.x) - 0.0001 < fwidthCoarse(x_fract) ? uv.x : x_fract;
-    return uv;
-}
-    
-vec3 getMoonTexture(vec3 dir)
-{
-    vec2 uv = cartesianToEquirectangularCoords(dir);
-    return texture(_MoonEquirectangular, uv).rgb;
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 getMoonTexture(vec3 dir)
+{ 
+    return texture(_MoonCubemap, dir).rgb;
 }</code></pre></div>
 
-<p>Now to see the texture add or change the following lines in the <cn>sky</cn> function, and don't forget to set our texture on the material in the inspector.</p>
+<p>The direction is going to be our moon's normal, as it points to where in the cubemap we need to sample. To see the texture add or change the following lines in the <cn>sky</cn> function.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moonTexture = getMoonTexture(moonNormal);
 vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
@@ -461,15 +445,27 @@ vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code
 
 <div class="note__base round"><p>Note that our transformation matrix only has 3 vectors, not 4. We can get away with this because we only need to rotate the moon normal, not translate it which is what the 4th component is normally used for.</p></div>
 
-<p>Now we can access this matrix by declaring it in our shader. We then need to multiply this matrix with the moon's normal in world-space to get the normal in moon-space. Add the following highlighted lines to implement this.</p>
+<p>Now we can access this matrix by declaring it in our shader. We then need to multiply this matrix with the moon's normal in world-space to get the normal in object-space. Add the following highlighted lines to implement this.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 _MoonWorldToObject;
 
 vec3 getMoonTexture(vec3 dir)
 {
     dir = _MoonWorldToObject * dir;
-    vec2 uv = cartesianToEquirectangularCoords(dir);
-    return texture(_MoonEquirectangular, uv).rgb;
+        
+    return texture(_MoonCubemap, dir).rgb;
+}</code></pre></div>
+
+<p>There's one final change we need to make. We're currently looking at the backside of the moon, so we rotate 180 degrees by flipping the x and z. You could of course also achieve the same by modifying the cubemap itself.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="4-6"><code class="language-glsl">vec3 getMoonTexture(vec3 dir)
+{
+    dir = _MoonWorldToObject * dir;
+    // Rotate 180 degrees by flipping both x and z.
+    dir.x = -dir.x;
+    dir.z = -dir.z;
+    
+    return texture(_MoonCubemap, dir).rgb;
 }</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -478,37 +474,30 @@ vec3 getMoonTexture(vec3 dir)
 
 <h2 id="the-stars">5. The stars</h2>
 
-<p>For the stars we're also going to sample an equirectangular texture, however this time we're using the view direction as our direction and we need more rotation matrices. One as a tilt, because the stars position depends on your latitude, and a spinning rotation, which rotates the stars around the tilted axis.</p>
+<p>For the stars we're also going to sample a cubemap, however this time we're using the view direction as our sample direction and we need more rotation matrices. One as a tilt, because the stars position depends on your latitude, and a spinning rotation, which rotates the stars around the tilted axis.</p>
 
-<p>The texture we'll be using again comes from NASA's <em>Scientific Visualization Studio</em>, and can be found <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">here</a>. It is the star map at the top of the page, where I'm using the 8192x4096 x-exr version. In the import settings ??????</p>
+<p>The texture we'll be using again comes from NASA's <em>Scientific Visualization Studio</em>, and can be found <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">here</a>. It is the star map at the top of the page, where I've converted the it to a 1024 cubemap (a higher resolution would be better but is too big for my git to handle). In the import settings again set it to Cubemap, enable mipmapping and set layout to 6x1.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/starmap_2020.jpg" alt="The star map, though be sure to download a higher resolution from NASA's website." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/StarColorCubemap.png" alt="The star cubemap, derived from NASA's photos." class="image__caption image__modal">
 </div>
 
-<p>Let's start by simply displaying the star map, by converting the the view direction direction to equirectangular UVs. Add the texture uniform and sample it in the <cn>sky</cn> function.</p>
+<p>Let's start by simply displaying the star map, by sampling it using the view direction. Add the texture uniform and sample it in the <cn>sky</cn> function. And don't forget to set the texture on the material.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.shader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="2,6,10-12,14" style="margin:0;"><code class="language-glsl">Properties{
-    [NoScaleOffset] _StarCubeMap ("Star cube map", Cube) = "black" {}
-}
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">group_uniforms Stars;
+uniform samplerCube _StarCubemap : source_color;
 
-TEXTURECUBE(_MoonCubeMap);      SAMPLER(sampler_MoonCubeMap);
-TEXTURECUBE(_StarCubeMap);      SAMPLER(sampler_StarCubeMap);
+void sky() {
+	// The stars
+	vec3 starColor = texture(_StarCubemap, viewDir, -1.0).rgb;
 
-float4 Fragment (v2f IN) : SV_TARGET
-{
-    // The stars
-    float3 starUVW = viewDir;
-    float3 starColor = SAMPLE_TEXTURECUBE(_StarCubeMap, sampler_StarCubeMap, starUVW).rgb;
-
-    float3 col = skyColor + sunColor + moonColor + starColor;
-    return float4(col, 1);
+	vec3 col = skyColor + sunColor + moonColor + starColor;
 }</code></pre>
 </div>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_01.png" alt="The sky with the star map drawn." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_01.png" alt="The sky with the star map drawn." class="image__caption image__modal">
 </div>
 
 <p>That was easy, but looking at the result you might see a few problems, one of them being that the stars are drawn on top of the moon (and also sun). To fix this we multiply the starColor by 1 minus the moon and sun masks.</p>
