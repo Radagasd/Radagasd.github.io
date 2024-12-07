@@ -80,12 +80,12 @@ image: /assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_Constellati
 
 <p>These direction are in turn used to calculate 4 angles, each between two of these directions.</p>
 <ul>
-    <li><b>sunView</b>: angle between the sun and view direction,</li>
-    <li><b>sunZenith</b>: angle between the sun and the Zenith (the y-axis),</li>
-    <li><b>viewZenith</b>: angle between the view direction and Zenith,</li>
-    <li><b>sunMoon</b>: angle between the sun and the moon.</li>
+    <li><b>sun-view</b>: angle between the sun and view direction,</li>
+    <li><b>sun-zenith</b>: angle between the sun and the Zenith (the y-axis),</li>
+    <li><b>view-zenith</b>: angle between the view direction and Zenith,</li>
+    <li><b>sun-moon</b>: angle between the sun and the moon.</li>
 </ul>
-<p>The <b>sunView</b> angle can be used to change the colour directly around the sun, e.g. when the sun sets there should be an orange glow around the sun. The <b>sunZenith</b> can be used to measure how far the sun is above (or below) the horizon. The <b>viewZenith</b> similarly measures how far we're looking above (or below) the horizon. Finally, the <b>sunMoon</b> angle is useful to determine when a solar (or lunar) eclipse occurs.</p>
+<p>The <b>sun-view</b> angle can be used to change the colour directly around the sun, e.g. when the sun sets there should be an orange glow around the sun. The <b>sun-zenith</b> can be used to measure how far the sun is above (or below) the horizon. The <b>view-zenith</b> similarly measures how far we're looking above (or below) the horizon. Finally, the <b>sun-moon</b> angle is useful to determine when a solar (or lunar) eclipse occurs.</p>
 
 
 <h2 id="basic-setup">2. Basic setup</h2>
@@ -95,7 +95,7 @@ image: /assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_Constellati
 
 <h3 id="skybox-controller">2.1 Skybox controller</h3>
 
-<p>Despite the fact that this tutorial is all about the skybox shader, we do still need a small script to pass the sun and moon direction to the shader. Add a WorldEnvironment node to the scene, and create a new Environment for it. Within the Environment create a new Sky, and a new Sky Material using a ShaderMaterial, which is where we will put our skybox shader in the next section. Now create a new gdscript called <em>skybox_controller.gd</em> and attach it to the WorldEnvironment. The script is very simple and shown below in the code block.</p>
+<p>Despite the fact that this tutorial is all about the skybox shader, we do still need a small script to pass the sun and moon direction to the shader. Add a WorldEnvironment node to the scene, and create a new Environment for it. Within the Environment create a new Sky, and a new Sky Material using a ShaderMaterial, which is where we will put our skybox shader in the next section. Now create a new gdscript called <cn>skybox_controller.gd</cn> and attach it to the WorldEnvironment. The script is very simple and shown below in the code block.</p>
 
 <button class="collapsible round">Code block (<em>skybox_controller.gd</em>)</button>
 <div class="collapsible__content round code">
@@ -116,7 +116,7 @@ func _process(delta: float) -> void:
 
 <h3 id="gdshader">2.2 GDShader</h3>
 
-<p> In this tutorial we'll be writing a GDShader using the Sky template, which only have one processing function, the sky() function. There are some additional options for Sky shaders, which we won't be using but you can read on them <a href="https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/sky_shader.html">here</a>. Start by creating a new resource, select Shader, set the Mode to Sky and name it <em>skybox.gdshader</em>. Replace the shader's code with the following code block.</p>
+<p> In this tutorial we'll be writing a GDShader using the Sky template, which only has one processing function, the <cn>sky</cn> function. There are some additional options for sky shaders, which we won't be using but you can read on them <a href="https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/sky_shader.html">here</a>. Start by creating a new resource, select Shader, set the Mode to Sky and name it <cn>skybox.gdshader</cn>. Replace the shader's code with the following code block.</p>
 
 <button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
 <div class="collapsible__content round code">
@@ -134,7 +134,7 @@ void sky() {
 }</code></pre>
 </div>
 
-<p>This is the basic shader we'll build upon in the following sections. I'll briefly go over its contents. In order for it to be used as a skybox we set the <cn>shader_type</cn> to sky. Our two main inputs are the sun and moon direction, which take the form of the <cn>sun_dir</cn> and <cn>moon_dir</cn>, which are both a uniform vec3. Note that these are the same names as we use in the <em>skybox_controller</em> to pass on the directions. The <cn>group_uniforms</cn> line is there to group both directions toghether in the inspector.</p>
+<p>This is the basic shader we'll build upon in the following sections. I'll briefly go over its contents. In order for it to be used as a skybox we set the <cn>shader_type</cn> to sky. Our two main inputs are the sun and moon direction, which take the form of the <cn>sun_dir</cn> and <cn>moon_dir</cn>, which are both a uniform <cn>vec3</cn>. Note that these are the same names as we use in the <em>skybox_controller</em> to pass on the directions. The <cn>group_uniforms</cn> line is there to group both directions toghether in the inspector.</p>
 
 <p>In the <cn>sky</cn> function we get the view direction from the <cn>EYEDIR</cn>. Finally, we set our <cn>COLOR</cn> output to the stepped dot products between the sun and view direction, and the moon and view direction. Because they're directions they should already be normalized.</p>
 <p>In order to see something set the <em>ShaderMaterial</em> in the <em>WorldEnvironment</em> to use the skybox shader. The sky should now be black, with a bright red and green spot that correspond to the positions of the sun and moon (it is yellow when they overlap). You can test this by rotating the <em>Sun</em> and <em>Moon</em> nodes from the previous section.</p>
@@ -151,7 +151,7 @@ void sky() {
 
 <h3 id="main-angles">3.1 Main angles</h3>
 
-<p>As a quick reminder the 4 main angles are: the sunView, sunZentih, viewZentih and sunMoon angle.</p>
+<p>As a quick reminder the 4 main angles are: the sun-view, sunZentih, viewZentih and sun-moon angle.</p>
 <p>While I've been talking about angles all this time we're actually only going to calculate the dot product between the different directions. Mathematically this corresponds to the cosine of the angle between the directions (if both vectors are normalized). For our use case this is fine, though you should note that the cosine of an angle isn't linear (it flattens near 0° and 180°).</p>
 <p>We already have the sun, moon and view direction in our shader and the zenith direction is simply \((0, 1, 0)\), so we can calculate all 4 dot products. Add the following highlighted lines to our shader in the <cn>sky</cn> function.</p>
 
@@ -188,7 +188,7 @@ uniform sampler2D view_zenith_gradient : source_color, repeat_disable;
 uniform sampler2D sun_view_gradient : source_color, repeat_disable;
 </code></pre></div>
 
-<p>We use the <cn>source_color</cn> hint to ensure we're sampling our texture as linear data and the <cn>repeate_disable</cn> hint to ensure our sampling doesn't loop around when our dot product gets close to 0 or 1.</p>
+<p>We use the <cn>source_color</cn> hint to ensure we're sampling our texture as linear data and the <cn>repeat_disable</cn> hint to ensure our sampling doesn't loop around when our dot product gets close to 0 or 1.</p>
 
 <div class="note__base round">
     <p>The <cn>/** */</cn> notation is used to add descriptions that can be read in the inspector if you hover over the entry.</p>
@@ -196,7 +196,7 @@ uniform sampler2D sun_view_gradient : source_color, repeat_disable;
 
 <h4>3.2.1 Main sky colour</h4>
 
-<p>Now let us sample the first gradient and output its colour. The sunZenith gradient is the simplest and represents the general sky colour depending on how high the sun is in the sky. This is represented within our shader by the float <cn>sun_zenith_dot01</cn>. Add the following lines to the <cn>sky</cn> function and change the output value of <cn>output</cn> as seen below.</p>
+<p>Now let us sample the first gradient and output its colour. The sun-zenith gradient is the simplest and represents the general sky colour depending on how high the sun is in the sky. This is represented within our shader by the float <cn>sun_zenith_dot01</cn>. Add the following lines to the <cn>sky</cn> function and change the output value <cn>output</cn> as seen below.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Sky colours
 vec3 sun_zenith_color = texture(sun_zenith_gradient, vec2(sun_zenith_dot01, 0.5)).rgb;
@@ -206,14 +206,14 @@ vec3 sky_output = sun_zenith_color;
 vec3 output = sky_output;
 </code></pre></div>
 
-<p>I've used the following small gradient texture as my sunZenith gradient, where if the sun is directly below us it is nearly black and transitions to a brighter blue as the sun rises. You can download it, by right-clicking and save image, and set it as your texture or create one that better suits your needs. Know that you can easily create these gradient textures <a href="https://docs.godotengine.org/en/stable/classes/class_gradienttexture1d.html">within Godot</a> itself, which makes it much easier to play with them.</p>
+<p>I've used the following small gradient texture as my sun-zenith gradient, where if the sun is directly below us it is nearly black and transitions to a brighter blue as the sun rises. You can download it, by right-clicking and save image, and set it as your texture or create one that better suits your needs. Know that you can easily create these gradient textures <a href="https://docs.godotengine.org/en/stable/classes/class_gradienttexture1d.html">within Godot</a> itself, which makes it much easier to play with them.</p>
 
 <div class="container image__container round" style="width:100%">
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/sun_zenith_gradient.png" alt="Gradient texture representing the main colour of the sky." class="image__caption image__modal">
 </div>
 
 <div class="note__base round">
-    <p>For all the gradient textures' import settings I've turned off generate mip maps, and set compression quality to high while using VRAM compressed.</p>
+    <p>For all the gradient textures' import settings I've turned off generate mip maps, and set compression to Loslless.</p>
 </div>
 
 <div class="container image__container round" style="width:100%">
@@ -224,7 +224,7 @@ vec3 output = sky_output;
 
 <h4>3.2.2 Horizon haze</h4>
 
-<p>The next gradient is the viewZenith gradient, which represents the difference in colour near the horizon (usually a slight haze). First thing to note is that the sample coordinate for the texture is still <cn>sun_zenith_dot01</cn>, because the colour of the haze depends on the height of the sun. However, we need to mask the haze depending on <cn>view_zenith_dot</cn>.</p>
+<p>The next gradient is the view-zenith gradient, which represents the difference in colour near the horizon (usually a slight haze). First thing to note is that the sample coordinate for the texture is still <cn>sun_zenith_dot01</cn>, because the colour of the haze depends on the height of the sun. However, we need to mask the haze depending on <cn>view_zenith_dot</cn>.</p>
 <p>Add the following two lines and change <cn>sky_output</cn> to reflect our newly added haze. The <cn>view_zenith_color</cn> is once again a texture sample using <cn>sun_zenith_dot01</cn> as uv coordinate. The <cn>vz_mask</cn> does, as the name suggests, mask the <cn>view_zenith_color</cn>. The mask is 1 at or below the horizon, where <cn>view_zenith_dot</cn> is 0, and tends to 0 above the horizon. The <cn>pow</cn> is there to control how quickly the haze vanishes with height, I've set it to a power of 4 but you can experiment with this.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 view_zenith_color = texture(view_zenith_gradient, vec2(sun_zenith_dot01, 0.5)).rgb;
@@ -242,7 +242,7 @@ vec3 sky_output = sun_zenith_color + vz_mask * view_zenith_color;
 <p></p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_02.png" alt="Depiction of the skybox with viewZenith haze, given at different altitudes of the sun." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_02.png" alt="Depiction of the skybox with view-zenith haze, given at different altitudes of the sun." class="image__caption image__modal">
 </div>
 
 <div class="note__base round">
@@ -252,7 +252,7 @@ vec3 sky_output = sun_zenith_color + vz_mask * view_zenith_color;
 
 <h4>3.2.3 Sun bloom</h4>
 
-<p>The final of the gradient textures is the sunView gradient, which represents the brighter colour you see surrounding the sun. Similarly to the previous texture we use <cn>sun_zenith_dot01</cn> as the uv coordinate and use <cn>solarViewDot</cn> for masking.</p>
+<p>The final of the gradient textures is the sun-view gradient, which represents the brighter colour you see surrounding the sun. Similarly to the previous texture we use <cn>sun_zenith_dot01</cn> as the uv coordinate and use <cn>solarViewDot</cn> for masking.</p>
 <p>Add the following lines and once again update <cn>sky_output</cn> to our new value. The mask consists of the <cn>sun_view_dot</cn> clamped between 0 and 1. The mask is 1 when looking at the sun and 0 when looking 90° or more away from the sun. The <cn>pow</cn> is used again to control the fall-off, I've again set it to 4.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 sun_view_color = texture(sun_view_gradient, vec2(sun_zenith_dot01, 0.5)).rgb;
