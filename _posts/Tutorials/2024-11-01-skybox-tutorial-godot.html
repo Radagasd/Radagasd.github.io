@@ -105,8 +105,8 @@ extends WorldEnvironment # We're modifying the sky material that is on a WorldEn
 func _process(delta: float) -> void:
     var sun_dir = $"../Sun".get_global_transform().basis.z; # This is our forward direction pointing towards the sun
     var moon_dir = $"../Moon".get_global_transform().basis.z; # This is our forward direction pointing towards the moon
-    environment.sky.sky_material.set_shader_parameter('_SunDir', sun_dir); # Update sky material with sun direction
-    environment.sky.sky_material.set_shader_parameter('_MoonDir', moon_dir); # Update sky material with moon direction
+    environment.sky.sky_material.set_shader_parameter('sun_dir', sun_dir); # Update sky material with sun direction
+    environment.sky.sky_material.set_shader_parameter('moon_dir', moon_dir); # Update sky material with moon direction
     pass
 </code></pre>
 </div>
@@ -123,18 +123,18 @@ func _process(delta: float) -> void:
     <pre class="line-numbers" style="margin:0;"><code class="language-glsl">shader_type sky;
 
 group_uniforms Directions;
-uniform vec3 _SunDir;
-uniform vec3 _MoonDir;
+uniform vec3 sun_dir;
+uniform vec3 moon_dir;
 
 void sky() {
     vec3 viewDir = EYEDIR;
 
-    vec3 col = vec3(step(0.9,dot(_SunDir, viewDir)), step(0.9,dot(_MoonDir, viewDir)), 0);
+    vec3 col = vec3(step(0.9,dot(sun_dir, viewDir)), step(0.9,dot(moon_dir, viewDir)), 0);
     COLOR = col;
 }</code></pre>
 </div>
 
-<p>This is the basic shader we'll build upon in the following sections. I'll briefly go over its contents. In order for it to be used as a skybox we set the <cn>shader_type</cn> to sky. Our two main inputs are the sun and moon direction, which take the form of the <cn>_SunDir</cn> and <cn>_MoonDir</cn>, which are both a uniform vec3. Note that these are the same names as we use in the <em>SkyboxController</em> to pass on the directions. The <cn>group_uniforms</cn> line is there to group both directions toghether in the inspector.</p>
+<p>This is the basic shader we'll build upon in the following sections. I'll briefly go over its contents. In order for it to be used as a skybox we set the <cn>shader_type</cn> to sky. Our two main inputs are the sun and moon direction, which take the form of the <cn>sun_dir</cn> and <cn>moon_dir</cn>, which are both a uniform vec3. Note that these are the same names as we use in the <em>SkyboxController</em> to pass on the directions. The <cn>group_uniforms</cn> line is there to group both directions toghether in the inspector.</p>
 
 <p>In the <cn>sky</cn> function we get the view direction from the <cn>EYEDIR</cn>. Finally, we set our <cn>COLOR</cn> output to the stepped dot products between the sun and view direction, and the moon and view direction. Because they're directions they should already be normalized.</p>
 <p>In order to see something set the <em>ShaderMaterial</em> in the <em>WorldEnvironment</em> to use the Skybox shader. The sky should now be black, with a bright red and green spot that correspond to the positions of the sun and moon (it is yellow when they overlap). You can test this by rotating the <em>Sun</em> and <em>Moon</em> nodes from the previous section.</p>
@@ -158,10 +158,10 @@ void sky() {
 <div class="container__code"><pre class="line-numbers round" data-line="3-7"><code class="language-glsl">vec3 viewDir = EYEDIR;
 
 // Main angles
-float sunViewDot = dot(_SunDir, viewDir);
-float sunZenithDot = _SunDir.y;
+float sunViewDot = dot(sun_dir, viewDir);
+float sunZenithDot = sun_dir.y;
 float viewZenithDot = viewDir.y;
-float sunMoonDot = dot(_SunDir, _MoonDir);
+float sunMoonDot = dot(sun_dir, moon_dir);
 </code></pre></div>
 
 <p>Note that we've simplified the calculation of <cn>sunZenithDot</cn> and <cn>viewZenithDot</cn>, the dot product between a vector and \((0, 1, 0)\) corresponds simply to the y-value of that vector.</p>
@@ -177,15 +177,15 @@ float sunZenithDot01 = (sunZenithDot + 1.0) * 0.5;
 <h3 id="colours-of-the-sky">3.2 Colours of the sky</h3>
 
 <p>The colours of the sky will be determined by sampling 3 gradient textures, adjusting them depending on our main angles, and adding them together.</p>
-<p>Add all 3 gradient textures by adding the following lines just below the <cn>_SunDir</cn> and <cn>_MoonDir</cn> uniforms.</p>
+<p>Add all 3 gradient textures by adding the following lines just below the <cn>sun_dir</cn> and <cn>moon_dir</cn> uniforms.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">group_uniforms SkyGradients;
 /** The gradient texture that is sampled using the Sun-Zenith angle */
-uniform sampler2D _SunZenithGrad : source_color, repeat_disable;
+uniform sampler2D sun_zenith_gradient : source_color, repeat_disable;
 /** The gradient texture that is sampled using the View-Zenith angle */
-uniform sampler2D _ViewZenithGrad : source_color, repeat_disable;
+uniform sampler2D view_zenith_gradient : source_color, repeat_disable;
 /** The gradient texture that is sampled using the Sun-View angle */
-uniform sampler2D _SunViewGrad : source_color, repeat_disable;
+uniform sampler2D sun_view_gradient : source_color, repeat_disable;
 </code></pre></div>
 
 <p>We use the <cn>source_color</cn> hint to ensure we're sampling our texture as linear data and the <cn>repeate_disable</cn> hint to ensure our sampling doesn't loop around when our dot product gets close to 0 or 1.</p>
@@ -199,7 +199,7 @@ uniform sampler2D _SunViewGrad : source_color, repeat_disable;
 <p>Now let us sample the first gradient and output its colour. The sunZenith gradient is the simplest and represents the general sky colour depending on how high the sun is in the sky. This is represented within our shader by the float <cn>sunZenithDot01</cn>. Add the following lines to the <cn>sky</cn> function and change the output value of <cn>col</cn> as seen below.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Sky colours
-vec3 sunZenithColor = texture(_SunZenithGrad, vec2(sunZenithDot01, 0.5)).rgb;
+vec3 sunZenithColor = texture(sun_zenith_gradient, vec2(sunZenithDot01, 0.5)).rgb;
 
 vec3 skyColor = sunZenithColor;
 
@@ -227,7 +227,7 @@ vec3 col = skyColor;
 <p>The next gradient is the viewZenith gradient, which represents the difference in colour near the horizon (usually a slight haze). First thing to note is that the sample coordinate for the texture is still <cn>sunZenithDot01</cn>, because the colour of the haze depends on the height of the sun. However, we need to mask the haze depending on <cn>viewZenithDot</cn>.</p>
 <p>Add the following two lines and change <cn>skyColor</cn> to reflect our newly added haze. The <cn>viewZenithColor</cn> is once again a texture sample using <cn>sunZenithDot01</cn> as uv coordinate. The <cn>vzMask</cn> does, as the name suggests, mask the <cn>viewZenithColor</cn>. The mask is 1 at or below the horizon, where <cn>viewZenithDot</cn> is 0, and tends to 0 above the horizon. The <cn>pow</cn> is there to control how quickly the haze vanishes with height, I've set it to a power of 4 but you can experiment with this.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 viewZenithColor = texture(_ViewZenithGrad, vec2(sunZenithDot01, 0.5)).rgb;
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 viewZenithColor = texture(view_zenith_gradient, vec2(sunZenithDot01, 0.5)).rgb;
 float vzMask = pow(clamp(1.0 - viewZenithDot, 0.0, 1.0), 4);
 
 vec3 skyColor = sunZenithColor + vzMask * viewZenithColor;
@@ -255,7 +255,7 @@ vec3 skyColor = sunZenithColor + vzMask * viewZenithColor;
 <p>The final of the gradient textures is the sunView gradient, which represents the brighter colour you see surrounding the sun. Similarly to the previous texture we use <cn>sunZenithDot01</cn> as the uv coordinate and use <cn>solarViewDot</cn> for masking.</p>
 <p>Add the following lines and once again update <cn>skyColor</cn> to our new value. The mask consists of the <cn>sunViewDot</cn> clamped between 0 and 1. The mask is 1 when looking at the sun and 0 when looking 90° or more away from the sun. The <cn>pow</cn> is used again to control the fall-off, I've again set it to 4.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 sunViewColor = texture(_SunViewGrad, vec2(sunZenithDot01, 0.5)).rgb;
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 sunViewColor = texture(sun_view_gradient, vec2(sunZenithDot01, 0.5)).rgb;
 float svMask = pow(clamp(sunViewDot, 0.0, 1.0), 4);
 	
 vec3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewColor;</code></pre></div>
@@ -288,15 +288,15 @@ vec3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewColo
 <button class="collapsible round">Code block (<em>Skybox.gdshader</em>)</button>
 <div class="collapsible__content round code">
     <pre class="line-numbers" data-line="1-3, 8-10, 12" style="margin:0;"><code class="language-glsl">group_uniforms Sun;
-uniform float _SunRadius : hint_range(0, 1) = 0.05;
-uniform vec3 _SunColor : source_color = vec3(1.0, 1.0, 1.0);
+uniform float sun_radius : hint_range(0, 1) = 0.05;
+uniform vec3 sun_color : source_color = vec3(1.0, 1.0, 1.0);
 
 void sky(){
     ...
 
     // The sun
-	float sunMask = get_sun_mask(sunViewDot, _SunRadius);
-	vec3 sunColor = _SunColor * sunMask;
+	float sunMask = get_sun_mask(sunViewDot, sun_radius);
+	vec3 sunColor = sun_color * sunMask;
 	
 	vec3 col = skyColor + sunColor;
     COLOR = col;
@@ -335,12 +335,12 @@ float sphere_intersect(vec3 rayDir, vec3 spherePos, float radius)
 <p>Now for the implementation we need a new property, the moon's radius. Add the following uniform just below the sun group.</p>
 
 <div class="container__code"><pre class="line-numbers round"><code class="language-glsl">group_uniforms Moon;
-uniform float _MoonRadius : hint_range(0, 1) = 0.05;</code></pre></div>
+uniform float moon_radius : hint_range(0, 1) = 0.05;</code></pre></div>
 
 <p>To show the moon on the screen we need to call <cn>sphere_intersect</cn> in the <cn>sky</cn> function, define the mask and add it to <cn>col</cn>.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// The moon
-float moonIntersect = sphere_intersect(viewDir, _MoonDir, _MoonRadius);
+float moonIntersect = sphere_intersect(viewDir, moon_dir, moon_radius);
 float moonMask = moonIntersect > -1.0 ? 1.0 : 0.0;
 vec3 moonColor = vec3(1.0, 1.0, 1.0) * moonMask;
 
@@ -363,12 +363,12 @@ vec3 col = skyColor + sunColor + moonColor;</code></pre></div>
     </div>
 </div>
 
-<p>Let's add this normal calculation in the <cn>sky</cn> function by taking the difference between the <cn>viewDir</cn> scaled by <cn>moonIntersect</cn> and the <cn>_MoonDir</cn>. Add the highlighted line to our moon code.</p>
+<p>Let's add this normal calculation in the <cn>sky</cn> function by taking the difference between the <cn>viewDir</cn> scaled by <cn>moonIntersect</cn> and the <cn>moon_dir</cn>. Add the highlighted line to our moon code.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line="4"><code class="language-glsl">// The moon
-float moonIntersect = sphere_intersect(viewDir, _MoonDir, _MoonRadius);
+float moonIntersect = sphere_intersect(viewDir, moon_dir, moon_radius);
 float moonMask = moonIntersect > -1.0 ? 1.0 : 0.0;
-vec3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre></div>
+vec3 moonNormal = normalize(viewDir * moonIntersect - moon_dir);</code></pre></div>
 
 <p>We now have the normal, but for our NdotL lighting we also need the light direction. The light direction would be the direction of the sun's rays away from the moon. It is <em>away</em> from the sun because we want our surface to be lit if the dot product between the normal and light direction is 1.</p>
 
@@ -379,19 +379,19 @@ vec3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre></d
 </div>
 
 <p>In mathematical terms it can be expressed as \( d_l = norm(d_s r_s - d_m r_m) \). Here \(d_l\) is the light direction, \(d_s\) the sun direction, \(r_s\) the sun's distance to us, \(d_m\) the moon direction, \(r_m\) the moon's distance to us, and \(norm()\) a normalization function. This might look complicated, however, we can use the fact that the sun is much further away from us than the moon (about 400 times further). Using this fact we can roughly approximate the light direction by saying the sun's distance is so big that the moon's distance is neglectable, i.e. \(d_l = norm(d_s r_s - d_m r_m) ≈ norm(d_s r_s) = d_s\).</p>
-<p>We can now calculate our NdotL using the <cn>moonNormal</cn> and <cn>_SunDir</cn>. Add the highlighted line and adjust our moon variable to show the new lighting. Note that we clamp the <cn>dot</cn> between 0 and 1, because there is no such thing as negative lighting.</p>
+<p>We can now calculate our NdotL using the <cn>moonNormal</cn> and <cn>sun_dir</cn>. Add the highlighted line and adjust our moon variable to show the new lighting. Note that we clamp the <cn>dot</cn> between 0 and 1, because there is no such thing as negative lighting.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2-3"><code class="language-glsl">vec3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);
-float moonNdotL = clamp(dot(moonNormal, _SunDir), 0.0, 1.0);
+<div class="container__code"><pre class="line-numbers round" data-line="2-3"><code class="language-glsl">vec3 moonNormal = normalize(viewDir * moonIntersect - moon_dir);
+float moonNdotL = clamp(dot(moonNormal, sun_dir), 0.0, 1.0);
 vec3 moonColor = moonMask * moonNdotL * vec3(1.0, 1.0, 1.0);</code></pre></div>
 
 <p>Let's also add an exposure property, so that we can control how bright the moon is. Add the following highlighted lines, adding a uniform and modifying <cn>moonColor</cn>.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="1, 5" style="margin:0;"><code class="language-glsl">uniform float _MoonExposure : hint_range(-16, 16) = 0;
+<div class="container__code"><pre class="line-numbers round" data-line="1, 5" style="margin:0;"><code class="language-glsl">uniform float moon_exposure : hint_range(-16, 16) = 0;
 ...
 void sky(){
     ...
-    vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * vec3(1.0, 1.0, 1.0);
+    vec3 moonColor = moonMask * moonNdotL * exp2(moon_exposure) * vec3(1.0, 1.0, 1.0);
 }</code></pre></div>
 
 <p></p>
@@ -413,35 +413,35 @@ void sky(){
 
 <p>When importing the texture in Godot you will have to set the import settings to Cubemap, enable mipmaps and set the arrangement to 6x1. Then add the following uniform to the shader, and don't forget to set the texture on the sky material.</p>
 
-<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform samplerCube _MoonCubemap : source_color;
+<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform samplerCube moon_cubemap : source_color;
 </code></pre></div>
 
 <p>We'll add a separate function for sampling the moon texture, called <cn>get_moon_texture</cn>, above the <cn>sky</cn> function. For now it just samples the texture using a 3D vector as input.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 get_moon_texture(vec3 dir)
 { 
-    return texture(_MoonCubemap, dir).rgb;
+    return texture(moon_cubemap, dir).rgb;
 }</code></pre></div>
 
 <p>The direction is going to be our moon's normal, as it points to where in the cubemap we need to sample. To see the texture add or change the following lines in the <cn>sky</cn> function.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moonTexture = get_moon_texture(moonNormal);
-vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
+vec3 moonColor = moonMask * moonNdotL * exp2(moon_exposure) * moonTexture;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal">
 </div>
 
-<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, object-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>SkyboxController.gd</em>, from section <a href="#skybox-controller">2.1</a>. The 3 basis vectors, forward, right, and up, form the object-to-world matrix. In order to get the world-to-object matrix we simply invert it. Add the highlighted line to the <em>SkyboxController.gd</em> script, where we set shader matrix called <cn>_MoonWorldToObject</cn>.</p>
+<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, object-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>SkyboxController.gd</em>, from section <a href="#skybox-controller">2.1</a>. The 3 basis vectors, forward, right, and up, form the object-to-world matrix. In order to get the world-to-object matrix we simply invert it. Add the highlighted line to the <em>SkyboxController.gd</em> script, where we set shader matrix called <cn>moon_world_to_object</cn>.</p>
 
 <button class="collapsible round">Code block (<em>SkyboxController.gd</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" style="margin:0;" data-line="3-4,7"><code class="language-gdscript">func _process(delta: float) -> void:
     var sun_dir = $"../Sun".get_global_transform().basis.z; # This is our forward direction pointing towards the sun
-    var moonBasis = $"../Moon".get_global_transform().basis;
-    var moon_dir = moonBasis.z; # This is our forward direction pointing towards the moon
-    environment.sky.sky_material.set_shader_parameter('_SunDir', sun_dir); # Update sky material with sun direction
-    environment.sky.sky_material.set_shader_parameter('_MoonDir', moon_dir); # Update sky material with moon direction
-    environment.sky.sky_material.set_shader_parameter('_MoonWorldToObject', moonBasis.inverse()); # The world to object matrix is the inverse of the basis (which is object to world)
+    var moon_basis = $"../Moon".get_global_transform().basis;
+    var moon_dir = moon_basis.z; # This is our forward direction pointing towards the moon
+    environment.sky.sky_material.set_shader_parameter('sun_dir', sun_dir); # Update sky material with sun direction
+    environment.sky.sky_material.set_shader_parameter('moon_dir', moon_dir); # Update sky material with moon direction
+    environment.sky.sky_material.set_shader_parameter('moon_world_to_object', moon_basis.inverse()); # The world to object matrix is the inverse of the basis (which is object to world)
     pass</code></pre>
 </div>
 
@@ -449,25 +449,25 @@ vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code
 
 <p>Now we can access this matrix by declaring it in our shader. We then need to multiply this matrix with the moon's normal in world-space to get the normal in object-space. Add the following highlighted lines to implement this.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 _MoonWorldToObject;
+<div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 moon_world_to_object;
 
 vec3 get_moon_texture(vec3 dir)
 {
-    dir = _MoonWorldToObject * dir;
+    dir = moon_world_to_object * dir;
         
-    return texture(_MoonCubemap, dir).rgb;
+    return texture(moon_cubemap, dir).rgb;
 }</code></pre></div>
 
 <p>There's one final change we need to make. We're currently looking at the backside of the moon, so we rotate 180 degrees by flipping the x and z. You could of course also achieve the same by modifying the cubemap itself.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line="4-6"><code class="language-glsl">vec3 get_moon_texture(vec3 dir)
 {
-    dir = _MoonWorldToObject * dir;
+    dir = moon_world_to_object * dir;
     // Rotate 180 degrees by flipping both x and z.
     dir.x = -dir.x;
     dir.z = -dir.z;
     
-    return texture(_MoonCubemap, dir).rgb;
+    return texture(moon_cubemap, dir).rgb;
 }</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -488,11 +488,11 @@ vec3 get_moon_texture(vec3 dir)
 
 <button class="collapsible round">Code block (<em>Skybox.gdshader</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">group_uniforms Stars;
-uniform samplerCube _StarCubemap : source_color;
+uniform samplerCube star_cubemap : source_color;
 
 void sky() {
 	// The stars
-	vec3 starColor = texture(_StarCubemap, viewDir).rgb;
+	vec3 starColor = texture(star_cubemap, viewDir).rgb;
 
 	vec3 col = skyColor + sunColor + moonColor + starColor;
 }</code></pre>
@@ -504,13 +504,13 @@ void sky() {
 
 <p>That was easy, but looking at the result you might see a few problems, one of them being that the stars are drawn on top of the moon (and also sun). To fix this we multiply the starColor by 1 minus the moon and sun masks.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-glsl">vec3 starColor = texture(_StarCubemap, viewDir).rgb;
+<div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-glsl">vec3 starColor = texture(star_cubemap, viewDir).rgb;
 float starMask = (1.0 - sunMask) * (1.0 - moonMask);
 starColor *= starMask;</code></pre></div>
 
 <p>Another thing is that the stars look rather blurry. In order to make the stars sharper we'll be biasing the mip-level. This would make the texture values flicker more with camera movement, which normally would be bad but actually is appropriate for stars. Add the extra parameter to the texture sample to bias the mipmap by -1 (read the texture one mip-level lower than normal).</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 starColor = texture(_StarCubemap, viewDir, -1.0).rgb;</code></pre></div>
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 starColor = texture(star_cubemap, viewDir, -1.0).rgb;</code></pre></div>
 
 <p>Alternatively you could just disable mip-mapping altogether for the texture, however, in some cases you might need it. One example would be when using a second camera that renders at a lower resolution, without mip-mapping it would flicker too much and become distracting.</p>
 
@@ -518,23 +518,23 @@ starColor *= starMask;</code></pre></div>
 
 <button class="collapsible round">Code block (<em>Skybox.gdshader</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4, 9-10" style="margin:0;"><code class="language-glsl">group_uniforms Stars;
-uniform samplerCube _StarCubemap : source_color;
-uniform float _StarExposure : hint_range(-16, 16) = 0;
-uniform float _StarPower : hint_range(1, 5) = 1;
+uniform samplerCube star_cubemap : source_color;
+uniform float star_exposure : hint_range(-16, 16) = 0;
+uniform float star_power : hint_range(1, 5) = 1;
 
 void sky() {
 	// The stars
-	vec3 starColor = texture(_StarCubemap, viewDir).rgb;
-	starColor = pow(starColor, vec3(_StarPower));
+	vec3 starColor = texture(star_cubemap, viewDir).rgb;
+	starColor = pow(starColor, vec3(star_power));
     float starMask = (1.0 - sunMask) * (1.0 - moonMask);
-	starColor *= starMask * exp2(_StarExposure);
+	starColor *= starMask * exp2(star_exposure);
 }</code></pre>
 </div>
 
 <p>We're almost there but there is still one problem, the stars are still bright and visible during the day. In order to fix this we'll add another factor to <cn>starColor</cn>, which depends on <cn>sunZenithDot</cn> and <cn>sunViewDot01</cn>. The idea is that the stars are too dim compared to the sun or the sky during the day. Add and change the following lines.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float starStrength = (1.0 - sunViewDot01) * (clamp(-sunZenithDot, 0.0, 1.0));
-starColor *= starMask * exp2(_StarExposure) * starStrength;</code></pre></div>
+starColor *= starMask * exp2(star_exposure) * starStrength;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_02.png" alt="The night sky, with star exposure and power set to 2 and 1.3 respectively. These values are pure personal preference to have the brightest stars affected by the bloom post-processing, without too much background noise." class="image__caption image__modal">
@@ -588,13 +588,13 @@ vec3 get_star_uvw(vec3 viewDir, float latitude, float localSiderealTime)
 <p>Now we just need to use the <cn>starUVW</cn> instead of <cn>viewDir</cn> when sampling the star cubemap. However, we do need some input for the latitude and time. So let's add two new uniforms, the latitude in degrees between -90° (south pole) and 90° (north pole) and the speed with which the stars rotate (given in days per second). For the time itself we can use the built-in variable <cn>TIME</cn>, where we take the modulus to keep the time between 0 and 1. Add or change the highlighted lines.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.gdshader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="1-2,6-7" style="margin:0;"><code class="language-glsl">uniform float _StarLatitude : hint_range(-90, 90) = 0;
-uniform float _StarSpeed = 0.001;
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="1-2,6-7" style="margin:0;"><code class="language-glsl">uniform float star_latitude : hint_range(-90, 90) = 0;
+uniform float star_speed = 0.001;
 
 void sky() {
     // The stars
-	vec3 starUVW = get_star_uvw(viewDir, _StarLatitude, mod(TIME *  _StarSpeed, 1.0));
-	vec3 starColor = texture(_StarCubemap, starUVW).rgb;
+	vec3 starUVW = get_star_uvw(viewDir, star_latitude, mod(TIME *  star_speed, 1.0));
+	vec3 starColor = texture(star_cubemap, starUVW).rgb;
 }
 </code></pre>
 </div>
@@ -618,13 +618,13 @@ void sky() {
 <p>Now add the cubemap uniform, as well as a colour for the constellation lines. We can reuse the <cn>starUVW</cn>, so sample the texture and multiply it by the <cn>_ConstellationColor</cn>. Again we need to mask the sun and moon, as well as multiply it by the <cn>starStrength</cn>. Finally, add the result to the final <cn>col</cn>. Add or change the highlighted lines.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.gdshader</em>)</button>
-<div class="collapsible__content round code"><pre class="line-numbers" data-line="1-2, 5-9" style="margin:0;"><code class="language-glsl">uniform samplerCube _StarConstellationCubemap : source_color;
-uniform vec3 _StarConstellationColor : source_color = vec3(0.0, 0.3, 0.6);
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="1-2, 5-9" style="margin:0;"><code class="language-glsl">uniform samplerCube star_constellation_cubemap : source_color;
+uniform vec3 star_constellation_color : source_color = vec3(0.0, 0.3, 0.6);
 
 void sky() {
     // The constellations
-	vec3 constColor = texture(_StarConstellationCubemap, starUVW).rgb;
-	constColor *= _StarConstellationColor * starMask * starStrength;
+	vec3 constColor = texture(star_constellation_cubemap, starUVW).rgb;
+	constColor *= star_constellation_color * starMask * starStrength;
 
     vec3 col = skyColor + sunColor + moonColor + starColor + constColor;
 }
@@ -655,7 +655,7 @@ sunColor *= (1.0 - moonMask);</code></pre></div>
 <p>I've never seen a total solar eclipse in person and finding reliable images of the sky during one is quite hard, but it seems that the sky becomes darker and the area around the sun seems brighter as a result. In order to implement this we'll use <cn>sunMoonDot</cn> to determine how much of the sun is eclipsed. As a function of this we'll lower the value of <cn>skyColor</cn> and increase the value of <cn>sunColor</cn> (so that the bloom has a greater effect).</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Solar eclipse
-float solarEclipse01 = smoothstep(1.0 - _SunRadius * _SunRadius, 1.0, sunMoonDot);
+float solarEclipse01 = smoothstep(1.0 - sun_radius * sun_radius, 1.0, sunMoonDot);
 skyColor *= mix(1.0, 0.4, solarEclipse01);
 sunColor *= (1.0 - moonMask) * mix(1.0, 16.0, solarEclipse01);</code></pre></div>
 
@@ -676,7 +676,7 @@ sunColor *= (1.0 - moonMask) * mix(1.0, 16.0, solarEclipse01);</code></pre></div
 <p>Unfortunately we can't reuse <cn>sunMask</cn> or <cn>moonMask</cn> and instead have to calculate a new mask. This mask is very similar to <cn>sunMask</cn>, but we take the <cn>step</cn> function of negative <cn>sunViewDot</cn>, which means it is 1 when the sun is opposite of the view direction. Add the following lines to the <cn>sky</cn> function below the solar eclipse to make the mask and mask out the <cn>moonColor</cn>.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Lunar eclipse
-float lunarEclipseMask = 1.0 - step(1.0 - _SunRadius * _SunRadius, -sunViewDot);
+float lunarEclipseMask = 1.0 - step(1.0 - sun_radius * sun_radius, -sunViewDot);
 moonColor *= lunarEclipseMask;</code></pre></div>
 
 <p>The mask needs to be one minus the step because we want the moon to be visible unless it is in the mask. Technically speaking we should be defining an earth radius and use that for the mask, because the mask should represent the earth's shadow. However, for our purposes it works fine to use the sun's radius instead.</p>
@@ -685,11 +685,11 @@ moonColor *= lunarEclipseMask;</code></pre></div>
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_Eclipses_LunarEclipse_01.png" alt="Partial lunar eclipse." class="image__caption image__modal">
 </div>
 
-<p>If you've seen a lunar eclipses you'll know that it turns slightly red once it gets fully eclipsed. Let's implement that as well. In order to do this we need to know when the moon is nearly fully eclipsed. We do this by using a <cn>smoothstep</cn> function, similarly to calculating <cn>solarEclipse01</cn>. However, this time we want it to be 0 up until the sun and moon are almost oppositely aligned. To do this we multiply the masking radius (<cn>_SunRadius</cn>) by a small number (0.05). Finally we <cn>mix</cn> between the mask and a dark orangish red colour and multiply the moonColor with that. Add or change the highlighted lines.</p>
+<p>If you've seen a lunar eclipses you'll know that it turns slightly red once it gets fully eclipsed. Let's implement that as well. In order to do this we need to know when the moon is nearly fully eclipsed. We do this by using a <cn>smoothstep</cn> function, similarly to calculating <cn>solarEclipse01</cn>. However, this time we want it to be 0 up until the sun and moon are almost oppositely aligned. To do this we multiply the masking radius (<cn>sun_radius</cn>) by a small number (0.05). Finally we <cn>mix</cn> between the mask and a dark orangish red colour and multiply the moonColor with that. Add or change the highlighted lines.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line="3-4"><code class="language-glsl">// Lunar eclipse
-float lunarEclipseMask = 1.0 - step(1.0 - _SunRadius * _SunRadius, -sunViewDot);
-float lunarEclipse01 = smoothstep(1.0 - _SunRadius * _SunRadius * 0.05, 1.0, -sunMoonDot);
+float lunarEclipseMask = 1.0 - step(1.0 - sun_radius * sun_radius, -sunViewDot);
+float lunarEclipse01 = smoothstep(1.0 - sun_radius * sun_radius * 0.05, 1.0, -sunMoonDot);
 moonColor *= mix(vec3(lunarEclipseMask), vec3(0.3,0.05,0), lunarEclipse01);</code></pre></div>
 
 <p>You can of course change the red moon color or even add a property for it to control from the inspector.</p>
