@@ -673,29 +673,29 @@ sunColor *= (1.0 - moonMask) * mix(1.0, 16.0, solarEclipse01);</code></pre></div
 
 <p>The lunar eclipse will work similar to the solar eclipse, we'll mask out the moon and calculate a <cn>lunarEclipse01</cn> variable. This time the variable will be used only to change the moon, not the sky.</p>
 
-<p>Unfortunately we can't reuse <cn>sunMask</cn> or <cn>moonMask</cn> and instead have to calculate a new mask. This mask is very similar to <cn>sunMask</cn>, but we take the <cn>step</cn> function of negative <cn>sunViewDot</cn>, which means it is 1 when the sun is opposite of the view direction. Add the following lines to make the mask and mask out the <cn>moonColor</cn>. Add the following lines to the <cn>Fragment</cn> function below the solar eclipse code.</p>
+<p>Unfortunately we can't reuse <cn>sunMask</cn> or <cn>moonMask</cn> and instead have to calculate a new mask. This mask is very similar to <cn>sunMask</cn>, but we take the <cn>step</cn> function of negative <cn>sunViewDot</cn>, which means it is 1 when the sun is opposite of the view direction. Add the following lines to the <cn>sky</cn> function below the solar eclipse to make the mask and mask out the <cn>moonColor</cn>.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Lunar eclipse
-float lunarEclipseMask = 1 - step(1 - _SunRadius * _SunRadius, -sunViewDot);
+float lunarEclipseMask = 1.0 - step(1.0 - _SunRadius * _SunRadius, -sunViewDot);
 moonColor *= lunarEclipseMask;</code></pre></div>
 
 <p>The mask needs to be one minus the step because we want the moon to be visible unless it is in the mask. Technically speaking we should be defining an earth radius and use that for the mask, because the mask should represent the earth's shadow. However, for our purposes it works fine to use the sun's radius instead.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_LunarEclipse_01.png" alt="Partial lunar eclipse." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_Eclipses_LunarEclipse_01.png" alt="Partial lunar eclipse." class="image__caption image__modal">
 </div>
 
-<p>If you've seen a lunar eclipses you'll know that it turns slightly red once it gets fully eclipsed. Let's implement that as well. In order to do this we need to know when the moon is nearly fully eclipsed. We do this by using a <cn>smoothstep</cn> function, similarly to calculating <cn>solarEclipse01</cn>. However, this time we want it to be 0 up until the sun and moon are almost oppositely aligned. To do this we multiply the masking radius (the _SunRadius) by a small number (0.05). Finally we <cn>lerp</cn> between the mask and a dark orangish red colour and multiply the moonColor with that. Add or change the highlighted lines.</p>
+<p>If you've seen a lunar eclipses you'll know that it turns slightly red once it gets fully eclipsed. Let's implement that as well. In order to do this we need to know when the moon is nearly fully eclipsed. We do this by using a <cn>smoothstep</cn> function, similarly to calculating <cn>solarEclipse01</cn>. However, this time we want it to be 0 up until the sun and moon are almost oppositely aligned. To do this we multiply the masking radius (<cn>_SunRadius</cn>) by a small number (0.05). Finally we <cn>mix</cn> between the mask and a dark orangish red colour and multiply the moonColor with that. Add or change the highlighted lines.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line="3-4"><code class="language-glsl">// Lunar eclipse
-float lunarEclipseMask = 1 - step(1 - _SunRadius * _SunRadius, -sunViewDot);
-float lunarEclipse01 = smoothstep(1 - _SunRadius * _SunRadius * 0.05, 1.0, -sunMoonDot);
-moonColor *= lerp(lunarEclipseMask, float3(0.3,0.05,0), lunarEclipse01);</code></pre></div>
+float lunarEclipseMask = 1.0 - step(1.0 - _SunRadius * _SunRadius, -sunViewDot);
+float lunarEclipse01 = smoothstep(1.0 - _SunRadius * _SunRadius * 0.05, 1.0, -sunMoonDot);
+moonColor *= mix(vec3(lunarEclipseMask), vec3(0.3,0.05,0), lunarEclipse01);</code></pre></div>
 
 <p>You can of course change the red moon color or even add a property for it to control from the inspector.</p>
 
 <div class="container image__container round" style="width:100%">
-    <img src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_Eclipses_LunarEclipse_02.png" alt="Total lunar eclipse." class="image__caption image__modal">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_Eclipses_LunarEclipse_02.png" alt="Total lunar eclipse." class="image__caption image__modal">
 </div>
 
 
@@ -703,6 +703,6 @@ moonColor *= lerp(lunarEclipseMask, float3(0.3,0.05,0), lunarEclipse01);</code><
 
 <p>This the end of the tutorial, we've made a skybox shader where the colour of the sky is determined by the height of the sun and several colour gradients. The moon is shown, lit depending on the sun's position and has a texture. The stars are drawn, rotate in the sky, and represent the sky at a chosen latitude. A constellation map is drawn over the stars, so that you can find out where Orion is. And finally we've made some simple calculations to simulate a solar and lunar eclipse.</p>
 
-<p>There is of course a lot more customisation that you could add, such as more colour options and other parameters. However, that is mostly up to your personal preferences or outside demands. I hope you've at least learned some new things and had fun making this, I sure did. In the next part of this tutorial series we'll make a C# script to control the position of the sun, moon and stars, such that they correspond to their real-world position in the sky given your geographical position and the date.</p>
+<p>There is of course a lot more customisation that you could add, such as more colour options and other parameters. However, that is mostly up to your personal preferences or outside demands. I hope you've at least learned some new things and had fun making this, I sure did.</p>
     
-<p>If you want to buy me a coffee (or tea because I don't drink that much coffee) you can do so using my <a href="https://ko-fi.com/kelvinvanhoorn" target="_blank">ko-fi</a> page. You can also check out my <a href="https://twitter.com/KelvinvanHoorn" target="_blank">twitter</a> for more shader work and other things that might not make it to the site.</p>
+<p>If you want to buy me a coffee (or tea because I don't drink coffee) you can do so using my <a href="https://ko-fi.com/kelvinvanhoorn" target="_blank">ko-fi</a> page. You can also check out my <a href="https://bsky.app/profile/kelvinvanhoorn.com" target="_blank">BlueSky</a> for more shader work and other things that might not make it to the site.</p>
