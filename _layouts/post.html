@@ -8,46 +8,38 @@
   <body>
     {% include header.html %}
     
-    <div class="main-grid">
+    <div class="main-content">
       
+      {{ content }}
 
-      <div></div>
-      <div class="main-content">
-        
-        {{ content }}
+      {% assign cat = page.category %}
+      {% assign postlist = site.posts | where:"category", page.category | sort %}
+      {% if postlist.size > 1 %}
+        <div class="post__navigation">
+          {% for item in postlist %}
+            {% if item.title == page.title %}
+              {% unless forloop.last %}
+                {% assign next_i = forloop.index0 | plus: 1 %}
+                {% assign next = postlist[next_i] %}
+                <a href="{{ site.baseurl }}{{ next.url }}" style="text-align: left;"><i class="fas fa-chevron-circle-left"></i> {{ next.title }}</a>
+              {% else %}
+                <div></div>
+              {% endunless %}
+              {% unless forloop.first %}
+                  {% assign prev_i = forloop.index0 | minus: 1 %}
+                  {% assign prev = postlist[prev_i] %}
+                  <a href="{{ site.baseurl }}{{ prev.url }}" style="text-align: right;">{{ prev.title }} <i class="fas fa-chevron-circle-right"></i></a>
+              {% else %}
+                <div></div>
+              {% endunless %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
 
-        {% assign cat = page.category %}
-        {% assign postlist = site.posts | where:"category", page.category | sort %}
-        {% if postlist.size > 1 %}
-          <div class="post__navigation">
-            {% for item in postlist %}
-              {% if item.title == page.title %}
-                {% unless forloop.last %}
-                  {% assign next_i = forloop.index0 | plus: 1 %}
-                  {% assign next = postlist[next_i] %}
-                  <a href="{{ site.baseurl }}{{ next.url }}" style="text-align: left;"><i class="fas fa-chevron-circle-left"></i> {{ next.title }}</a>
-                {% else %}
-                  <div></div>
-                {% endunless %}
-                {% unless forloop.first %}
-                    {% assign prev_i = forloop.index0 | minus: 1 %}
-                    {% assign prev = postlist[prev_i] %}
-                    <a href="{{ site.baseurl }}{{ prev.url }}" style="text-align: right;">{{ prev.title }} <i class="fas fa-chevron-circle-right"></i></a>
-                {% else %}
-                  <div></div>
-                {% endunless %}
-                {% break %}
-              {% endif %}
-            {% endfor %}
-          </div>
-        {% endif %}
-
-        {% include comments.html %}
-        
-      </div>
-      <div></div>
+      {% include comments.html %}
       
-
     </div>
     
 
