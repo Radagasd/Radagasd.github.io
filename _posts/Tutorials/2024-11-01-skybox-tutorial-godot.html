@@ -409,6 +409,8 @@ void sky(){
     <img src="/assets/posts/tutorials/skybox-tutorial-godot/MoonColorCubemap.jpg" alt="Color cubemap of the moon, created from NASA's Scientific Visualization Studio data." class="image__caption image__modal">
 </div>
 
+<div class="note__base round"><p>You can generate this 6x1 row cubemap from the equirectangular texture using the <a href="https://github.com/indus/kubi">Kubi python package</a>, or using this <a href="https://jaxry.github.io/panorama-to-cubemap/">panorama to cubemap website</a> (though you have to stitch the 6 sides toghether yourself in some photo editor like Gimp). I've generated the cubemaps in this tutorial using the python package.</p></div>
+
 <p>When importing the texture in Godot you will have to set the import settings to Cubemap, enable mipmaps and set the arrangement to 6x1. Then add the following uniform to the shader, and don't forget to set the texture on the sky material.</p>
 
 <div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform samplerCube _MoonCubemap : source_color;
@@ -596,7 +598,7 @@ void sky() {
 </div>
 
 <div class="container video__container round gif">
-    <video src="/assets/posts/tutorials/skybox-tutorial-part-1/SkyboxP1_TheStars_Rotation.mp4" class="video-autoplay" muted loop></video>
+    <video src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_Rotation.mp4" class="video-autoplay" muted loop></video>
     <div class="caption__text">
         Animation of the stars at a highly exaggerated speed, you can see Polaris (the North Star) at the top. Latitude is 52° (The Netherlands), speed = 0.01.
     </div>
