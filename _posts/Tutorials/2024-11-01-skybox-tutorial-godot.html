@@ -1,0 +1,708 @@
+---
+title: Godot - Skybox tutorial
+layout: post
+category: tutorial
+blurb: In this tutorial I show you how to create a skybox shader in Godot. It is an authored skybox (not procedural) that draws the sky, sun, moon stars.
+preview-video: assets/posts/tutorials/skybox-tutorial-godot/Preview.mp4
+image: /assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_Constellation.png
+---
+
+
+<div class="video__container round gif">
+    <video src="/assets/posts/tutorials/skybox-tutorial-part-1/Preview.mp4" class="video-autoplay" muted loop></video>
+</div>
+
+<p>In a previous post I showed one of my <a href="{{site.baseurl}}/2022/02/14/astronomical-skybox/">skyboxes</a>, which has a shader and code to calculate the positions of the sun and moon. People quite liked the result, and as such I decided write a tutorial on it. It focuses primarily on the shader, which uses several gradients to color the sky depending on the sun and moon's position. It is assumed that you have some basic knowledge of Godot and shaders, and it's good to note that this tutorial is not about Godot best practices nor writing the most optimal shader.</p>
+<p>This tutorial was made with <b>Godot v4.3</b> using the Forward+ renderer, and we'll be making a <b>written gdshader</b> (GLSL). You can find a Unity version of this tutorial <a href="{{site.baseurl}}/2022/03/17/skybox-tutorial-part-1/">here</a>. Note that the general concept can be applied to any shader environment.</p>
+<div class="note__base round">
+<p>You can get the project files <a href="https://github.com/Radagasd/skybox-tutorial-godot" target="_blank">here</a>, which includes the shader, a sample scene, and all the assets used in this tutorial.</p>
+</div>
+
+<h2>Acknowledgements</h2>
+
+<p>For this tutorial the main acknowledgement would be <em>NASA's</em> <a href="https://svs.gsfc.nasa.gov/index.html" target="_blank"><em>Scientific Visualization Studio</em></a>, for their publicly available texture maps of the moon and stars.</p>
+<p>Besides that the Godot's documentation has been a great help, with a special shout out to the <a href="https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/index.html">Shading reference</a>.</p>
+
+<h2>Contents</h2>
+
+<div style="padding-left: 1.2em;">
+    <ol>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#basic-setup">Basic setup</a>
+            <ol>
+                <li><a href="#skybox-controller">Skybox controller</a></li>
+                <li><a href="#gdshader">GDShader</a></li>
+            </ol>
+        </li>
+        <li><a href="#the-sun-and-sky">The sun and sky</a>
+            <ol>
+                <li><a href="#main-angles">Main angles</a></li>
+                <li><a href="#colours-of-the-sky">Colours of the sky</a></li>
+                <li><a href="#the-sun">The sun</a></li>
+            </ol>
+        </li>
+        <li><a href="#the-moon">The moon</a>
+            <ol>
+                <li><a href="#ray-tracing-mask">Ray-tracing mask</a></li>
+                <li><a href="#moon-lighting">Moon lighting</a></li>
+                <li><a href="#moon-texture">Moon texture</a></li>
+            </ol>
+        </li>
+        <li><a href="#the-stars">The stars</a>
+            <ol>
+                <li><a href="#star-rotations">Star rotations</a></li>
+                <li><a href="#constellations">Constellations</a></li>
+            </ol>
+        </li>
+        <li><a href="#eclipses">Eclipses</a>
+            <ol>
+                <li><a href="#solar-eclipse">Solar eclipse</a></li>
+                <li><a href="#lunar-eclipse">Lunar eclipse</a></li>
+            </ol>
+        </li>
+        <li><a href="#conclusion">Conclusion</a></li>
+    </ol>
+</div>
+
+
+<h2 id="introduction">1. Introduction</h2>
+
+<p>Before we start doing anything in Godot I'd first like to talk about the general approach of this skybox, as it is <em>not</em> a physically based model. Instead we'll be trying to approach the look of the sky using basic inputs, such as the sun's position.</p>
+<p>In this shader we're going to colour the sky by sampling 3 different colour gradients depending on the position and strength of the sun. In addition we'll draw the sun, moon and stars, and also take solar and lunar eclipses into account. In order to do this we need 4 main directions as input. The sun direction, the moon direction, the view direction from the camera and the <a href="https://en.wikipedia.org/wiki/Zenith" target="_blank">zenith</a> direction, defined as directly above the observer which corresponds to the y-direction in Godot.</p>
+<p>In order to give you a better idea I've drawn these four directions below. This is a 2D slice of the world, where the vertical axis corresponds to the y-axis in Godot, and the horizontal axis corresponds to the x-z plane in Godot. The symbols correspond to the following: H = horizon plane, Z = zenith direction, S = sun direction, M = moon direction, and V = view direction. Note that all directions point from the centre outwards, this is a convention we'll be following, where we define our directions to point from the camera/origin towards the object in question, e.g. the sun direction points towards the sun <em>not</em> from the sun.</p>
+
+<div style="display: grid; align-items: center; justify-items: center;">
+    <div class="container image__container round" style="width:50%;">
+        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/Directions.png" alt="Four main directions: M = moon, Z = zenith, S = sun, V = view. H represents the horizon plane." class="image__caption image__modal">
+    </div>
+</div>
+
+
+<p>These direction are in turn used to calculate 4 angles, each between two of these directions.</p>
+<ul>
+    <li><b>sun-view</b>: angle between the sun and view direction,</li>
+    <li><b>sun-zenith</b>: angle between the sun and the Zenith (the y-axis),</li>
+    <li><b>view-zenith</b>: angle between the view direction and Zenith,</li>
+    <li><b>sun-moon</b>: angle between the sun and the moon.</li>
+</ul>
+<p>The <b>sun-view</b> angle can be used to change the colour directly around the sun, e.g. when the sun sets there should be an orange glow around the sun. The <b>sun-zenith</b> can be used to measure how far the sun is above (or below) the horizon. The <b>view-zenith</b> similarly measures how far we're looking above (or below) the horizon. Finally, the <b>sun-moon</b> angle is useful to determine when a solar (or lunar) eclipse occurs.</p>
+
+
+<h2 id="basic-setup">2. Basic setup</h2>
+
+<p>Start by opening Godot and creating a new 3D scene. Add a Camera3D and DirectionalLight3D node to it. Rename the directional light to <em>Sun</em> and add a empty Node3D and call it <em>Moon</em>. These objects will be used to set the direction of the sun and moon respectively. Also add a plane or some other objects so that you have a reference of where the horizon is.</p>
+
+
+<h3 id="skybox-controller">2.1 Skybox controller</h3>
+
+<p>Despite the fact that this tutorial is all about the skybox shader, we do still need a small script to pass the sun and moon direction to the shader. Add a WorldEnvironment node to the scene, and create a new Environment for it. Within the Environment create a new Sky, and a new Sky Material using a ShaderMaterial, which is where we will put our skybox shader in the next section. Now create a new gdscript called <cn>skybox_controller.gd</cn> and attach it to the WorldEnvironment. The script is very simple and shown below in the code block.</p>
+
+<button class="collapsible round">Code block (<em>skybox_controller.gd</em>)</button>
+<div class="collapsible__content round code">
+    <pre class="line-numbers" style="margin:0;"><code class="language-gdscript">@tool # Make it run in editor (might need to close and reopen scene to work)
+extends WorldEnvironment # We're modifying the sky material that is on a WorldEnvironment, so extend from there.
+        
+func _process(delta: float) -> void:
+    var sun_dir = $"../Sun".get_global_transform().basis.z; # This is our forward direction pointing towards the sun
+    var moon_dir = $"../Moon".get_global_transform().basis.z; # This is our forward direction pointing towards the moon
+    environment.sky.sky_material.set_shader_parameter('sun_dir', sun_dir); # Update sky material with sun direction
+    environment.sky.sky_material.set_shader_parameter('moon_dir', moon_dir); # Update sky material with moon direction
+    pass
+</code></pre>
+</div>
+
+<p>It extends from WorldEnvironment so that it can grab the skybox material. We grab the forward directions directly from the Sun and Moon objects in our scene, using their transform basis. We pass the directions to the shader using the <cn>set_shader_parameter</cn> function on the material, where the first parementer is the name of the shader uniform we'll be creating in the next section.</p>
+<p>The <cn>@tool</cn> attribute at the top is used so that the script also runs in editor mode, otherwise we would need to run the game to see the sun and moon directions change.</p>
+
+<h3 id="gdshader">2.2 GDShader</h3>
+
+<p> In this tutorial we'll be writing a GDShader using the Sky template, which only has one processing function, the <cn>sky</cn> function. There are some additional options for sky shaders, which we won't be using but you can read on them <a href="https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/sky_shader.html">here</a>. Start by creating a new resource, select Shader, set the Mode to Sky and name it <cn>skybox.gdshader</cn>. Replace the shader's code with the following code block.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code">
+    <pre class="line-numbers" style="margin:0;"><code class="language-glsl">shader_type sky;
+
+group_uniforms Directions;
+uniform vec3 sun_dir;
+uniform vec3 moon_dir;
+
+void sky() {
+    vec3 view_dir = EYEDIR;
+
+    vec3 output = vec3(step(0.9,dot(sun_dir, view_dir)), step(0.9,dot(moon_dir, view_dir)), 0);
+    COLOR = output;
+}</code></pre>
+</div>
+
+<p>This is the basic shader we'll build upon in the following sections. I'll briefly go over its contents. In order for it to be used as a skybox we set the <cn>shader_type</cn> to sky. Our two main inputs are the sun and moon direction, which take the form of the <cn>sun_dir</cn> and <cn>moon_dir</cn>, which are both a uniform <cn>vec3</cn>. Note that these are the same names as we use in the <em>skybox_controller</em> to pass on the directions. The <cn>group_uniforms</cn> line is there to group both directions toghether in the inspector.</p>
+
+<p>In the <cn>sky</cn> function we get the view direction from the <cn>EYEDIR</cn>. Finally, we set our <cn>COLOR</cn> output to the stepped dot products between the sun and view direction, and the moon and view direction. Because they're directions they should already be normalized.</p>
+<p>In order to see something set the <em>ShaderMaterial</em> in the <em>WorldEnvironment</em> to use the skybox shader. The sky should now be black, with a bright red and green spot that correspond to the positions of the sun and moon (it is yellow when they overlap). You can test this by rotating the <em>Sun</em> and <em>Moon</em> nodes from the previous section.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SunMoonDir.png" alt="Depiction of the skybox, showing the sun and moon directions as a red and green circle respectively. The grey at the bottom is a basic Godot plane and not part of the skybox." class="image__caption image__modal">
+</div>
+
+
+<h2 id="the-sun-and-sky">3. The sun and sky</h2>
+
+<p>In this section we'll go over calculating our 4 main angles, using the main angles to both sample and adjust the colour gradients for the sky, and drawing the sun.</p>
+
+
+<h3 id="main-angles">3.1 Main angles</h3>
+
+<p>As a quick reminder the 4 main angles are: the sun-view, sunZentih, viewZentih and sun-moon angle.</p>
+<p>While I've been talking about angles all this time we're actually only going to calculate the dot product between the different directions. Mathematically this corresponds to the cosine of the angle between the directions (if both vectors are normalized). For our use case this is fine, though you should note that the cosine of an angle isn't linear (it flattens near 0° and 180°).</p>
+<p>We already have the sun, moon and view direction in our shader and the zenith direction is simply \((0, 1, 0)\), so we can calculate all 4 dot products. Add the following highlighted lines to our shader in the <cn>sky</cn> function.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="3-7"><code class="language-glsl">vec3 view_dir = EYEDIR;
+
+// Main angles
+float sun_view_dot = dot(sun_dir, view_dir);
+float sun_zenith_dot = sun_dir.y;
+float view_zenith_dot = view_dir.y;
+float sun_moon_dot = dot(sun_dir, moon_dir);
+</code></pre></div>
+
+<p>Note that we've simplified the calculation of <cn>sun_zenith_dot</cn> and <cn>view_zenith_dot</cn>, the dot product between a vector and \((0, 1, 0)\) corresponds simply to the y-value of that vector.</p>
+<p>The dot products range from -1 to 1, with -1 being parallel but opposed vectors, 0 perpendicular vectors and 1 parallel vectors. While this is a useful range for some calculations, for others it is better to remap it to a 0, 1 range. As such add the following 2 lines just below the previous calculations.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float sun_view_dot01 = (sun_view_dot + 1.0) * 0.5;
+float sun_zenith_dot01 = (sun_zenith_dot + 1.0) * 0.5;
+</code></pre></div>
+
+<p>These calculations haven't changed the look of the skybox yet, but form the foundation for most subsequent calculations.</p>
+
+
+<h3 id="colours-of-the-sky">3.2 Colours of the sky</h3>
+
+<p>The colours of the sky will be determined by sampling 3 gradient textures, adjusting them depending on our main angles, and adding them together.</p>
+<p>Add all 3 gradient textures by adding the following lines just below the <cn>sun_dir</cn> and <cn>moon_dir</cn> uniforms.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">group_uniforms SkyGradients;
+/** The gradient texture that is sampled using the Sun-Zenith angle */
+uniform sampler2D sun_zenith_gradient : source_color, repeat_disable;
+/** The gradient texture that is sampled using the View-Zenith angle */
+uniform sampler2D view_zenith_gradient : source_color, repeat_disable;
+/** The gradient texture that is sampled using the Sun-View angle */
+uniform sampler2D sun_view_gradient : source_color, repeat_disable;
+</code></pre></div>
+
+<p>We use the <cn>source_color</cn> hint to ensure we're sampling our texture as linear data and the <cn>repeat_disable</cn> hint to ensure our sampling doesn't loop around when our dot product gets close to 0 or 1.</p>
+
+<div class="note__base round">
+    <p>The <cn>/** */</cn> notation is used to add descriptions that can be read in the inspector if you hover over the entry.</p>
+</div>
+
+<h4>3.2.1 Main sky colour</h4>
+
+<p>Now let us sample the first gradient and output its colour. The sun-zenith gradient is the simplest and represents the general sky colour depending on how high the sun is in the sky. This is represented within our shader by the float <cn>sun_zenith_dot01</cn>. Add the following lines to the <cn>sky</cn> function and change the output value <cn>output</cn> as seen below.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Sky colours
+vec3 sun_zenith_color = texture(sun_zenith_gradient, vec2(sun_zenith_dot01, 0.5)).rgb;
+
+vec3 sky_output = sun_zenith_color;
+
+vec3 output = sky_output;
+</code></pre></div>
+
+<p>I've used the following small gradient texture as my sun-zenith gradient, where if the sun is directly below us it is nearly black and transitions to a brighter blue as the sun rises. You can download it, by right-clicking and save image, and set it as your texture or create one that better suits your needs. Know that you can easily create these gradient textures <a href="https://docs.godotengine.org/en/stable/classes/class_gradienttexture1d.html">within Godot</a> itself, which makes it much easier to play with them.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/sun_zenith_gradient.png" alt="Gradient texture representing the main colour of the sky." class="image__caption image__modal">
+</div>
+
+<div class="note__base round">
+    <p>For all the gradient textures' import settings I've turned off generate mip maps, and set compression to Loslless.</p>
+</div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_01.png" alt="Depiction of the skybox main colour, given at different altitudes of the sun. Note that the altitude is the negative of the x-rotation of the sun object." class="image__caption image__modal">
+</div>
+
+
+
+<h4>3.2.2 Horizon haze</h4>
+
+<p>The next gradient is the view-zenith gradient, which represents the difference in colour near the horizon (usually a slight haze). First thing to note is that the sample coordinate for the texture is still <cn>sun_zenith_dot01</cn>, because the colour of the haze depends on the height of the sun. However, we need to mask the haze depending on <cn>view_zenith_dot</cn>.</p>
+<p>Add the following two lines and change <cn>sky_output</cn> to reflect our newly added haze. The <cn>view_zenith_color</cn> is once again a texture sample using <cn>sun_zenith_dot01</cn> as uv coordinate. The <cn>vz_mask</cn> does, as the name suggests, mask the <cn>view_zenith_color</cn>. The mask is 1 at or below the horizon, where <cn>view_zenith_dot</cn> is 0, and tends to 0 above the horizon. The <cn>pow</cn> is there to control how quickly the haze vanishes with height, I've set it to a power of 4 but you can experiment with this.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 view_zenith_color = texture(view_zenith_gradient, vec2(sun_zenith_dot01, 0.5)).rgb;
+float vz_mask = pow(clamp(1.0 - view_zenith_dot, 0.0, 1.0), 4);
+
+vec3 sky_output = sun_zenith_color + vz_mask * view_zenith_color;
+</code></pre></div>
+
+<p>For the gradient texture I've used the following, where you should note that near the middle the texture becomes orange before transitioning towards a pale blue. This represents the colour of the horizon during a sunset or sunrise. You can once again download it and use it as your gradient.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/view_zenith_gradient.png" alt="Gradient texture representing the haze colour near the horizon." class="image__caption image__modal">
+</div>
+
+<p></p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_02.png" alt="Depiction of the skybox with view-zenith haze, given at different altitudes of the sun." class="image__caption image__modal">
+</div>
+
+<div class="note__base round">
+    <p><b>Note:</b> you might see some extensive banding in the colours of the sky. I won't go into the details of this, but you can greatly reduce it by enalbing the <em>Use Debanding</em> option in the Project Settings. It is under the Anti Aliasing section, with advanced settings turned on.</p>
+</div>
+
+
+<h4>3.2.3 Sun bloom</h4>
+
+<p>The final of the gradient textures is the sun-view gradient, which represents the brighter colour you see surrounding the sun. Similarly to the previous texture we use <cn>sun_zenith_dot01</cn> as the uv coordinate and use <cn>solarViewDot</cn> for masking.</p>
+<p>Add the following lines and once again update <cn>sky_output</cn> to our new value. The mask consists of the <cn>sun_view_dot</cn> clamped between 0 and 1. The mask is 1 when looking at the sun and 0 when looking 90° or more away from the sun. The <cn>pow</cn> is used again to control the fall-off, I've again set it to 4.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 sun_view_color = texture(sun_view_gradient, vec2(sun_zenith_dot01, 0.5)).rgb;
+float sv_mask = pow(clamp(sun_view_dot, 0.0, 1.0), 4);
+	
+vec3 sky_output = sun_zenith_color + vz_mask * view_zenith_color + sv_mask * sun_view_color;</code></pre></div>
+
+<p>For the gradient texture I've used the following, where most of the action occurs at the centre during sunrise/sunset. You can once again either download this texture or create one that suits your needs.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/sun_view_gradient.png" alt="Gradient texture representing the colour around the sun." class="image__caption image__modal">
+</div>
+
+<p></p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_SkyColours_03.png" alt="Depiction of the skybox with sun bloom, given at different altitudes of the sun. This is by far most noticeable at 0°, though you could alter the gradient to also be more vibrant at other values." class="image__caption image__modal">
+</div>
+
+
+<h3 id="the-sun">3.3 The sun</h3>
+
+<p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>get_sun_mask</cn>. The mask is quite simple, we step <cn>sun_view_dot</cn> depending on a set radius. Add the following lines before the <cn>sky</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float get_sun_mask(float sun_view_dot, float radius)
+{
+    float step_radius = 1.0 - radius * radius;
+    return step(step_radius, sun_view_dot);
+}</code></pre></div>
+
+<p>We'll control the sun's radius with a float uniform set between 0 and 1, and we'll add color uniform to set the sun's color (you could update the skybox_controller to pass the directional light's color). Add or replace the following lines.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code">
+    <pre class="line-numbers" data-line="1-3, 8-10, 12" style="margin:0;"><code class="language-glsl">group_uniforms Sun;
+uniform float sun_radius : hint_range(0, 1) = 0.05;
+uniform vec3 sun_color : source_color = vec3(1.0, 1.0, 1.0);
+
+void sky(){
+    ...
+
+    // The sun
+	float sun_mask = get_sun_mask(sun_view_dot, sun_radius);
+	vec3 sun_output = sun_color * sun_mask;
+	
+	vec3 output = sky_output + sun_output;
+    COLOR = output;
+}</code></pre>
+</div>
+
+<p>In order to give the sun a more blurred and sun-like edge we're going to add a bloom. Go to the <cn>WorldEnvironment</cn> node and enable the glow. I recommend you play around a bit with the levels and the threshold to get the look you want. You can check out the project files to see exactly which settings I'm using here.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheSun.png" alt="The sun with glow post-processing, with a sun radius of 0.05." class="image__caption image__modal">
+</div>
+
+
+<h2 id="the-moon">4. The Moon</h2>
+
+<p>The sun seems a bit lonely in the sky, so lets add the moon as well. The method for the moon will be quite different, as we need more information for texture sampling and lighting. In order to do this we'll do some basic ray-tracing of a sphere in the sky and use that for our moon.</p>
+
+
+<h3 id="ray-tracing-mask">4.1 Ray-tracing mask</h3>
+
+<p>The first step is just getting the ray-traced sphere information and creating a mask from it. I'll not go into the specifics of ray-tracing and instead use this function from <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a> (with small modifications). You can also check my other tutorial on <a href="{{site.baseurl}}/2021/05/11/math-line-intersections/">line intersections</a> to learn more about ray-tracing. Add the following lines before the <cn>sky</cn> function.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// From Inigo Quilez, https://iquilezles.org/articles/intersectors/
+float sphere_intersect(vec3 ray_dir, vec3 sphere_pos, float radius)
+{
+    vec3 oc = -sphere_pos;
+    float b = dot(oc, ray_dir);
+    float c = dot(oc, oc) - radius * radius;
+    float h = b * b - c;
+    if(h < 0.0) return -1.0;
+    h = sqrt(h);
+    return -b - h;
+}</code></pre></div>
+
+<p>The function has 3 arguments, the ray direction (the view direction), the sphere's position (the moon direction) and the radius (the moon radius). In return it outputs the distance from the ray origin (our camera) to the intersection with the sphere, and if there is no intersection it returns -1. We can then create a mask by checking if the intersection is greater than -1 or not.</p>
+<p>Now for the implementation we need a new property, the moon's radius. Add the following uniform just below the sun group.</p>
+
+<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">group_uniforms Moon;
+uniform float moon_radius : hint_range(0, 1) = 0.05;</code></pre></div>
+
+<p>To show the moon on the screen we need to call <cn>sphere_intersect</cn> in the <cn>sky</cn> function, define the mask and add it to <cn>output</cn>.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// The moon
+float moon_intersect = sphere_intersect(view_dir, moon_dir, moon_radius);
+float moon_mask = moon_intersect > -1.0 ? 1.0 : 0.0;
+vec3 moon_output = vec3(1.0, 1.0, 1.0) * moon_mask;
+
+vec3 output = sky_output + sun_output + moon_output;</code></pre></div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Raytrace.png" alt="The moon mask, with a radius of 0.07." class="image__caption image__modal">
+</div>
+
+<div class="note__base round"><p>Note that in the picture above the moon and sun have a similar size, while the moon radius is 0.07 and the sun radius is 0.05. Unfortunately their radius variables do not scale the same.</p></div>
+
+
+<h3 id="moon-lighting">4.2 Moon lighting</h3>
+
+<p>For the lighting we're going to do some simple NdotL lighting, except that we first need to calculate a normal. Luckily, that isn't that difficult as we have a ray-traced sphere as moon. We can take the difference between the moon direction and the intersection point, and normalize it. This procedure is illustrated below, where the moon's size is greatly exaggerated.</p>
+
+<div style="display: grid; align-items: center; justify-items: center;">
+    <div class="container image__container round" style="width:50%">
+        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonNormal.png" alt="Schematic for calculating the moon's normal, where M is the moon direction, V view direction, I intersection point, and N the normal." class="image__caption image__modal">
+    </div>
+</div>
+
+<p>Let's add this normal calculation in the <cn>sky</cn> function by taking the difference between the <cn>view_dir</cn> scaled by <cn>moon_intersect</cn> and the <cn>moon_dir</cn>. Add the highlighted line to our moon code.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="4"><code class="language-glsl">// The moon
+float moon_intersect = sphere_intersect(view_dir, moon_dir, moon_radius);
+float moon_mask = moon_intersect > -1.0 ? 1.0 : 0.0;
+vec3 moon_normal = normalize(view_dir * moon_intersect - moon_dir);</code></pre></div>
+
+<p>We now have the normal, but for our NdotL lighting we also need the light direction. The light direction would be the direction of the sun's rays away from the moon. It is <em>away</em> from the sun because we want our surface to be lit if the dot product between the normal and light direction is 1.</p>
+
+<div style="display: grid; align-items: center; justify-items: center;">
+    <div class="container image__container round" style="width:50%">
+        <img src="/assets/posts/tutorials/skybox-tutorial-part-1/MoonLightingDirection.png" alt="Schematic of lighting direction \(d_l\). Sun and moon distance are not drawn to scale." class="image__caption image__modal">
+    </div>
+</div>
+
+<p>In mathematical terms it can be expressed as \( d_l = norm(d_s r_s - d_m r_m) \). Here \(d_l\) is the light direction, \(d_s\) the sun direction, \(r_s\) the sun's distance to us, \(d_m\) the moon direction, \(r_m\) the moon's distance to us, and \(norm()\) a normalization function. This might look complicated, however, we can use the fact that the sun is much further away from us than the moon (about 400 times further). Using this fact we can roughly approximate the light direction by saying the sun's distance is so big that the moon's distance is neglectable, i.e. \(d_l = norm(d_s r_s - d_m r_m) ≈ norm(d_s r_s) = d_s\).</p>
+<p>We can now calculate our NdotL using the <cn>moon_normal</cn> and <cn>sun_dir</cn>. Add the highlighted line and adjust our moon variable to show the new lighting. Note that we clamp the <cn>dot</cn> between 0 and 1, because there is no such thing as negative lighting.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="2-3"><code class="language-glsl">vec3 moon_normal = normalize(view_dir * moon_intersect - moon_dir);
+float moon_ndotl = clamp(dot(moon_normal, sun_dir), 0.0, 1.0);
+vec3 moon_output = moon_mask * moon_ndotl * vec3(1.0, 1.0, 1.0);</code></pre></div>
+
+<p>Let's also add an exposure property, so that we can control how bright the moon is. Add the following highlighted lines, adding a uniform and modifying <cn>moon_output</cn>.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="1, 5" style="margin:0;"><code class="language-glsl">uniform float moon_exposure : hint_range(-16, 16) = 0;
+...
+void sky(){
+    ...
+    vec3 moon_output = moon_mask * moon_ndotl * exp2(moon_exposure) * vec3(1.0, 1.0, 1.0);
+}</code></pre></div>
+
+<p></p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Lighting.png" alt="A partially lit moon during the setting sun, with moon exposure set to 1." class="image__caption image__modal">
+</div>
+
+
+<h3 id="moon-texture">4.3 Moon texture</h3>
+
+<p>For a stylised look a textureless moon might suffice, but more often than not you do want some texture for it. You could create your own, but we're going to use the publicly available color map from NASA's <a href="https://svs.gsfc.nasa.gov/cgi-bin/details.cgi?aid=4720" target="_blank"><em>Scientific Visualization Studio</em></a>. NASA provides it as an equirectangular texture, which is great for compression but really annoying to deal with when deciding mipmap level. Instead I've generated a cubemap from it, which you can download below. </p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/moon_color_cubemap.jpg" alt="Color cubemap of the moon, created from NASA's Scientific Visualization Studio data." class="image__caption image__modal">
+</div>
+
+<div class="note__base round"><p>You can generate this 6x1 row cubemap from the equirectangular texture using the <a href="https://github.com/indus/kubi">Kubi python package</a>, or using this <a href="https://jaxry.github.io/panorama-to-cubemap/">panorama to cubemap website</a> (though you have to stitch the 6 sides toghether yourself in some photo editor like Gimp). I've generated the cubemaps in this tutorial using the python package.</p></div>
+
+<p>When importing the texture in Godot you will have to set the import settings to Cubemap, enable mipmaps and set the arrangement to 6x1. Then add the following uniform to the shader, and don't forget to set the texture on the sky material.</p>
+
+<div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform samplerCube moon_cubemap : source_color;
+</code></pre></div>
+
+<p>We'll add a separate function for sampling the moon texture, called <cn>get_moon_texture</cn>, above the <cn>sky</cn> function. For now it just samples the texture using a 3D vector as input.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 get_moon_texture(vec3 dir)
+{ 
+    return texture(moon_cubemap, dir).rgb;
+}</code></pre></div>
+
+<p>The direction is going to be our moon's normal, as it points to where in the cubemap we need to sample. To see the texture add or change the following lines in the <cn>sky</cn> function.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moon_texture = get_moon_texture(moon_normal);
+vec3 moon_output = moon_mask * moon_ndotl * exp2(moon_exposure) * moon_texture;</code></pre></div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Texture_01.png" alt="The moon with the color map applied." class="image__caption image__modal">
+</div>
+
+<p>Okay, we have the moon texture, so this section is done right? Well... if you change the moon's direction you'll notice that the texture changes, which is not how the real moon behaves (we only see one side). The texture changes because our normal is in world-space, meaning that it changes with the moon's rotation in the sky. What we want is the normal in the moon's local space, object-space. In order to get that we need a space transformation matrix. We'll construct it in our gdscript, <em>skybox_controller.gd</em>, from section <a href="#skybox-controller">2.1</a>. The 3 basis vectors, forward, right, and up, form the object-to-world matrix. In order to get the world-to-object matrix we simply invert it. Add the highlighted line to the <em>skybox_controller.gd</em> script, where we set shader matrix called <cn>moon_world_to_object</cn>.</p>
+
+<button class="collapsible round">Code block (<em>skybox_controller.gd</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" style="margin:0;" data-line="3-4,7"><code class="language-gdscript">func _process(delta: float) -> void:
+    var sun_dir = $"../Sun".get_global_transform().basis.z; # This is our forward direction pointing towards the sun
+    var moon_basis = $"../Moon".get_global_transform().basis;
+    var moon_dir = moon_basis.z; # This is our forward direction pointing towards the moon
+    environment.sky.sky_material.set_shader_parameter('sun_dir', sun_dir); # Update sky material with sun direction
+    environment.sky.sky_material.set_shader_parameter('moon_dir', moon_dir); # Update sky material with moon direction
+    environment.sky.sky_material.set_shader_parameter('moon_world_to_object', moon_basis.inverse()); # The world to object matrix is the inverse of the basis (which is object to world)
+    pass</code></pre>
+</div>
+
+<div class="note__base round"><p>Note that our transformation matrix only has 3 vectors, not 4. We can get away with this because we only need to rotate the moon normal, not translate it which is what the 4th component is normally used for.</p></div>
+
+<p>Now we can access this matrix by declaring it in our shader. We then need to multiply this matrix with the moon's normal in world-space to get the normal in object-space. Add the following highlighted lines to implement this.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 moon_world_to_object;
+
+vec3 get_moon_texture(vec3 dir)
+{
+    dir = moon_world_to_object * dir;
+        
+    return texture(moon_cubemap, dir).rgb;
+}</code></pre></div>
+
+<p>There's one final change we need to make. We're currently looking at the backside of the moon, so we rotate 180 degrees by flipping the x and z. You could of course also achieve the same by modifying the cubemap itself.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="4-6"><code class="language-glsl">vec3 get_moon_texture(vec3 dir)
+{
+    dir = moon_world_to_object * dir;
+    // Rotate 180 degrees by flipping both x and z.
+    dir.x = -dir.x;
+    dir.z = -dir.z;
+    
+    return texture(moon_cubemap, dir).rgb;
+}</code></pre></div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheMoon_Texture_02.png" alt="The textured moon, sampled in object space." class="image__caption image__modal">
+</div>
+
+<h2 id="the-stars">5. The stars</h2>
+
+<p>For the stars we're also going to sample a cubemap, however this time we're using the view direction as our sample direction and we need more rotation matrices. One as a tilt, because the stars position depends on your latitude, and a spinning rotation, which rotates the stars around the tilted axis.</p>
+
+<p>The texture we'll be using again comes from NASA's <em>Scientific Visualization Studio</em>, and can be found <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">here</a>. It is the star map at the top of the page, where I've converted the it to a 1024 cubemap (a higher resolution would be better but is too big for my git to handle). In the import settings again set it to Cubemap, enable mipmapping and set layout to 6x1.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/star_color_cubemap.png" alt="The star cubemap, derived from NASA's photos." class="image__caption image__modal">
+</div>
+
+<p>Let's start by simply displaying the star map, by sampling it using the view direction. Add the texture uniform and sample it in the <cn>sky</cn> function. And don't forget to set the texture on the material.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">group_uniforms Stars;
+uniform samplerCube star_cubemap : source_color;
+
+void sky() {
+	// The stars
+	vec3 star_output = texture(star_cubemap, view_dir).rgb;
+
+	vec3 output = sky_output + sun_output + moon_output + star_output;
+}</code></pre>
+</div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_01.png" alt="The sky with the star map drawn." class="image__caption image__modal">
+</div>
+
+<p>That was easy, but looking at the result you might see a few problems, one of them being that the stars are drawn on top of the moon (and also sun). To fix this we multiply the star_output by 1 minus the moon and sun masks.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="2"><code class="language-glsl">vec3 star_output = texture(star_cubemap, view_dir).rgb;
+float star_mask = (1.0 - sun_mask) * (1.0 - moon_mask);
+star_output *= star_mask;</code></pre></div>
+
+<p>Another thing is that the stars look rather blurry. In order to make the stars sharper we'll be biasing the mip-level. This would make the texture values flicker more with camera movement, which normally would be bad but actually is appropriate for stars. Add the extra parameter to the texture sample to bias the mipmap by -1 (read the texture one mip-level lower than normal).</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 star_output = texture(star_cubemap, view_dir, -1.0).rgb;</code></pre></div>
+
+<p>Alternatively you could just disable mip-mapping altogether for the texture, however, in some cases you might need it. One example would be when using a second camera that renders at a lower resolution, without mip-mapping it would flicker too much and become distracting.</p>
+
+<p>Let's also add an exposure and power value for the star map, so that we have more control over the absolute and relative brightness of the stars. Add 2 new uniforms, and take <cn>star_output</cn> to the power and multiply it by the exposure. The power basically makes fainter stars even fainter, as we're multiplying values smaller than 1 with themselves. The <cn>abs</cn> is only there to prevent an error message from Unity, as it can't handle powers of negative numbers.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="3-4, 9-10" style="margin:0;"><code class="language-glsl">group_uniforms Stars;
+uniform samplerCube star_cubemap : source_color;
+uniform float star_exposure : hint_range(-16, 16) = 0;
+uniform float star_power : hint_range(1, 5) = 1;
+
+void sky() {
+	// The stars
+	vec3 star_output = texture(star_cubemap, view_dir).rgb;
+	star_output = pow(star_output, vec3(star_power));
+    float star_mask = (1.0 - sun_mask) * (1.0 - moon_mask);
+	star_output *= star_mask * exp2(star_exposure);
+}</code></pre>
+</div>
+
+<p>We're almost there but there is still one problem, the stars are still bright and visible during the day. In order to fix this we'll add another factor to <cn>star_output</cn>, which depends on <cn>sun_zenith_dot</cn> and <cn>sun_view_dot01</cn>. The idea is that the stars are too dim compared to the sun or the sky during the day. Add and change the following lines.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float star_strength = (1.0 - sun_view_dot01) * (clamp(-sun_zenith_dot, 0.0, 1.0));
+star_output *= star_mask * exp2(star_exposure) * star_strength;</code></pre></div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_02.png" alt="The night sky, with star exposure and power set to 2 and 1.3 respectively. These values are pure personal preference to have the brightest stars affected by the bloom post-processing, without too much background noise." class="image__caption image__modal">
+</div>
+
+
+<h3 id="star-rotations">5.1 Star rotations</h3>
+
+<p>As you might know the night sky differs depending on where you are in the world and what time it is. To implement this we'll first tilt the star map depending on a latitude that we provide and then rotate the map around that tilted axis depending on time.</p>
+
+<p>In order to do these rotations we need a new function that can rotate a direction, given a rotation axis and rotation amount. I won't go over the mathetmatical details of this function, instead we'll be using this <cn>rotation3d</cn> function from <a href="https://github.com/dmnsgn/glsl-rotate" target="_blank">here</a>. Add this function above the <cn>sky</cn> function.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">// Construct a rotation matrix that rotates around a particular axis by angle
+// Adapted from: https://github.com/dmnsgn/glsl-rotate
+mat3 rotation3d(vec3 axis, float angle) {
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return mat3(
+        vec3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s),
+        vec3(oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s),
+        vec3(oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c));
+}</code></pre>
+</div>
+
+<p>Let's encapsulate the rotations we're going to do in a new function called <cn>get_star_uvw</cn>. This function will take the view direction, a latitude and local sidereal time as input. We tilt the star map with respect to the world x-axis and spin it around the y-axis. The rest of this function is simply converting the latitude and time to radians and multiplying the rotation matrices in the correct order. Note that we tilt around the negative x-axis, that's just so that the game's z-axis corresponds to the north for.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">// Rotate the view direction, tilt with latitude, spin with time
+vec3 get_star_uvw(vec3 view_dir, float latitude, float local_sidereal_time)
+{
+    // tilt = 0 at the north pole, where latitude = 90 degrees
+    float tilt = PI * (latitude - 90.0) / 180.0;
+    mat3 tilt_rotation = rotation3d(vec3(-1.0,0.0,0.0), tilt);
+    
+    // 0.75 is a texture offset for lST = 0 equals noon
+    float spin = (0.75-local_sidereal_time) * 2.0 * PI;
+    mat3 spin_rotation = rotation3d(vec3(0.0, 1.0, 0.0), spin);
+        
+    // The order of rotation is important
+    return spin_rotation * tilt_rotation * view_dir;
+}</code></pre>
+</div>
+
+<div class="note__base round"><p>You might be wondering, what is local sidereal time? Sidereal time is the time of day as measured from distant stars instead of the sun, i.e. 1 sidereal day is 1 full rotation of the stars. This value will be between 0 and 1, where 0 refers to the time when the sun is the highest in the sky (noon). The local part refers to that were using the local time zone, instead of greenwich time. You can read more about sidereal time on the <a href="https://en.wikipedia.org/wiki/Sidereal_time" target="_blank">wiki page</a>.</p>
+<p>Another interesting thing to note is that we subtract time, this is because the time represents the rotation of the earth, but in our scene the earth is stationary and thus the stars should rotate in the opposite direction.</p></div>
+
+<p>Now we just need to use the <cn>star_uvw</cn> instead of <cn>view_dir</cn> when sampling the star cubemap. However, we do need some input for the latitude and time. So let's add two new uniforms, the latitude in degrees between -90° (south pole) and 90° (north pole) and the speed with which the stars rotate (given in days per second). For the time itself we can use the built-in variable <cn>TIME</cn>, where we take the modulus to keep the time between 0 and 1. Add or change the highlighted lines.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="1-2,6-7" style="margin:0;"><code class="language-glsl">uniform float star_latitude : hint_range(-90, 90) = 0;
+uniform float star_speed = 0.001;
+
+void sky() {
+    // The stars
+	vec3 star_uvw = get_star_uvw(view_dir, star_latitude, mod(TIME *  star_speed, 1.0));
+	vec3 star_output = texture(star_cubemap, star_uvw).rgb;
+}
+</code></pre>
+</div>
+
+<div class="container video__container round gif">
+    <video src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_Rotation.mp4" class="video-autoplay" muted loop></video>
+    <div class="caption__text">
+        Animation of the stars at a highly exaggerated speed, you can see Polaris (the North Star) at the top. Latitude is 52° (The Netherlands), speed = 0.01.
+    </div>
+</div>
+
+
+<h3 id="constellations">5.2 Constellations</h3>
+
+<p>The star map is technically finished, however, when looking for a star map I found that NASA also has a constellation map and it might be fun to add it to our sky. It is also really easy to add with what we already have. Download the constellation cubemap from the picture below or generate it from <a href="https://svs.gsfc.nasa.gov/4851" target="_blank">NASA's equirectangular texture</a>, it is the "Constellation figures in celestial coordinates.". Don't forget to set the import settings Cubemap.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/star_constellation_cubemap.jpg" alt="The constellation cubemap generated from NASA's Scientific Visualization Studio image." class="image__caption image__modal">
+</div>
+
+<p>Now add the cubemap uniform, as well as a colour for the constellation lines. We can reuse the <cn>star_uvw</cn>, so sample the texture and multiply it by the <cn>_ConstellationColor</cn>. Again we need to mask the sun and moon, as well as multiply it by the <cn>star_strength</cn>. Finally, add the result to the final <cn>output</cn>. Add or change the highlighted lines.</p>
+
+<button class="collapsible round">Code block (<em>skybox.gdshader</em>)</button>
+<div class="collapsible__content round code"><pre class="line-numbers" data-line="1-2, 5-9" style="margin:0;"><code class="language-glsl">uniform samplerCube star_constellation_cubemap : source_color;
+uniform vec3 star_constellation_color : source_color = vec3(0.0, 0.3, 0.6);
+
+void sky() {
+    // The constellations
+	vec3 constellation_ouput = texture(star_constellation_cubemap, star_uvw).rgb;
+	constellation_ouput *= star_constellation_color * star_mask * star_strength;
+
+    vec3 output = sky_output + sun_output + moon_output + star_output + constellation_ouput;
+}
+</code></pre>
+</div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_TheStars_Constellation.png" alt="The night sky with constellations, Ursa Minor can be seen at the top." class="image__caption image__modal">
+</div>
+
+
+<h2 id="eclipses">6. Eclipses</h2>
+
+<p>We're getting close to the end of this tutorial as there are only 2 phenomena left that we'll implement, the solar and lunar eclipse. A solar eclipse occurs when the moon is in front of the sun, and a lunar eclipse occurs when the earth casts it shadow onto the moon, i.e. the sun is at the opposite direction of the moon. Of these 2 the solar eclipse is easier to implement so let's start with that.</p>
+
+
+<h3 id="solar-eclipse">6.1 Solar eclipse</h3>
+
+<p>Currently the sun and moon are both drawn, even if they're on top of each other. To fix this we simply use the inverse (one minus) of the moon's mask to mask out the sun if the moon is in front. Add the following lines to the <cn>sky</cn> function below the constellation code.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Solar eclipse
+sun_output *= (1.0 - moon_mask);</code></pre></div>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_Eclipses_SolarEclipse_01.png" alt="The solar eclipse. I've lowered the moon radius to 0.067." class="image__caption image__modal">
+</div>
+
+<p>I've never seen a total solar eclipse in person and finding reliable images of the sky during one is quite hard, but it seems that the sky becomes darker and the area around the sun seems brighter as a result. In order to implement this we'll use <cn>sun_moon_dot</cn> to determine how much of the sun is eclipsed. As a function of this we'll lower the value of <cn>sky_output</cn> and increase the value of <cn>sun_output</cn> (so that the bloom has a greater effect).</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Solar eclipse
+float solar_eclipse01 = smoothstep(1.0 - sun_radius * sun_radius, 1.0, sun_moon_dot);
+sky_output *= mix(1.0, 0.4, solar_eclipse01);
+sun_output *= (1.0 - moon_mask) * mix(1.0, 16.0, solar_eclipse01);</code></pre></div>
+
+
+<p>Notice that we use a similar calculation to the sun's mask, except we use a <cn>smoothstep</cn> so that <cn>solar_eclipse01</cn> is 0 up until the centre of the moon overlaps the edge of the sun and becomes 1 when the moon and sun centres align.</p>
+
+<p>This is only one way of changing the sky during a solar eclipse, you could of course expand on this using more colours or colour gradients and sample those as function of <cn>solar_eclipse01</cn>. Though if you do, be aware that solar eclipses can also occur at night, when you can't see the sun.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_Eclipses_SolarEclipse_02.png" alt="The solar eclipse, with lowered sky_output and increased sun_output." class="image__caption image__modal">
+</div>
+
+
+<h3 id="lunar-eclipse">6.2 Lunar eclipse</h3>
+
+<p>The lunar eclipse will work similar to the solar eclipse, we'll mask out the moon and calculate a <cn>lunar_eclipse01</cn> variable. This time the variable will be used only to change the moon, not the sky.</p>
+
+<p>Unfortunately we can't reuse <cn>sun_mask</cn> or <cn>moon_mask</cn> and instead have to calculate a new mask. This mask is very similar to <cn>sun_mask</cn>, but we take the <cn>step</cn> function of negative <cn>sun_view_dot</cn>, which means it is 1 when the sun is opposite of the view direction. Add the following lines to the <cn>sky</cn> function below the solar eclipse to make the mask and mask out the <cn>moon_output</cn>.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// Lunar eclipse
+float lunar_eclipse_mask = 1.0 - step(1.0 - sun_radius * sun_radius, -sun_view_dot);
+moon_output *= lunar_eclipse_mask;</code></pre></div>
+
+<p>The mask needs to be one minus the step because we want the moon to be visible unless it is in the mask. Technically speaking we should be defining an earth radius and use that for the mask, because the mask should represent the earth's shadow. However, for our purposes it works fine to use the sun's radius instead.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_Eclipses_LunarEclipse_01.png" alt="Partial lunar eclipse." class="image__caption image__modal">
+</div>
+
+<p>If you've seen a lunar eclipses you'll know that it turns slightly red once it gets fully eclipsed. Let's implement that as well. In order to do this we need to know when the moon is nearly fully eclipsed. We do this by using a <cn>smoothstep</cn> function, similarly to calculating <cn>solar_eclipse01</cn>. However, this time we want it to be 0 up until the sun and moon are almost oppositely aligned. To do this we multiply the masking radius (<cn>sun_radius</cn>) by a small number (0.05). Finally we <cn>mix</cn> between the mask and a dark orangish red colour and multiply the moon_output with that. Add or change the highlighted lines.</p>
+
+<div class="container__code"><pre class="line-numbers round" data-line="3-4"><code class="language-glsl">// Lunar eclipse
+float lunar_eclipse_mask = 1.0 - step(1.0 - sun_radius * sun_radius, -sun_view_dot);
+float lunar_eclipse01 = smoothstep(1.0 - sun_radius * sun_radius * 0.05, 1.0, -sun_moon_dot);
+moon_output *= mix(vec3(lunar_eclipse_mask), vec3(0.3,0.05,0), lunar_eclipse01);</code></pre></div>
+
+<p>You can of course change the red moon color or even add a property for it to control from the inspector.</p>
+
+<div class="container image__container round" style="width:100%">
+    <img src="/assets/posts/tutorials/skybox-tutorial-godot/Skybox_Eclipses_LunarEclipse_02.png" alt="Total lunar eclipse." class="image__caption image__modal">
+</div>
+
+
+<h2 id="conclusion">7. Conclusion</h2>
+
+<p>This the end of the tutorial, we've made a skybox shader where the colour of the sky is determined by the height of the sun and several colour gradients. The moon is shown, lit depending on the sun's position and has a texture. The stars are drawn, rotate in the sky, and represent the sky at a chosen latitude. A constellation map is drawn over the stars, so that you can find out where Orion is. And finally we've made some simple calculations to simulate a solar and lunar eclipse.</p>
+
+<p>There is of course a lot more customisation that you could add, such as more colour options and other parameters. However, that is mostly up to your personal preferences or outside demands. I hope you've at least learned some new things and had fun making this, I sure did.</p>
+    
+<p>If you want to buy me a coffee (or tea because I don't drink coffee) you can do so using my <a href="https://ko-fi.com/kelvinvanhoorn" target="_blank">ko-fi</a> page. You can also check out my <a href="https://bsky.app/profile/kelvinvanhoorn.com" target="_blank">BlueSky</a> for more shader work and other things that might not make it to the site.</p>

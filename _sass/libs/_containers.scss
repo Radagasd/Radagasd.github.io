@@ -30,12 +30,11 @@
     padding-inline-start: 1em;
 }
 
+// Kept for potential future use
 .container__code{
-    display: grid;
 }
 
 .container__code.line-numbers{
-    margin: 0;
 }
 
 // TODO: Some of the social containers could be deprecated
