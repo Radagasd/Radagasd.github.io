@@ -275,9 +275,9 @@ vec3 skyColor = sunZenithColor + vzMask * viewZenithColor + svMask * sunViewColo
 
 <h3 id="the-sun">3.3 The sun</h3>
 
-<p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>getSunMask</cn>. The mask is quite simple, we step <cn>sunViewDot</cn> depending on a set radius. Add the following lines before the <cn>sky</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
+<p>While we can see the bloom around where the sun should be, we currently don't actually see the sun. Let's fix that by making a mask for where the sun should be drawn. Let's encapsulate the sun mask in its own function called <cn>get_sun_mask</cn>. The mask is quite simple, we step <cn>sunViewDot</cn> depending on a set radius. Add the following lines before the <cn>sky</cn> function. Note that we use the square of the radius, for it grants us finer control over the size. We take 1 minus the radius square because we want to draw the sun where the dot product is near 1.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float getSunMask(float sunViewDot, float sunRadius)
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">float get_sun_mask(float sunViewDot, float sunRadius)
 {
     float stepRadius = 1.0 - sunRadius * sunRadius;
     return step(stepRadius, sunViewDot);
@@ -295,7 +295,7 @@ void sky(){
     ...
 
     // The sun
-	float sunMask = getSunMask(sunViewDot, _SunRadius);
+	float sunMask = get_sun_mask(sunViewDot, _SunRadius);
 	vec3 sunColor = _SunColor * sunMask;
 	
 	vec3 col = skyColor + sunColor;
@@ -320,7 +320,7 @@ void sky(){
 <p>The first step is just getting the ray-traced sphere information and creating a mask from it. I'll not go into the specifics of ray-tracing and instead use this function from <a href="https://www.iquilezles.org/www/articles/intersectors/intersectors.htm" target="_blank">Inigo Quilez</a> (with small modifications). You can also check my other tutorial on <a href="{{site.baseurl}}/2021/05/11/math-line-intersections/">line intersections</a> to learn more about ray-tracing. Add the following lines before the <cn>sky</cn> function.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// From Inigo Quilez, https://iquilezles.org/articles/intersectors/
-float sphIntersect(vec3 rayDir, vec3 spherePos, float radius)
+float sphere_intersect(vec3 rayDir, vec3 spherePos, float radius)
 {
     vec3 oc = -spherePos;
     float b = dot(oc, rayDir);
@@ -337,10 +337,10 @@ float sphIntersect(vec3 rayDir, vec3 spherePos, float radius)
 <div class="container__code"><pre class="line-numbers round"><code class="language-glsl">group_uniforms Moon;
 uniform float _MoonRadius : hint_range(0, 1) = 0.05;</code></pre></div>
 
-<p>To show the moon on the screen we need to call <cn>sphIntersect</cn> in the <cn>sky</cn> function, define the mask and add it to <cn>col</cn>.</p>
+<p>To show the moon on the screen we need to call <cn>sphere_intersect</cn> in the <cn>sky</cn> function, define the mask and add it to <cn>col</cn>.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">// The moon
-float moonIntersect = sphIntersect(viewDir, _MoonDir, _MoonRadius);
+float moonIntersect = sphere_intersect(viewDir, _MoonDir, _MoonRadius);
 float moonMask = moonIntersect > -1.0 ? 1.0 : 0.0;
 vec3 moonColor = vec3(1.0, 1.0, 1.0) * moonMask;
 
@@ -366,7 +366,7 @@ vec3 col = skyColor + sunColor + moonColor;</code></pre></div>
 <p>Let's add this normal calculation in the <cn>sky</cn> function by taking the difference between the <cn>viewDir</cn> scaled by <cn>moonIntersect</cn> and the <cn>_MoonDir</cn>. Add the highlighted line to our moon code.</p>
 
 <div class="container__code"><pre class="line-numbers round" data-line="4"><code class="language-glsl">// The moon
-float moonIntersect = sphIntersect(viewDir, _MoonDir, _MoonRadius);
+float moonIntersect = sphere_intersect(viewDir, _MoonDir, _MoonRadius);
 float moonMask = moonIntersect > -1.0 ? 1.0 : 0.0;
 vec3 moonNormal = normalize(viewDir * moonIntersect - _MoonDir);</code></pre></div>
 
@@ -416,16 +416,16 @@ void sky(){
 <div class="container__code"><pre class="line-numbers round"><code class="language-glsl">uniform samplerCube _MoonCubemap : source_color;
 </code></pre></div>
 
-<p>We'll add a separate function for sampling the moon texture, called <cn>getMoonTexture</cn>, above the <cn>sky</cn> function. For now it just samples the texture using a 3D vector as input.</p>
+<p>We'll add a separate function for sampling the moon texture, called <cn>get_moon_texture</cn>, above the <cn>sky</cn> function. For now it just samples the texture using a 3D vector as input.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 getMoonTexture(vec3 dir)
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 get_moon_texture(vec3 dir)
 { 
     return texture(_MoonCubemap, dir).rgb;
 }</code></pre></div>
 
 <p>The direction is going to be our moon's normal, as it points to where in the cubemap we need to sample. To see the texture add or change the following lines in the <cn>sky</cn> function.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moonTexture = getMoonTexture(moonNormal);
+<div class="container__code"><pre class="line-numbers round" data-line=""><code class="language-glsl">vec3 moonTexture = get_moon_texture(moonNormal);
 vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code></pre></div>
 
 <div class="container image__container round" style="width:100%">
@@ -451,7 +451,7 @@ vec3 moonColor = moonMask * moonNdotL * exp2(_MoonExposure) * moonTexture;</code
 
 <div class="container__code"><pre class="line-numbers round" data-line="1,5"><code class="language-glsl">uniform mat3 _MoonWorldToObject;
 
-vec3 getMoonTexture(vec3 dir)
+vec3 get_moon_texture(vec3 dir)
 {
     dir = _MoonWorldToObject * dir;
         
@@ -460,7 +460,7 @@ vec3 getMoonTexture(vec3 dir)
 
 <p>There's one final change we need to make. We're currently looking at the backside of the moon, so we rotate 180 degrees by flipping the x and z. You could of course also achieve the same by modifying the cubemap itself.</p>
 
-<div class="container__code"><pre class="line-numbers round" data-line="4-6"><code class="language-glsl">vec3 getMoonTexture(vec3 dir)
+<div class="container__code"><pre class="line-numbers round" data-line="4-6"><code class="language-glsl">vec3 get_moon_texture(vec3 dir)
 {
     dir = _MoonWorldToObject * dir;
     // Rotate 180 degrees by flipping both x and z.
@@ -563,11 +563,11 @@ mat3 rotation3d(vec3 axis, float angle) {
 }</code></pre>
 </div>
 
-<p>Let's encapsulate the rotations we're going to do in a new function called <cn>GetStarUVW</cn>. This function will take the view direction, a latitude and local sidereal time as input. We tilt the star map with respect to the world x-axis and spin it around the y-axis. The rest of this function is simply converting the latitude and time to radians and multiplying the rotation matrices in the correct order. Note that we tilt around the negative x-axis, that's just so that the game's z-axis corresponds to the north for.</p>
+<p>Let's encapsulate the rotations we're going to do in a new function called <cn>get_star_uvw</cn>. This function will take the view direction, a latitude and local sidereal time as input. We tilt the star map with respect to the world x-axis and spin it around the y-axis. The rest of this function is simply converting the latitude and time to radians and multiplying the rotation matrices in the correct order. Note that we tilt around the negative x-axis, that's just so that the game's z-axis corresponds to the north for.</p>
 
 <button class="collapsible round">Code block (<em>Skybox.gdshader</em>)</button>
 <div class="collapsible__content round code"><pre class="line-numbers" data-line="" style="margin:0;"><code class="language-glsl">// Rotate the view direction, tilt with latitude, spin with time
-vec3 GetStarUVW(vec3 viewDir, float latitude, float localSiderealTime)
+vec3 get_star_uvw(vec3 viewDir, float latitude, float localSiderealTime)
 {
     // tilt = 0 at the north pole, where latitude = 90 degrees
     float tilt = PI * (latitude - 90.0) / 180.0;
@@ -593,7 +593,7 @@ uniform float _StarSpeed = 0.001;
 
 void sky() {
     // The stars
-	vec3 starUVW = GetStarUVW(viewDir, _StarLatitude, mod(TIME *  _StarSpeed, 1.0));
+	vec3 starUVW = get_star_uvw(viewDir, _StarLatitude, mod(TIME *  _StarSpeed, 1.0));
 	vec3 starColor = texture(_StarCubemap, starUVW).rgb;
 }
 </code></pre>
